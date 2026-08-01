@@ -76,7 +76,7 @@ Dashboard actions use `client.host.command(...)`. Host commands are capabilities
 
 For real local data, configure and start a local development session for Match Vision in W3Booster Developer Mode, then open the local app from the client. The SDK receives the temporary launch credential automatically. Published users continue using the published URL.
 
-Match Vision always selects the production cloud backend unless the page URL contains the explicit developer override `?backend=local` (or `&backend=local` after another parameter). The override affects only that browser session and connects to the SDK's localhost endpoint.
+W3Booster selects the matching local or production platform when it creates an application launch session. The SDK consumes that platform-issued selection automatically; Match Vision does not parse backend parameters or choose a transport itself.
 
 ## SDK dependency
 
