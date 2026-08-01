@@ -1,0 +1,20 @@
+<div *ngIf="streamer().upgrades?.upgrades?.length">
+    <div class="upgrade-box">
+        <div *ngFor="let research of activeResearches(streamer())" class="upgrade-icon"
+            [style.backgroundImage]="'url(' + iconPath(research) + ')'">
+            <div *ngIf="isWeaponOrArmorUpgrade(research.name)" class="level-indicator current-level-{{research.level}}">
+                <div class="level-3"></div><div class="level-2"></div><div class="level-1"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div *ngIf="opponent()?.upgrades?.upgrades?.length">
+    <div class="upgrade-box opponent">
+        <div *ngFor="let research of activeResearches(opponent()!)" class="upgrade-icon"
+            [style.backgroundImage]="'url(' + iconPath(research) + ')'">
+            <div *ngIf="isWeaponOrArmorUpgrade(research.name)" class="level-indicator current-level-{{research.level}}">
+                <div class="level-3"></div><div class="level-2"></div><div class="level-1"></div>
+            </div>
+        </div>
+    </div>
+</div>

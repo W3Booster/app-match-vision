@@ -1,0 +1,86 @@
+<div class="topbar-wrapper">
+    <ng-template #raceDisplay let-e>
+      <div class="field field-race" [class.revert-bg]="e.revert"
+           [ngClass]="settings.showRacesOnlyTextual ? 'field-race-textonly' : 'field-race-'+raceSpriteIndex(e.player)"
+           [style.borderTopColor]="getColorCode(e.player)">
+        <div class="player-color" [style.backgroundColor]="getColorCode(e.player)">
+          <div class="player-color-gradient">
+            {{settings.showRacesOnlyTextual ? raceShortName(e.player) : ''}}
+          </div>
+        </div>
+      </div>
+    </ng-template>
+    <div class="topbar1">
+      <ng-container *ngFor="let e of [{player: player1, resources: player1Resources, revert: false}, {player: player2, resources: player2Resources, revert: true}]; let i = index">
+            <!-- for player2, show race first -->
+            <ng-container *ngIf="e.revert" [ngTemplateOutlet]="raceDisplay" [ngTemplateOutletContext]="{ $implicit: e }"></ng-container>
+            <div class="field field-gold" [style.borderTopColor]="getColorCode(e.player)"><span>{{ e.resources.gold | number:'1.0-0' }}</span></div>
+            <div class="field field-lumber" [style.borderTopColor]="getColorCode(e.player)"><span>{{ e.resources.lumber | number:'1.0-0' }}</span></div>
+            <div class="field field-food"
+                 [class.no-upkeep-color]="e.resources.supply <= 50"
+                 [class.low-upkeep-color]="e.resources.supply > 50 && e.resources.supply <= 80"
+                 [class.high-upkeep-color]="e.resources.supply > 80"
+                 [style.borderTopColor]="getColorCode(e.player)">
+              <span>{{ e.resources.supply | number:'1.0-0' }}</span>
+              /
+              {{ e.resources.supplyCap | number:'1.0-0' }}
+            </div>
+            <div class="field field-worker-food" [style.borderTopColor]="getColorCode(e.player)"><span>{{ e.resources.workerSupply || 0 | number:'1.0-0' }}</span></div>
+            <!-- for player1, show race after resources -->
+            <ng-container *ngIf="!e.revert" [ngTemplateOutlet]="raceDisplay" [ngTemplateOutletContext]="{ $implicit: e }"></ng-container>
+            <ng-container *ngIf="i === 0">
+              <div class="field field-time">
+                <span>{{formattedGameTime}}</span>
+                <div class="daynightcycle-wrapper">
+                  <div>
+                    <div class="daynightcycle daynightcycle-bg daynightcycle-{{dayNight().previousPhase}}"></div>
+                    <div class="daynightcycle daynightcycle-front daynightcycle-{{dayNight().phase}}"></div>
+                  </div>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+    </div>
+
+    <div class="topbar2">
+        <div>
+            <div class="player-name player-name-left">
+                <div class="player-country"
+                    *ngIf="player1.mainAccount && player1.mainAccount.country && player1.mainAccount.country != 'tw'"
+                    [style.backgroundImage]="'url(/assets/img/flags/'+ player1.mainAccount.country +'.png)'">
+                </div>
+                {{player1.name}}
+            </div>
+        </div>
+        <div> </div>
+        <div
+            [class]="(Boolean(settings.matchscoreEnabled) && !match.isReplay || Boolean(settings.matchscoreEnabledInReplay) && match.isReplay) ? 'show-matchscore' : 'hide-matchscore'">
+            <div class="score-count left-score-count">
+                {{runtime.matchscoreWins}}
+            </div>
+            <div class="content">
+                <div [class]="Boolean(settings.headlineTopIsMainHeadline) ? 'headline' : 'subline'">
+                    {{settings.headlineTop}}
+                </div>
+                <div [class]="!Boolean(settings.headlineTopIsMainHeadline) ? 'headline' : 'subline'">
+                    {{settings.headlineBot}}
+                </div>
+            </div>
+            <div class="score-count right-score-count">
+                {{runtime.matchscoreLosses}}
+            </div>
+        </div>
+        <div> </div>
+        <div>
+            <div class="player-name player-name-right">
+                <div class="player-country"
+                    *ngIf="player2.mainAccount && player2.mainAccount.country && player2.mainAccount.country != 'tw'"
+                    [style.backgroundImage]="'url(/assets/img/flags/'+ player2.mainAccount.country +'.png)'">
+                </div>
+                {{player2.name}}
+            </div>
+        </div>
+
+    </div>
+
+</div>

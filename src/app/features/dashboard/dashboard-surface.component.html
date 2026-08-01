@@ -1,0 +1,44 @@
+<main class="overlay-dashboard" [class.compact]="compact()">
+    <header class="dashboard-hero">
+        <div><span>MATCH VISION</span><h1>{{compact() ? 'Compact match control' : 'Match dashboard'}}</h1><p>Live match data and visual controls, powered by the W3Booster SDK.</p></div>
+        <button *ngIf="!compact()" type="button" class="primary" (click)="openCompact()"><i class="fa fa-external-link-alt"></i> Open compact window</button>
+        <button *ngIf="compact()" type="button" (click)="closeCompact()">Close</button>
+    </header>
+
+    <section class="score-panel">
+        <div class="score-label"><span>SESSION SCORE</span><small>Update the score shown by your overlay.</small></div>
+        <div class="score-side win"><button (click)="changeScore('wins', -1)">−</button><strong>{{wins}}</strong><button (click)="changeScore('wins', 1)">+</button><span>Wins</span></div>
+        <div class="score-separator">:</div>
+        <div class="score-side loss"><button (click)="changeScore('losses', -1)">−</button><strong>{{losses}}</strong><button (click)="changeScore('losses', 1)">+</button><span>Losses</span></div>
+        <button class="reset" type="button" (click)="resetScore()"><i class="fa fa-undo"></i> Reset</button>
+    </section>
+
+    <section class="dashboard-card current-match">
+        <header><div><span>LIVE</span><h2>Current match</h2></div><div class="match-clock" *ngIf="matchActive">{{formatTime(state().match.gameTime)}}</div></header>
+        <div class="empty" *ngIf="!matchActive"><i class="fa fa-hourglass-half"></i><b>No match running</b><span>This page updates automatically when Warcraft III starts a match.</span></div>
+        <ng-container *ngIf="matchActive">
+            <div class="match-meta"><b>{{state().match.map || 'Unknown map'}}</b><span>{{state().match.mode || 'Unknown mode'}} · {{state().match.realm || 'Warcraft III'}}</span><button *ngIf="state().match.isObserver || state().match.isReplay" (click)="reversePlayers()"><i class="fa fa-exchange-alt"></i> Reverse players</button></div>
+            <div class="team-grid">
+                <article *ngFor="let team of teams">
+                    <h3>Team {{team.id + 1}}</h3>
+                    <div class="player-row" *ngFor="let player of team.players">
+                        <i [attr.data-race]="player.race">{{raceName(player).charAt(0).toUpperCase()}}</i>
+                        <span><b>{{player.mainAccount?.name || player.name}}</b><small>{{raceName(player)}}</small></span>
+                        <ng-container *ngIf="playerStats(player) as stats"><em>{{stats.winRate | number:'1.0-0'}}%</em><strong>{{stats.wins}}W</strong><strong class="losses">{{stats.losses}}L</strong></ng-container>
+                    </div>
+                </article>
+            </div>
+        </ng-container>
+    </section>
+
+    <section class="dashboard-card match-history">
+        <header><div><span>RECENT</span><h2>Match history</h2></div><small>Stored by this app on this device</small></header>
+        <div class="empty small" *ngIf="!history.entries().length">No matches recorded yet.</div>
+        <article *ngFor="let match of history.entries()">
+            <time>{{match.startedAt | date:'shortTime'}}</time>
+            <span><b>{{match.map}}</b><small>{{match.mode}} · {{match.players.length}} players</small></span>
+            <div class="history-players"><ng-container *ngFor="let player of match.players; let last = last">{{player.name}}<i *ngIf="!last"> · </i></ng-container></div>
+            <em [class.live]="!match.endedAt">{{match.endedAt ? 'Finished' : 'Live'}}</em>
+        </article>
+    </section>
+</main>

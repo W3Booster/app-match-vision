@@ -1,0 +1,38 @@
+{
+  "name": "w3booster-match-vision",
+  "version": "0.1.0",
+  "description": "W3Booster's open-source live match visualization application.",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve --port 8081",
+    "start-ssl": "ng serve --port 8081 --ssl --ssl-key cert\\server.key --ssl-cert cert\\server.crt",
+    "build": "ng build --configuration production",
+    "test": "vitest run",
+    "check": "npm test && npm run build"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/common": "^22.1.0",
+    "@angular/compiler": "^22.1.0",
+    "@angular/core": "^22.1.0",
+    "@angular/platform-browser": "^22.1.0",
+    "@w3booster/sdk": "^0.1.0",
+    "rxjs": "^7.8.2",
+    "tslib": "^2.8.1"
+  },
+  "devDependencies": {
+    "@angular/build": "^22.1.2",
+    "@angular/cli": "^22.1.2",
+    "@angular/compiler-cli": "^22.1.0",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.10"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/W3Booster/app-match-vision.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.22.3"
+  }
+}

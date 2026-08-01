@@ -1,0 +1,580 @@
+.w3-classic {
+
+    @keyframes fadeOutSymetric {
+        0% {
+            opacity: 1;
+        }
+
+        47% {
+            opacity: 1;
+        }
+
+        53% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 0;
+        }
+    }
+
+    .flag {
+        max-height: 11px;
+    }
+
+    .App {
+        font-family: 'Roboto', sans-serif;
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        right: 0px;
+        bottom: 0px;
+        color: #e5e3e8;
+        height: 100%;
+
+        .wc3-ui-area {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            height:100%;
+            width:1440px;
+
+            .wc3-ui-area-container {
+                position: relative;
+                width:100%;
+                height: 100%;
+            }
+        }
+    }
+
+    .hero-avatar {
+        width: 69px;
+        height: 69px;
+        margin-top: 1px;
+        margin-left: 0px;
+        background-size: 100%;
+    }
+
+    .hero-avatar.hero-avatar-cover {
+        background: url('/assets/img/avatar-cover.jpg');
+        background-size: 100%;
+        height: 87px;
+        width:73px;
+        margin-left: -2px;
+        margin-top: -2px;
+    }
+
+    .grayscaled-filter {
+        filter: grayscale(100%);
+    }
+
+    .hero-area.hero-area-opponent {
+
+        left: auto;
+        right: 0.45%;
+        direction: rtl;
+
+
+        .hero-exp-bar-wrapper {
+            margin-right:-8px;
+        }
+
+        .ability-icon-wrapper:nth-child(3),
+        .ability-icon-wrapper:nth-child(4) {
+            position: absolute;
+            left: auto;
+            right: 2.3%;
+        }
+
+        &.inventory {
+            margin-right: 74px !important;
+            direction: ltr;
+        }
+    }
+
+    .ctrlgroup-wrapper {
+        position: absolute;
+        bottom: 256px;
+        left: 386px;
+        z-index: 99999999999999;
+        display: flex;
+        flex-direction: row;
+
+        .ctrlgroup {
+            width: 66px;
+            height: 30px;
+            background: url('/assets/img/controlgroup.png');
+            border-spacing: 4px;
+            display: inline-block;
+            display: flex;
+            flex-direction: row;
+            line-height: 30px;
+            zoom: 1;
+
+
+            .ctrlgroup-index {
+                vertical-align: middle;
+                width: 14px;
+                padding-left: 1px;
+                font-size: 13px;
+                font-weight: bold;
+                height: 30px;
+                text-align: center;
+                flex: 0 0 auto;
+                text-align: center;
+                color: #191620;
+            }
+
+            .ctrlgroup-icon {
+                margin-top: 2px;
+                width: 23px;
+                height: 23px;
+                background-size: 120%;
+                background-position: 50% 50%;
+                background-repeat: no-repeat;
+                flex: 0 0 auto;
+            }
+
+            .ctrlgroup-text {
+                vertical-align: middle;
+                height: 30px;
+                text-align: center;
+                flex: 1 1 auto;
+                padding-right: 5px;
+            }
+        }
+    }
+
+    .hero-level {
+        margin-left: 38px;
+        color: #ccc;
+        margin-top: 44px;
+        width: 28px;
+        padding: 2px 0px 1px 0px;
+        font-size: 15px;
+        text-align: center;
+        background-color: #000;
+        border: 1px solid #735007;
+        -webkit-box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.75);
+        -moz-box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.75);
+        box-shadow: 0px 0px 2px 0px rgba(0, 0, 0, 0.75);
+    }
+
+    .hero-exp-area {
+        margin-left: -9px;
+    }
+
+    .hero-hp-bar-wrapper, .hero-mana-bar-wrapper {
+        height: 6px;
+        width: 71px;
+        margin-left: -1px;
+        margin-right: -1px;
+        position: relative;
+    }
+
+    .hero-hp-bar-wrapper {
+        margin-top: 69px;
+    }
+
+    .hero-mana-bar-wrapper {
+        margin-top: 77px;
+    }
+
+    .hero-hp-bar, .hero-mana-bar {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        top: 0;
+        transition: width 0.3s ease;
+        opacity: 1;
+    }
+
+    .hero-hp-bar{
+        background: #00ff00
+    }
+
+    .hero-mana-bar {
+        background: #00aafd
+    }
+
+    .hero-bar-gradient {
+        background: linear-gradient(0deg, rgba(0, 0, 0, 1) 0%, rgba(0, 0, 0, 1) 80%, rgba(0, 0, 0, 0.0) 80%, rgba(0, 0, 0, 0) 100%);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        top: 0;
+        right:0px;
+        opacity: 0.5;
+    }
+
+    .hero-hp-bar-background, .hero-mana-bar-background, .hero-exp-bar-background {
+        border: 2px solid #000;
+        border-radius: 1px;
+        position: relative;
+        height: 100%;
+        background: #000;
+    }
+
+    .hero-exp-bar-wrapper {
+        margin-top: 1px;
+        height: 67px;
+        width: 9px;
+        position: relative;
+    }
+
+    .hero-exp-bar {
+        background: rgb(135, 0, 127);
+        background: linear-gradient(90deg, rgba(135, 0, 127, 1) 0%, rgba(149, 8, 141, 1) 74%, rgba(185, 27, 176, 1) 76%, rgba(185, 27, 176, 1) 100%);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        transition: height 1s ease;
+        opacity: 0.8;
+    }
+
+    .hero-area {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        top: 4.30%;
+        left: 0.45%;
+    }
+
+    .hero-area:nth-child(2) {
+        top: 12.90%;
+    }
+
+    .hero-area:nth-child(3) {
+        top: 21.55%;
+    }
+
+    .inventory {
+        margin-left: 74px;
+        margin-top: 2px;
+        width: 58px;
+
+        height: 89px;
+        background: url('/assets/img/inventory.png') no-repeat;
+        background-size: 100% !important;
+        opacity: 1;
+        z-index: -99999
+    }
+
+    .item-icon-wrapper {
+        margin-top: 0;
+        width: 23px;
+        height: 23px;
+        position: relative;
+        animation: slide-up 0.4s ease;
+        border: 3px solid transparent;
+        position: absolute;
+    }
+
+    .item-icon-wrapper:nth-child(2),
+    .item-icon-wrapper:nth-child(4),
+    .item-icon-wrapper:nth-child(6) {
+        margin-left: 29px;
+    }
+
+    .item-icon-wrapper:nth-child(1),
+    .item-icon-wrapper:nth-child(2) {
+        top: 0px;
+    }
+
+    .item-icon-wrapper:nth-child(3),
+    .item-icon-wrapper:nth-child(4) {
+        top: 29px;
+    }
+
+    .item-icon-wrapper:nth-child(5),
+    .item-icon-wrapper:nth-child(6) {
+        top: 58px;
+    }
+
+    .item-icon {
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        background-size: 120%;
+        background-position: 50% 50%;
+    }
+
+    .ability-icon-wrapper.inventory-spacer {
+        margin-left: 138px;
+        margin-right: 138px !important;
+    }
+
+    .ability-icon-wrapper {
+        margin-top: 2px;
+        width: 42px;
+        height: 42px;
+        position: relative;
+        animation: slide-up 0.4s ease;
+    }
+
+    .ability-icon-wrapper:nth-child(3),
+    .ability-icon-wrapper:nth-child(4) {
+        position: absolute;
+        left: 45px;
+    }
+
+    .ability-icon-wrapper:nth-child(3) {
+        top: 0%;
+    }
+
+    .ability-icon-wrapper:nth-child(4) {
+        top: 3.9333%;
+    }
+
+
+    .ability-icon {
+        width: 100%;
+        height: 100%;
+        background-repeat: no-repeat;
+        background-size: 115%;
+        background-position: 50% 50%;
+
+        &.ulti {
+            .cooldown, .cooldown-animation {
+                right: 0px !important;
+            }
+        }
+        .cooldown-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
+
+            .cooldown {
+                height: 100%;
+                position: absolute;
+                right: 8px;
+                left: 0px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                z-index: 2;
+                text-shadow: 1px 1px 4px #000000;
+                color: #fff;
+                font-weight: bold;
+            }
+
+            .cooldown-animation {
+                background-color: rgba(0, 0, 0, 0.3);
+                height: 100%;
+                left: 0px;
+                right: 8px;
+                position: absolute;
+                bottom: 0;
+                transition: height 1s linear;
+                z-index: 0;
+            }
+        }
+    }
+
+    .upgrade-box {
+        position: absolute;
+        /* below stats bar*/
+        left: 0px;
+        top: 60px;
+        /* obove grid
+    left:1330px;
+    top: 760px;*/
+        /* bottom left
+    left:10px;
+    top: 750px;*/
+        /* top right
+    left:1030px;
+    top: 46px;*/
+        margin-bottom: 90px;
+        animation: slide-up 0.4s ease;
+        transition: width 0.4s;
+    }
+
+    .upgrade-box.opponent {
+        left: auto;
+        right: 0px;
+    }
+
+    .upgrade-icon .upgrade-icon-label {
+        margin-top: 31px;
+        font-size: 11px;
+        background-color: rgba(0, 0, 0, 0.5);
+        color: #fff;
+        font-weight: bold;
+        text-align: center;
+        width: 100%;
+        border-radius: 3px;
+    }
+
+    .upgrade-icon {
+        width: 30px;
+        height: 30px;
+
+        position: relative;
+        animation: slide-up 0.4s ease;
+        background-repeat: no-repeat;
+        background-size: 115%;
+        background-position: 50% 50%;
+        float: left;
+        margin: 0 12px 0 2px;
+    }
+
+    .research-spacer {
+        margin: 0px 8px 0px 6px;
+        height: 30px;
+        float: left;
+        border-left: 1px solid rgba(255, 255, 255, 0.8);
+    }
+
+    .upgrade-icon-progress-bg {
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        top: 0px;
+        bottom: 0px;
+        background-color: rgba(0, 0, 0, 0.0);
+    }
+
+
+    .level-indicator {
+        position: absolute;
+        top: 0;
+        left: 100%;
+        width: 8px;
+        margin-left: -9px;
+        min-width: 4px;
+        height: 100%;
+    }
+
+    .level-indicator>div {
+        width: 100%;
+        height: 33%;
+        box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        -webkit-box-sizing: border-box;
+        background-color: #000;
+        -webkit-border-radius: 2px;
+        -moz-border-radius: 2px;
+        border-radius: 2px;
+        opacity: 0.7;
+        border: 1px solid #000;
+    }
+
+    .gametime {
+        font-size: 10px;
+        color: rgba(255, 255, 255, 0.7);
+
+    }
+
+    @keyframes blink {
+        0% {
+            background-color: #6f6f6f;
+        }
+
+        15% {
+            background-color: #3399ff;
+        }
+
+        30% {
+            background-color: #fff;
+        }
+
+        45% {
+            background-color: #3399ff;
+        }
+
+        60% {
+            background-color: #fff;
+        }
+
+        75% {
+            background-color: #3399ff;
+        }
+
+        90% {
+            background-color: #fff;
+        }
+
+        100% {
+            background-color: #fff;
+        }
+    }
+
+    @keyframes slide-up {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .level-indicator>div.level-1,
+    .level-indicator.current-level-2>div.level-2,
+    .level-indicator.current-level-3>div {
+        border: 1px solid #000;
+        opacity: 0.8;
+        background-color: #fff;
+        animation: blink 0.8s ease;
+    }
+
+    /*ultimates*/
+    .level-indicator.current-level-0 {
+        display: none;
+    }
+
+    .MatchupBarIsBottomCenter .ctrlgroup-wrapper {
+        margin-bottom: 44px;
+    }
+
+    body::after {
+        position: absolute;
+        width: 0;
+        height: 0;
+        overflow: hidden;
+        z-index: -1;
+    }
+
+
+    .circular-chart {
+        display: block;
+        margin: 2px auto;
+        max-width: 90%;
+        max-height: 250px;
+    }
+
+    .circle-bg {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.3);
+        stroke-width: 3.8;
+    }
+
+    .circle {
+        fill: none;
+        stroke-width: 2.8;
+        stroke-linecap: round;
+        animation: progress 1s ease-out forwards;
+    }
+
+    @keyframes progress {
+        0% {
+            stroke-dasharray: 0 100;
+        }
+    }
+
+    .circular-chart .circle {
+        stroke: rgba(255, 255, 255, 0.8);
+    }
+
+    .percentage {
+        fill: #fff;
+        font-family: sans-serif;
+        font-size: 0.8em;
+        font-weight: bold;
+        text-anchor: middle;
+    }
+}

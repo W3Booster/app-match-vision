@@ -1,0 +1,188 @@
+@use '../match-bar/match-bar.component';
+
+.obs-matchbar-4v4-wrapper {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    height: 112px;
+}
+
+:host-context(.MatchupBarIsBottomCenter) .obs-matchbar-4v4-wrapper {
+    top: 773px;
+}
+
+.match-box-team {
+    .match-box-content {
+        overflow: visible;
+    }
+
+    .gametime,
+    .gamemode,
+    .team-label {
+        display: none;
+    }
+
+    .teams {
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .team {
+        display: flex;
+        align-items: flex-start;
+        width: 100%;
+        font-size: 13px;
+
+        .player {
+            box-sizing: border-box;
+            flex: 1;
+            min-width: 0;
+            overflow: visible;
+            grid-template-rows: 25px 25px;
+            position: relative;
+            padding-bottom: 50px;
+
+            .player-race {
+                width: 20px;
+                height: 50px;
+                margin-inline-end: 8px;
+                background-size: auto 88%;
+                background-repeat: no-repeat;
+                background-position: center center;
+                box-sizing: border-box;
+            }
+
+            .player-name {
+                font-size: 14px;
+                max-width: calc(100% - 20px);
+            }
+
+            .player-details {
+                min-width: 0;
+            }
+
+            .player-country {
+                flex: 0 0 16px;
+            }
+
+            .player-resources {
+                grid-column: 2;
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                min-width: 0;
+                padding-top: 3px;
+                font-size: 12px;
+                font-weight: 500;
+
+                &.player-resources-full {
+                    gap: 5px;
+                }
+
+                .resource {
+                    position: relative;
+                    min-width: 0;
+                    white-space: nowrap;
+                    padding-left: 18px;
+
+                    &::before {
+                        content: "";
+                        position: absolute;
+                        left: 0px;
+                        top: 50%;
+                        width: 14px;
+                        height: 14px;
+                        transform: translateY(-50%);
+                        background: url('/assets/img/obs/matchbar_iconset.png');
+                        background-size: 14px auto;
+                    }
+                }
+
+                .resource-gold::before {
+                    background-position: 0 0;
+                }
+
+                .resource-lumber::before {
+                    background-position: 0 -14px;
+                }
+
+                .resource-food::before {
+                    background-position: 0 -28px;
+                }
+
+                .resource-army::before {
+                    background-position: 0 -42px;
+                }
+
+                .resource-food.no-upkeep-color {
+                    color: #9ed197;
+                }
+
+                .resource-food.low-upkeep-color {
+                    color: #d1c597;
+                }
+
+                .resource-food.high-upkeep-color {
+                    color: #d19798;
+                }
+            }
+
+            .player-heroes {
+                position: absolute;
+                left: 0px;
+                top: 56px;
+                display: flex;
+                align-items: flex-start;
+                gap: 3px;
+                min-width: 0;
+                padding-top: 0px;
+            }
+
+            .hero-chip {
+                width: 45px;
+                flex: 0 0 45px;
+            }
+
+            .hero-chip-icon {
+                position: relative;
+                width: 45px;
+                height: 45px;
+                background-size: cover;
+                background-position: center;
+                background-repeat: no-repeat;
+                border: 1px solid rgba(0, 0, 0, 0.7);
+                box-sizing: border-box;
+            }
+            .hero-chip-level {
+                position: absolute;
+                right: 0px;
+                bottom: 0px;
+                min-width: 14px;
+                padding: 0 2px;
+                background: rgba(0, 0, 0, 0.85);
+                color: #fff;
+                font-size: 10px;
+                line-height: 12px;
+                text-align: center;
+            }
+        }
+    }
+}
+
+.team-right {
+    left: auto;
+    right: -23px;
+}
+
+.team-reversed {
+    direction: rtl;
+
+    .player {
+        direction: ltr;
+    }
+
+    .player-race:not([data-race="random"]) {
+        transform: scaleX(-1);
+    }
+}

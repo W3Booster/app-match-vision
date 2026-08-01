@@ -1,0 +1,11 @@
+<div class="connection-error" *ngIf="connection.error()">{{connection.error()}}</div>
+
+<ng-container *ngIf="connection.state() as state">
+    <mv-overlay-surface *ngIf="surface === 'overlay'" [state]="state"></mv-overlay-surface>
+    <mv-dashboard-surface
+        *ngIf="surface !== 'overlay' && connection.client() as client"
+        [client]="client"
+        [state]="state"
+        [compact]="surface === 'compact'">
+    </mv-dashboard-surface>
+</ng-container>

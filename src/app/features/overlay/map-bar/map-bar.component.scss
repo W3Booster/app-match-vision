@@ -1,0 +1,39 @@
+/* map bar */
+.map-bar {
+    background: url('/assets/img/mapbar.png');
+    height: 51px;
+    width: 282px;
+    position: absolute;
+    left:4px;
+    bottom: 260px;
+    text-align: center;
+    line-height: 51px;
+    animation: slide-up 0.4s ease;
+
+    div:nth-child(n+2),
+    div:nth-last-child(n+2) {
+        position: absolute;
+        left: 0px;
+        right: 0px;
+        animation: fadeOutSymetric 7s;
+        animation-iteration-count: infinite;
+        animation-direction: alternate-reverse;
+    }
+
+    div:nth-last-child(n+2) {
+        animation-direction: alternate;
+    }
+
+    &.map-bar-obs {
+        font-family: FrizQuadrata;
+        font-weight: medium;
+        background: url('/assets/img/obs/mapbar_bg.png');
+        width: 269px;
+        height: 37px;
+        left: 10px;
+        bottom: 260px;
+        line-height: 36px;
+        font-size: 18px;
+        text-shadow: 1px 2px 1px rgba(0, 0, 0, 1);
+    }
+}

@@ -1,0 +1,48 @@
+<div *ngIf="showMatchBar()">
+    <div class="match-box gamemode-{{normalizedGameMode()}} {{additionalCss()}}">
+        <div class="match-box-content">
+            <div class="teams">
+                <div *ngFor="let team of teams(); let teamIndex = index" class="team team-{{teamIndex}}">
+                    <div class="team-label">Team {{Number(teamIndex) + 1}}</div>
+                    <div *ngFor="let player of team; let playerIndex = index"
+                        class="player player-{{playerIndex}} {{player.mainAccount ? 'player-has-alias' : 'player-has-no-alias'}}"
+                        [style.color]="getColorCode(player)">
+                        <ng-template #templateRef let-stats="stats">
+                            <div *ngIf="stats === undefined" class="player-no-stats">looking up stats</div>
+                            <div *ngIf="stats === null" class="player-no-stats">no records found</div>
+                            <div *ngIf="stats" class="player-stats">
+                                <img *ngIf="isOneVersusOne() && stats.league !== undefined && stats.rank !== undefined && stats.rank > 0" src="/assets/img/leagues/{{stats.league}}.png" style="width:22px; margin-right:4px"/>
+                                <div *ngIf="isOneVersusOne() && stats.rank !== undefined && stats.rank > 0" style="padding-right: 6px">
+                                    #{{stats.rank}} |</div>
+                                <div class="player-stats-ratio">{{formatRatio(stats.winRate)}}%</div>
+                                <div class="player-stats-wins">{{stats.wins}}W</div>
+                                <div class="player-stats-losses">{{stats.losses}}L</div>
+                            </div>
+                        </ng-template>
+                        <div [class]="'player-color ' + (runtime().teamColors ? 'team-colors' : '')"
+                            [style.color]="getColorCode(player)">
+                            <div class="player-color-2"></div>
+                        </div>
+                            <div class="player-race" attr.data-race="{{getRaceName(player).toLowerCase()}}"
+                            [style.borderColor]="getColorCode(player)"></div>
+                        <div class="player-details">
+                            <div class="player-name" [style.borderColor]="getColorCode(player)">
+                                {{player.mainAccount ? player.mainAccount.name : player.name}}
+                            </div>
+                            <div class="player-country"
+                                *ngIf="player.mainAccount && player.mainAccount.country && player.mainAccount.country != 'tw'"
+                                [style.backgroundImage]="'url(/assets/img/flags/'+ player.mainAccount.country +'.png)'">
+                            </div>
+                            <div *ngIf="player.mainAccount" class="player-alias"><span>{{player.name}}</span></div>
+                            <ng-template [ngTemplateOutlet]="templateRef"></ng-template>
+                        </div>
+                        <ng-template [ngTemplateOutlet]="templateRef"
+                            [ngTemplateOutletContext]="{ stats: getStats(player) }"></ng-template>
+                    </div>
+                </div>
+            </div>
+
+            <div class="gametime" *ngIf="settings().topBarGameDurationEnabled">{{formattedGameTime()}}</div>
+            <div class="gamemode">{{getGameMode()}}</div>
+        </div>
+    </div>

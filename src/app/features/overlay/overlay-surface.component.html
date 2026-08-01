@@ -1,0 +1,300 @@
+    <div [class]='isReforged ? "w3-reforged" : "w3-classic"' *ngIf="state && streamer">
+        <div class='App'>
+            <div class="{{additionalCSSClasses}}">
+                <div>
+                    <div class="wc3-ui-area" [style.zoom]="runtime.hudScale || 1">
+                        <div class="wc3-ui-area-container">
+                            <mv-map-bar [match]="state.match" [settings]="settings" [runtime]="runtime"></mv-map-bar>
+
+                            <div *ngIf="settings.controlgroupsEnabled !== false && !isObserverOrReplay() && streamer.controlgroups && runtime.chatbarOpen !== true"
+                                class="ctrlgroup-wrapper">
+                                <ng-container *ngFor="let index of [0,1,2,3,4,5,6,7,8,9]">
+                                    <div [style.visibility]="(streamer.controlgroups[index] ? 'visible' : 'hidden')"
+                                        class="ctrlgroup">
+                                        <ng-container *ngIf="streamer.controlgroups[index]">
+                                            <div class="ctrlgroup-index">
+                                                {{(index + 1) % 10}}
+                                            </div>
+                                            <div class="ctrlgroup-icon"
+                                                [style.backgroundImage]="'url(' + getIconPath('all', streamer.controlgroups[index].frontunit) + ')'">
+                                            </div>
+                                            <div class="ctrlgroup-text">
+                                                {{ streamer.controlgroups[index].size }}
+                                            </div>
+                                        </ng-container>
+                                    </div>
+                                </ng-container>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wc3-ui-area">
+                        <div class="wc3-ui-area-container">
+
+                            <mv-match-bar [match]="state.match" [players]="players" [gameTime]="state.match.gameTime"
+                                [settings]="settings" [runtime]="runtime"
+                                *ngIf="settings.topBarEnabled && !showObserverBar() && !showObserverTeamBar()">
+                            </mv-match-bar>
+
+                            <mv-observer-bar [match]="state.match" [players]="players"
+                                [gameTime]="state.match.gameTime" [settings]="settings" [runtime]="runtime"
+                                *ngIf="settings.topBarEnabled && showObserverBar()">
+                            </mv-observer-bar>
+
+                            <mv-team-observer-bar [match]="state.match" [players]="players"
+                                [settings]="settings" [runtime]="runtime"
+                                *ngIf="settings.topBarEnabled && showObserverTeamBar()">
+                            </mv-team-observer-bar>
+
+                            <mv-upgrade-panel
+                                *ngIf="!showObserverTeamBar() && settings.researchesEnabled && settings.researchesOfAttackAndArmorEnabled"
+                                [match]="state.match" [streamer]="streamer" [opponent]="opponent" [settings]="settings">
+                            </mv-upgrade-panel>
+                        </div>
+                    </div>
+
+
+                    <div *ngIf="isObserverOrReplay() && !showObserverTeamBar()">
+                        <div *ngIf="streamer.heroes?.length">
+                            <div *ngFor="let hero of streamer.heroes"
+                                class="hero-area hero-area-streamer" id="ID_AVATAR_{{hero.id}}">
+                                <div [class]="'hero-avatar' + (isHeroDefeated(hero) ? ' grayscaled-filter' : ' ')"
+                                    [style.backgroundImage]="'url(' + getIconPath('heroes', hero.id) + ')'">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div *ngFor="let item of  [].constructor(requiredAvatarCoverCount); let i = index"
+                            class="hero-area hero-area-streamer hero-area-cover" id="ID_AVATAR_COVER_{{i}}">
+                            <div class="hero-avatar hero-avatar-cover">
+                            </div>
+                        </div>
+
+                        <div *ngIf="opponent?.heroes?.length">
+                            <div *ngFor="let hero of opponent!.heroes"
+                                class="hero-area hero-area-opponent" id="ID_AVATAR_{{hero.id}}">
+                                <div [class]="'hero-avatar' + (isHeroDefeated(hero) ? ' grayscaled-filter' : ' ')"
+                                    [style.backgroundImage]="'url(' + getIconPath('heroes', hero.id) + ')'">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div *ngIf="showObserverTeamBar() && state.match.isReplay && !state.match.isObserver">
+                        <div *ngFor="let item of [].constructor(getRequiredAvatarCoverCountForObserverTeamBar()); let i = index"
+                            class="hero-area hero-area-streamer hero-area-cover" id="ID_AVATAR_COVER_TEAM_{{i}}"
+                            [style.top]="getAvatarCoverTop(i)">
+                            <div class="hero-avatar hero-avatar-cover">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div
+                        *ngIf="!showObserverTeamBar() && (settings.heroAbilitiesEnabled || settings.heroExpProgressEnabled !== false)">
+
+                        <div *ngIf="settings.heroExpProgressEnabled !== false">
+                            <div *ngIf="streamer.heroes?.length">
+                                <div *ngFor="let hero of streamer.heroes"
+                                    class="hero-area hero-area-streamer hero-exp-area" id="ID_HEROEXP_{{hero.id}}">
+                                        <div class="hero-exp-bar-wrapper">
+                                            <div class="hero-exp-bar-background">
+                                                <div class="hero-exp-bar"
+                                                    [style.height]="(getHeroExperienceProgress(hero)*100) + '%'">
+                                                </div>
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="opponent?.heroes?.length">
+                                <div *ngFor="let hero of opponent!.heroes"
+                                    class="hero-area hero-area-opponent hero-exp-area"
+                                    id="ID_OPPONENT_HEROEXP_{{hero.id}}">
+                                        <div class="hero-exp-bar-wrapper">
+                                            <div class="hero-exp-bar-background">
+                                                <div class="hero-exp-bar"
+                                                    [style.height]="(getHeroExperienceProgress(hero)*100) + '%'">
+                                                </div>
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div *ngIf="streamer.heroes?.length">
+                                <div *ngFor="let hero of streamer.heroes"
+                                    class="hero-area hero-area-streamer hero-hp-area" id="ID_HEROHP_{{hero.id}}">
+                                    <ng-template
+                                        *ngIf="heroHealthRatio(hero) > 0"
+                                        let-heroHPPercentage="heroHPPercentage"
+                                        [ngTemplateOutletContext]="{ heroHPPercentage: heroHealthRatio(hero)}"
+                                        [ngTemplateOutlet]="selfie" #selfie>
+                                        <div class="hero-hp-bar-wrapper">
+                                            <div class="hero-hp-bar-background">
+                                                <div class="hero-hp-bar" [style.width]="(heroHPPercentage * 100) + '%'"
+                                                    [style.background]="'rgb(' + ((heroHPPercentage <= 0.6 ? 1 : (1 - ((heroHPPercentage - 0.6) / 0.4)))  *255)  + ' , ' + ((heroHPPercentage > 0.6 ? 1 : (heroHPPercentage / 0.6))  *255) + ',0)'">
+                                                    <div class="hero-bar-gradient"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </div>
+                            </div>
+
+                            <div *ngIf="opponent?.heroes?.length">
+                                <div *ngFor="let hero of opponent!.heroes"
+                                    class="hero-area hero-area-opponent hero-hp-area" id="ID_HEROHP_{{hero.id}}">
+                                    <ng-template
+                                        *ngIf="heroHealthRatio(hero) > 0"
+                                        let-heroHPPercentage="heroHPPercentage"
+                                        [ngTemplateOutletContext]="{ heroHPPercentage: heroHealthRatio(hero)}"
+                                        [ngTemplateOutlet]="selfie" #selfie>
+                                        <div class="hero-hp-bar-wrapper">
+                                            <div class="hero-hp-bar-background">
+                                                <div class="hero-hp-bar" [style.width]="(heroHPPercentage * 100) + '%'"
+                                                    [style.background]="'rgb(' + ((heroHPPercentage <= 0.6 ? 1 : (1 - ((heroHPPercentage - 0.6) / 0.4)))  *255)  + ' , ' + ((heroHPPercentage > 0.6 ? 1 : (heroHPPercentage / 0.6))  *255) + ',0)'">
+                                                    <div class="hero-bar-gradient"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </ng-template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div *ngIf="streamer.heroes?.length">
+                                <div *ngFor="let hero of streamer.heroes"
+                                    class="hero-area hero-area-streamer hero-mana-area" id="ID_HEROMANA_{{hero.id}}">
+                                        <div class="hero-mana-bar-wrapper"
+                                            *ngIf="hero.mana && hero.hitpoints && hero.hitpoints.current > 0">
+                                            <div class="hero-mana-bar-background">
+                                                <div class="hero-mana-bar"
+                                                    [style.width]="(hero.mana.current / hero.mana.max*100) + '%'">
+                                                    <div class="hero-bar-gradient"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="opponent?.heroes?.length">
+                                <div *ngFor="let hero of opponent!.heroes"
+                                    class="hero-area hero-area-opponent hero-mana-area" id="ID_OPPONENT_HEROMANA_{{hero.id}}">
+                                        <div class="hero-mana-bar-wrapper"
+                                            *ngIf="hero.mana && hero.hitpoints && hero.hitpoints.current > 0">
+                                            <div class="hero-mana-bar-background">
+                                                <div class="hero-mana-bar"
+                                                    [style.width]="(hero.mana.current / hero.mana.max*100) + '%'">
+                                                    <div class="hero-bar-gradient"></div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div *ngIf="settings.heroLevelEnabled !== false">
+                            <div *ngIf="streamer.heroes?.length">
+                                <div *ngFor="let hero of streamer.heroes"
+                                    class="hero-area hero-area-streamer" id="ID_HEROLVL_{{hero.id}}">
+                                        <div class="hero-level">{{getHeroLevel(hero)}}</div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="opponent?.heroes?.length">
+                                <div *ngFor="let hero of opponent!.heroes"
+                                    class="hero-area hero-area-opponent" id="ID_OPPONENT_HEROLVL_{{hero.id}}">
+                                        <div class="hero-level">{{getHeroLevel(hero)}}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div *ngIf="settings.heroAbilitiesEnabled">
+                            <div *ngIf="streamer.heroes?.length">
+                                <div *ngFor="let hero of streamer.heroes"
+                                    class="hero-area hero-area-streamer" id="ID_HEROABILITY_{{hero.id}}">
+
+                                        <div *ngFor="let ability of hero.abilities || []" id="ID_ABILITY_{{ability.name}}"
+                                            [class]="'ability-icon-wrapper ' + (settings.heroItemsEnabled !== false ? 'inventory-spacer' : '') ">
+
+                                            <div class="ability-icon {{ability.level == 0 ? 'ulti' : '' }}"
+                                                [style.backgroundImage]="'url(' + getIconPath('heroabilities', ability.name) + ')'">
+                                                <div *ngIf="getCooldown(ability.id) as cooldown"
+                                                    class="cooldown-wrapper">
+                                                    <div *ngIf="cooldown.remaining > 0" class="cooldown">
+                                                        {{cooldown.remaining}}
+                                                    </div>
+                                                    <div *ngIf="cooldown.remaining > 0" class="cooldown-animation"
+                                                        [style.height]="(cooldown.remaining / cooldown.total) * 100 + '%'">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="level-indicator current-level-{{ability.level}}">
+                                                <div class=" level-3"></div>
+                                                <div class="level-2"></div>
+                                                <div class="level-1"></div>
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="opponent?.heroes?.length">
+                                <div *ngFor="let hero of opponent!.heroes"
+                                    class="hero-area hero-area-opponent" id="ID_OPPONENT_HEROABILITY_{{hero.id}}">
+                                        <div *ngFor="let ability of hero.abilities || []"
+                                            id="ID_OPPONENT_ABILITY_{{ability.name}}"
+                                            [class]="'ability-icon-wrapper ' + (settings.heroItemsEnabled !== false ? 'inventory-spacer' : '') ">
+                                            <div class="ability-icon"
+                                                [style.backgroundImage]="'url(' + getIconPath('heroabilities', ability.name) + ')'">
+                                                <div *ngIf="getCooldown(ability.id) as cooldown"
+                                                    class="cooldown-wrapper">
+                                                    <div *ngIf="cooldown.remaining > 0" class="cooldown">
+                                                        {{cooldown.remaining}}
+                                                    </div>
+                                                    <div *ngIf="cooldown.remaining > 0" class="cooldown-animation"
+                                                        [style.height]="(cooldown.remaining / cooldown.total) * 100 + '%'">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="level-indicator current-level-{{ability.level}}">
+                                                <div class="level-3"></div>
+                                                <div class="level-2"></div>
+                                                <div class="level-1"></div>
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div *ngIf="settings.heroItemsEnabled !== false">
+                            <div *ngIf="streamer.heroes?.length">
+                                <div *ngFor="let hero of streamer.heroes"
+                                    class="hero-area hero-area-streamer inventory" id="ID_HEROINVENTORY_{{hero.id}}">
+                                        <div *ngFor="let item of heroItems(hero)" id="ID_ITEM_{{item}}"
+                                            class="item-icon-wrapper">
+                                            <div class="item-icon" *ngIf="item !== ''"
+                                                [style.backgroundImage]="'url(' + getIconPath('item', item) + ')'">
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+
+                            <div *ngIf="opponent?.heroes?.length">
+                                <div *ngFor="let hero of opponent!.heroes"
+                                    class="hero-area hero-area-opponent inventory"
+                                    id="ID_OPPONENT_HEROINVENTORY_{{hero.id}}">
+                                        <div *ngFor="let item of heroItems(hero)" id="ID_ITEM_{{item}}"
+                                            class="item-icon-wrapper">
+                                            <div class="item-icon" *ngIf="item !== ''"
+                                                [style.backgroundImage]="'url(' + getIconPath('item', item) + ')'">
+                                            </div>
+                                        </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

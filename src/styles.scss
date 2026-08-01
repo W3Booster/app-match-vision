@@ -1,0 +1,47 @@
+/* You can add global styles to this file, and also import other style files */
+
+@use 'styles/classic';
+@use 'styles/reforged';
+
+@import 'https://fonts.googleapis.com/css?family=Roboto:400,500,700,900';
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background: transparent;
+}
+
+body.application-surface {
+    overflow: visible;
+    background: #080c10;
+    pointer-events: auto;
+    -webkit-app-region: no-drag;
+}
+
+@font-face {
+    font-family: 'BlizQuadrataWeb';
+    src:url('/assets/fonts/BlizQuadrataWeb.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'FrizQuadrata';
+    src:url('/assets/fonts/Friz Quadrata Bold.otf');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'FrizQuadrata';
+    src:url('/assets/fonts/Friz Quadrata Regular.ttf');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'FrizQuadrata';
+    src:url('/assets/fonts/Friz Quadrata Std Medium.otf');
+    font-weight: 500;
+    font-style: normal;
+}

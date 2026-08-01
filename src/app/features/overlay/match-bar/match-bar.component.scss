@@ -1,0 +1,549 @@
+/* match box*/
+@keyframes slide-down {
+    0% {
+        opacity: 0;
+        margin-top: -66px;
+    }
+
+    100% {
+        opacity: 1;
+        margin-top: 0px;
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        opacity: 1;
+    }
+
+    22% {
+        opacity: 1;
+    }
+
+    24% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+@keyframes fadeOutSymetric {
+    0% {
+        opacity: 1;
+    }
+
+    47% {
+        opacity: 1;
+    }
+
+    53% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+:host-context(.MatchupBarIsBottomCenter) .match-box {
+    animation: slide-up 0.4s ease;
+    background: url('/assets/img/statsbar-full.png') no-repeat;
+    height: 77px;
+    top: 773px;
+    left: 637px;
+    padding-top: 14px !important;
+}
+
+.match-box {
+    animation: slide-down 1.5s none;
+    background: url('/assets/img/statsbar.png') no-repeat;
+    width: 646px;
+    height: 66px;
+    position: absolute;
+    top: 0px;
+    left: -23px;
+    font-size: 16px;
+    font-weight: normal;
+    box-sizing: border-box;
+    padding: 0px 16px 0px 14px;
+    transition: opacity 0.2s ease-in-out;
+    transition-delay: 0.2s;
+
+    &.hover {
+        opacity: 0.0;
+    }
+
+    &.options-no-streamer-stats .team-0,
+    :host-context(.w3-reforged-old) & .team-0 {
+
+        .player-stats,
+        .player-no-stats {
+            display: none !important;
+        }
+
+        .player-alias,
+        .player-details {
+            animation-iteration-count: 0 !important;
+        }
+    }
+
+    &.options-no-opponent-stats .team:not(.team-0),
+    :host-context(.w3-reforged-old) .team:not(.team-0) {
+
+        .player-stats,
+        .player-no-stats {
+            display: none !important;
+        }
+
+        .player-alias,
+        .player-details {
+            animation-iteration-count: 0 !important;
+        }
+    }
+
+    &.options-no-player-colors {
+        .player-color {
+            display: none !important;
+        }
+
+        .player-race {
+            border-top: none !important;
+        }
+    }
+
+    .match-box-content {
+        position: relative;
+        width: 100%;
+        height: 49px;
+        box-sizing: border-box;
+        overflow: hidden;
+
+        .team {
+            min-width: 0;
+
+            .team-label {
+                display: none;
+            }
+
+            .player {
+                display: grid;
+                grid-template-columns: min-content minmax(0, 1fr);
+                grid-template-rows: 25px 25px;
+                position: relative;
+                min-width: 0;
+
+                &>div {
+                    color: #fff;
+                }
+
+                .player-color {
+                    position: absolute;
+                    left: 0px;
+                    right: 0px;
+                    top: 0px;
+                    height: 50px;
+                    background: linear-gradient(180deg, currentColor 0%, rgba(20, 19, 21, 0) 60%, rgba(20, 19, 21, 0) 100%);
+                    background-position-y: -18px;
+                    background-repeat: no-repeat;
+                    z-index: 2;
+                }
+
+                .team-colors.player-color {
+                    background: linear-gradient(180deg, currentColor 0%, rgba(20, 19, 21, 0) 60%, rgba(20, 19, 21, 0) 100%);
+                    background-position-y: -18px;
+                    background-repeat: no-repeat;
+                }
+
+                .player-race {
+                    width: 20px;
+                    height: 50px;
+                    margin-inline-end: 10px;
+                    background-image: url('/assets/img/races.jpg');
+                    background-size: auto 100%;
+                    grid-column: 1;
+                    grid-row: 1 / span 2;
+                    border-top: 8px solid red;
+
+                    &[data-race="random"] {
+                        background-position-x: 0%;
+                    }
+
+                    &[data-race="human"] {
+                        background-position-x: 25%;
+                    }
+
+                    &[data-race="night elf"] {
+                        background-position-x: 50%;
+                    }
+
+                    &[data-race="orc"] {
+                        background-position-x: 75%;
+                    }
+
+                    &[data-race="undead"] {
+                        background-position-x: 100%;
+                    }
+                }
+
+                .player-details {
+                    direction: ltr !important;
+                    display: flex;
+                    padding-bottom: 0px;
+                    align-items: flex-end;
+                    min-width: 0;
+                    overflow: hidden;
+
+                    .player-name {
+                        font-weight: 500;
+                        margin-inline-end: 4px;
+                        text-overflow: ellipsis;
+                        overflow: hidden;
+                        white-space: nowrap;
+                        min-width: 0;
+                    }
+
+                    .player-country {
+                        width: 16px;
+                        height: 11px;
+                        background-repeat: no-repeat;
+                        margin-bottom: 3px;
+                    }
+
+                    .player-alias {
+                        font-size: 14px;
+                        color: #999;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                        min-width: 0;
+
+                        span {
+                            padding-inline-start: 10px;
+
+                            &::before {
+                                content: "as ";
+                            }
+                        }
+                    }
+
+                    .player-stats,
+                    .player-no-stats {
+                        display: none;
+                    }
+                }
+
+                .player-stats {
+                    grid-column: 2;
+                    font-weight: 500;
+                    display: flex;
+                    padding-top: 3px;
+                    direction: ltr !important;
+                    min-width: 0;
+                    overflow: hidden;
+                    white-space: nowrap;
+
+                    .player-stats-wins {
+                        color: #2bc332;
+                        padding: 0px 7px;
+                    }
+
+                    .player-stats-losses {
+                        color: #dc3c3c;
+                    }
+                }
+
+                .player-no-stats {
+                    grid-column: 2;
+                    color: #666666;
+                    padding-top: 3px;
+                    min-width: 0;
+                    overflow: hidden;
+                    text-overflow: ellipsis;
+                    white-space: nowrap;
+                }
+            }
+        }
+
+        .versus {
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            top: 12px;
+            text-align: center;
+        }
+
+        .gamemode {
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            top: 14px;
+            font-size: 14px;
+            text-align: center;
+            color: #555;
+        }
+
+        .gametime+.gamemode {
+            top: 12px;
+        }
+
+        .gametime {
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            bottom: 4px;
+            text-align: center;
+            color: #fff;
+            font-size: 11px;
+        }
+    }
+}
+
+.gamemode-gm-1v1 {
+    .teams {
+        display: flex;
+        align-items: flex-start;
+
+        .team {
+            flex: 1;
+        }
+
+        .team+.team {
+            direction: rtl;
+
+            .player-race:not([data-race="random"]) {
+                transform: scaleX(-1);
+            }
+
+            .player-details,
+            .player-stats,
+            .player-no-stats {
+                justify-content: flex-end;
+            }
+        }
+    }
+}
+
+
+.gamemode-gm-2v2 {
+
+    .teams {
+        display: flex;
+        align-items: flex-start;
+
+        .team {
+            flex: 1;
+            font-size: 13px;
+            display: flex;
+            align-items: flex-start;
+
+            &:first-child {
+                margin-right: 50px;
+            }
+
+            &:nth-child(2) {
+                margin-left: 50px;
+            }
+
+            .player {
+                box-sizing: border-box;
+                flex: 1;
+                min-width: 0;
+
+                .player-name {
+                    font-size: 14px;
+                }
+
+                .player-alias {
+                    position: absolute;
+                    top: 28px;
+                    left: 28px;
+                    max-width: calc(100% - 28px);
+                    animation: fadeOutSymetric 15s;
+                    animation-iteration-count: infinite;
+                    animation-direction: alternate;
+
+                    span {
+                        padding-inline-start: 0px !important;
+                    }
+                }
+
+                &.player-has-alias {
+
+                    .player-stats,
+                    .player-no-stats {
+                        animation: fadeOutSymetric 15s;
+                        animation-iteration-count: infinite;
+                        animation-direction: alternate-reverse;
+                    }
+                }
+            }
+        }
+
+        .team+.team {
+            direction: rtl;
+
+            .player-alias {
+                left: auto;
+                right: 28px !important;
+                max-width: calc(100% - 28px);
+            }
+
+            .player-race:not([data-race="random"]) {
+                transform: scaleX(-1);
+            }
+
+            .player-details,
+            .player-stats,
+            .player-no-stats {
+                justify-content: flex-end;
+            }
+        }
+    }
+}
+
+.gamemode-gm-3v3,
+.gamemode-gm-4v4 {
+
+    .gametime,
+    .gamemode {
+        display: none;
+    }
+
+    .teams {
+        position: relative;
+
+        .team+.team {
+            animation: fadeOutSymetric 20s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate-reverse;
+        }
+
+        .team {
+            position: absolute;
+            left: 0px;
+            right: 0px;
+            animation: fadeOutSymetric 20s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+
+            display: flex;
+            align-items: flex-start;
+            font-size: 13px;
+
+            .team-label {
+                display: block;
+                order: 10;
+                writing-mode: vertical-rl;
+                width: 18px;
+                height: 50px;
+                text-align: center;
+                color: #ccc;
+                background-color: #333;
+                padding-right: 2px;
+            }
+
+            .player {
+                box-sizing: border-box;
+                flex: 1;
+                min-width: 0;
+
+                .player-name {
+                    font-size: 14px;
+                }
+
+                .player-race:not([data-race="random"]) {
+                    transform: scaleX(-1);
+                }
+
+                .player-alias {
+                    position: absolute;
+                    top: 28px;
+                    left: 28px;
+                    max-width: calc(100% - 28px);
+                    animation: fadeOutSymetric 10s;
+                    animation-iteration-count: infinite;
+                    animation-direction: alternate;
+
+                    span {
+                        padding-inline-start: 0px !important;
+                    }
+                }
+
+                &.player-has-alias {
+
+                    .player-stats,
+                    .player-no-stats {
+                        animation: fadeOutSymetric 10s;
+                        animation-iteration-count: infinite;
+                        animation-direction: alternate-reverse;
+                    }
+                }
+            }
+        }
+    }
+}
+
+
+.gamemode-gm-4ffa,
+.gamemode-gm-3ffa {
+
+    .gametime,
+    .gamemode {
+        display: none;
+    }
+
+    .teams {
+        display: flex;
+        align-items: flex-start;
+
+        .team {
+            flex: 1;
+            font-size: 13px;
+
+            .player {
+                box-sizing: border-box;
+                min-width: 0;
+
+                .player-name {
+                    font-size: 14px;
+                }
+
+                .player-race:not([data-race="random"]) {
+                    transform: scaleX(-1);
+                }
+
+                .player-alias {
+                    position: absolute;
+                    top: 28px;
+                    left: 28px;
+                    max-width: calc(100% - 28px);
+                    animation: fadeOutSymetric 15s;
+                    animation-iteration-count: infinite;
+                    animation-direction: alternate;
+
+                    span {
+                        padding-inline-start: 0px !important;
+                    }
+                }
+
+                &.player-has-alias {
+
+                    .player-stats,
+                    .player-no-stats {
+                        animation: fadeOutSymetric 15s;
+                        animation-iteration-count: infinite;
+                        animation-direction: alternate-reverse;
+                    }
+                }
+
+
+                .player-stats,
+                .player-no-stats {
+                    font-size: 13px;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,451 @@
+@keyframes fadein {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes blink-low-upkeep {
+    0% {
+        background-color: rgba(0, 0, 0, 0);
+    }
+
+    15% {
+        background-color: #d1c597;
+    }
+
+    30% {
+        background-color: rgba(0, 0, 0, 0);
+        ;
+    }
+
+    45% {
+        background-color: #d1c597;
+    }
+
+    60% {
+        background-color: rgba(0, 0, 0, 0);
+        ;
+    }
+
+    75% {
+        background-color: #d1c597;
+    }
+
+    90% {
+        background-color: rgba(0, 0, 0, 0);
+        ;
+    }
+
+    100% {
+        background-color: rgba(0, 0, 0, 0);
+        ;
+    }
+}
+
+@keyframes blink-high-upkeep {
+    0% {
+        background-color: rgba(0, 0, 0, 0);
+    }
+
+    15% {
+        background-color: #d19798;
+    }
+
+    30% {
+        background-color: rgba(0, 0, 0, 0);
+        ;
+    }
+
+    45% {
+        background-color: #d19798;
+    }
+
+    60% {
+        background-color: rgba(0, 0, 0, 0);
+        ;
+    }
+
+    75% {
+        background-color: #d19798;
+    }
+
+    90% {
+        background-color: rgba(0, 0, 0, 0);
+        ;
+    }
+
+    100% {
+        background-color: rgba(0, 0, 0, 0);
+        ;
+    }
+}
+
+.topbar-wrapper {
+    animation: slide-up 0.4s ease;
+    font-family: BlizQuadrataWeb;
+    text-shadow: 1px 2px 1px rgba(0, 0, 0, 1);
+    color: #fff;
+
+    .topbar2 {
+        margin: 0px auto;
+        height: 49px;
+        display: flex;
+        padding: 0px 6px 4px 6px;
+        box-sizing: border-box;
+
+        &>div:nth-child(1),
+        &>div:nth-child(5) {
+            flex: 1 1 0px;
+
+        }
+
+        &>div:nth-child(2) {
+            flex: 0 0 14px;
+            background: url('/assets/img/obs/topbar2_bg.png') no-repeat 0px 0px;
+        }
+
+        &>div:nth-child(4) {
+            flex: 0 0 14px;
+            background: url('/assets/img/obs/topbar2_bg.png') no-repeat 100% 0px;
+        }
+
+        &>div:nth-child(3) {
+            flex: 0 0 90px;
+            background: url('/assets/img/obs/topbar2_bg_mid.png') repeat-x;
+            display: flex;
+
+            &.hide-matchscore {
+                .score-count {
+                    display: none;
+                }
+            }
+
+            &.show-matchscore {
+
+                &>div {
+                    border-right: 1px solid #060605;
+                    border-left: 1px solid #312e28;
+                }
+
+                &>div:last-child {
+                    border-right: none;
+                }
+
+                &>div:first-child {
+                    border-left: none;
+                }
+
+                .score-count {
+                    text-align: center;
+                    font-size: 26px;
+                    flex: 1 1 40px;
+                    margin: 4px 0px;
+                    padding: 0px 8px;
+                    line-height: 34px;
+                    box-sizing: border-box;
+                }
+
+                .left-score-count {
+                    padding-left: 4px;
+                }
+
+                .right-score-count {
+                    padding-right: 4px;
+                }
+            }
+
+            .content {
+                flex: 0 0 0px;
+                white-space: nowrap;
+                margin: 4px 0px;
+                padding: 0px 10px;
+                text-align: center;
+
+                .subline {
+                    font-size: 10px;
+                    color: #999;
+                    text-shadow: none;
+                    font-family: 'Roboto', sans-serif;
+                }
+
+                .headline {}
+
+                ;
+            }
+        }
+
+        .player-name {
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 5px;
+            padding: 2px 6px;
+            font-size: 22px;
+            font-weight: 500;
+            display: inline-block;
+            margin-top: 6px;
+
+            .player-country {
+                width: 20px;
+                height: 15px;
+                display: inline-block;
+                background-repeat: no-repeat;
+                background-size: 100%;
+
+            }
+        }
+
+        .player-name-left {
+            float: right;
+        }
+    }
+
+    .topbar1 {
+        margin: 0px auto;
+        width: 1440px;
+        height: 44px;
+        background: url('/assets/img/obs/topbar1_bg.png');
+        display: flex;
+        padding: 0px 6px 4px 6px;
+        box-sizing: border-box;
+
+        &>div {
+            flex: 1 1 0px;
+            border-right: 1px solid #060605;
+            border-left: 1px solid #312e28;
+        }
+
+        &>div:last-child {
+            border-right: none;
+        }
+
+        &>div:first-child {
+            border-left: none;
+        }
+
+        &>.field {
+
+            text-align: right;
+            padding-right: 10px;
+            line-height: 40px;
+            border-top: 2px solid transparent;
+            white-space: nowrap;
+
+            &:before {
+                content: "";
+                float: left;
+                width: 25px;
+                height: 23px;
+                margin: 8px 0px 0px 10px;
+                background: url('/assets/img/obs/matchbar_iconset.png')
+            }
+
+            &.field-time {
+                padding: 0px;
+                text-align: center;
+                font-size: 12px;
+                background-color: rgba(0, 0, 0, 0.5);
+                position: relative;
+                box-sizing: border-box;
+                border-top: none;
+
+                span {
+                    padding-right: 42px;
+                }
+
+                .daynightcycle {
+                    $cycleSize: 35px;
+                    position: absolute;
+                    top: 2px;
+                    left: 50%;
+                    margin-left:6px;
+                    width: $cycleSize;
+                    height: $cycleSize;
+                    background: url('/assets/img/obs/daynightcycle.png');
+                    background-position: 50% 50%;
+                    background-size: 100%;
+
+
+                    &.daynightcycle-front {
+                        animation: fadein 3s;
+                    }
+
+                    &.daynightcycle-0 {
+                        background-position-y: 0px;
+                    }
+
+                    &.daynightcycle-1 {
+                        background-position-y: $cycleSize * -1;
+                    }
+
+                    &.daynightcycle-2 {
+                        background-position-y: $cycleSize * -2;
+                    }
+
+                    &.daynightcycle-3 {
+                        background-position-y: $cycleSize * -3;
+                    }
+
+                    &.daynightcycle-4 {
+                        background-position-y: $cycleSize * -4;
+                    }
+
+                    &.daynightcycle-5 {
+                        background-position-y: $cycleSize * -5;
+                    }
+
+                    &.daynightcycle-6 {
+                        background-position-y: $cycleSize * -6;
+                    }
+
+                    &.daynightcycle-7 {
+                        background-position-y: $cycleSize * -7;
+                    }
+
+                    &.daynightcycle-8 {
+                        background-position-y: $cycleSize * -8;
+                    }
+
+                    &.daynightcycle-9 {
+                        background-position-y: $cycleSize * -9;
+                    }
+
+                    &.daynightcycle-10 {
+                        background-position-y: $cycleSize * -10;
+                    }
+
+                    &.daynightcycle-11 {
+                        background-position-y: $cycleSize * -11;
+                    }
+
+                    &.daynightcycle-12 {
+                        background-position-y: $cycleSize * -12;
+                    }
+
+                    &.daynightcycle-13 {
+                        background-position-y: $cycleSize * -13;
+                    }
+
+                    &.daynightcycle-14 {
+                        background-position-y: $cycleSize * -14;
+                    }
+
+                    &.daynightcycle-15 {
+                        background-position-y: $cycleSize * -15;
+                    }
+                }
+            }
+
+            &.field-race:before,
+            &.field-time:before {
+                display: none;
+            }
+
+            &.field-lumber:before {
+                background-position: 0px -25px;
+            }
+
+            &.field-food:before {
+                background-position: 0px -50px;
+            }
+
+            &.field-worker-food:before {
+                margin-top: 7px;
+                background-position: 0px -75px;
+            }
+
+            &.field-army-food:before {
+                margin-top: 8px;
+                background-position: 0px -100px;
+            }
+
+            &.no-upkeep-color {
+                span {
+                    color: #9ed197;
+                }
+
+            }
+
+            &.low-upkeep-color {
+                animation: blink-low-upkeep 0.8s ease;
+
+                span {
+                    color: #d1c597;
+                }
+            }
+
+            &.high-upkeep-color {
+                animation: blink-high-upkeep 0.8s ease;
+
+                span {
+                    color: #d19798;
+                }
+            }
+
+            &.field-race {
+                background: url('/assets/img/obs/matchbar_raceset.jpg') 60% 0 no-repeat;
+                margin-bottom: 1px;
+                box-sizing: border-box;
+
+                &.field-race-textonly {
+                    background: none;
+                    text-align: center;
+                    flex: 0 1 0px;
+
+                    .player-color {
+                        width: 50px;
+                    }
+
+                    &.revert-bg .player-color{
+                        transform: scaleX(-1);
+
+                    }
+                }
+
+                &.field-race-1 {
+                    background-position-y: 0px;
+                }
+
+                &.field-race-2 {
+                    background-position-y: -117px;
+                }
+
+                &.field-race-3 {
+                    background-position-y: -39px;
+                }
+
+                &.field-race-4 {
+                    background-position-y: -77px;
+                }
+
+                &.revert-bg {
+                    transform: scaleX(-1);
+                    border-left: 1px solid #060605;
+                    border-right: 1px solid #312e28;
+                }
+
+                .player-color {
+                    position: relative;
+                    height: 100%;
+                    width: 16px;
+                    float: right;
+                    margin-right: -10px;
+
+                    .player-color-gradient {
+                        position: absolute;
+                        left: 0px;
+                        right: 0px;
+                        top: 0px;
+                        bottom: 0px;
+
+                        background: rgb(0, 0, 0);
+                        background: linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.05) 100%);
+
+                    }
+                }
+            }
+        }
+    }
+}

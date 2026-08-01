@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Match Vision</title>
+  <base href="/">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <script>
+    function adjustZoom() {
+      const view = new URLSearchParams(window.location.search).get('view');
+      if (view === 'dashboard' || view === 'compact') {
+        document.body.style.zoom = 1;
+        return;
+      }
+      document.body.style.zoom = window.innerHeight / 1080;
+    }
+    window.addEventListener('resize', adjustZoom);
+    window.addEventListener('load', adjustZoom);
+  </script>
+</head>
+<body>
+  <app-root></app-root>
+</body>
+</html>
