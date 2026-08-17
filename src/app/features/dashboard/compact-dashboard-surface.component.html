@@ -1,4 +1,4 @@
-<main class="compact-control" [style.--compact-font-size.px]="fontSize">
+<main class="compact-control">
     <header class="compact-toolbar">
         <button type="button" class="back" (click)="closeCompact()" title="Close compact mode">
             <i aria-hidden="true">↩</i><span>Back to dashboard</span>
@@ -10,7 +10,7 @@
         </div>
     </header>
 
-    <div class="compact-content">
+    <div class="compact-content" [style.--compact-font-size.px]="fontSize">
         <section class="compact-section score-section">
             <header>
                 <div><span>SESSION</span><h1>Match score</h1></div>
@@ -32,9 +32,7 @@
             </header>
             <div class="empty" *ngIf="!matchActive">No match running</div>
             <div class="current-match-content" *ngIf="matchActive">
-                <div class="match-meta"><strong>{{decodedMap(state().match.map || 'Unknown map')}}</strong><span>{{state().match.mode || 'Unknown mode'}}</span></div>
                 <article class="team" *ngFor="let team of teams">
-                    <span class="team-marker" *ngIf="teams.length > 1">Team {{team.id + 1}}</span>
                     <div class="player" *ngFor="let player of team.players">
                         <i class="race" [attr.data-race]="raceClass(player.race)">{{raceInitial(player.race)}}</i>
                         <span class="player-name">{{displayName(player)}}</span>
