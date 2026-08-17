@@ -54,7 +54,6 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
         const current = this.state().application?.settings.observer?.reversePlayerOrder === true;
         this.client().host.setSetting('observer.reversePlayerOrder', !current);
     }
-    closeCompact(): void { window.close(); }
     changeFont(delta: 1 | -1): void { this.fontSize = Math.min(20, Math.max(10, this.fontSize + delta)); }
     playerStats(player: Player): PlayerStats | undefined {
         return standardGame.statsForMode(player, this.state().match.mode)

@@ -5,7 +5,6 @@ button:hover { border-color: #4d7990; background: #20313a; }
 .compact-control { display: grid; min-height: 100vh; grid-template-rows: auto 1fr auto; background: radial-gradient(circle at 10% 0, #152a38 0, #0b1217 36%, #080c10 100%); }
 .compact-toolbar { position: sticky; z-index: 3; top: 0; display: flex; min-height: 30px; align-items: center; gap: 5px; padding: 3px 5px; border-bottom: 1px solid #2b3a43; background: rgba(14,21,26,.98); box-shadow: 0 3px 12px rgba(0,0,0,.22); }
 .compact-toolbar button { min-height: 22px; padding: 2px 6px; }
-.compact-toolbar .back { display: flex; align-items: center; gap: 5px; }
 .toolbar-title { flex: 1; color: #66808e; font-size: .78em; font-weight: 900; letter-spacing: .09em; text-align: center; }
 .zoom-controls { display: flex; gap: 4px; }
 .zoom-controls button { width: 27px; padding: 2px; }
