@@ -3,9 +3,14 @@
 <ng-container *ngIf="connection.state() as state">
     <mv-overlay-surface *ngIf="surface === 'overlay'" [state]="state"></mv-overlay-surface>
     <mv-dashboard-surface
-        *ngIf="surface !== 'overlay' && connection.client() as client"
+        *ngIf="surface === 'dashboard' && connection.client() as client"
+        [client]="client"
+        [state]="state">
+    </mv-dashboard-surface>
+    <mv-compact-dashboard-surface
+        *ngIf="surface === 'compact' && connection.client() as client"
         [client]="client"
         [state]="state"
-        [compact]="surface === 'compact'">
-    </mv-dashboard-surface>
+        [status]="connection.status()">
+    </mv-compact-dashboard-surface>
 </ng-container>

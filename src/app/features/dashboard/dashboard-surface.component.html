@@ -1,8 +1,7 @@
-<main class="overlay-dashboard" [class.compact]="compact()">
+<main class="overlay-dashboard">
     <header class="dashboard-hero">
-        <div><span>MATCH VISION</span><h1>{{compact() ? 'Compact match control' : 'Match dashboard'}}</h1><p>Live match data and visual controls, powered by the W3Booster SDK.</p></div>
-        <button *ngIf="!compact()" type="button" class="primary" (click)="openCompact()"><i class="fa fa-external-link-alt"></i> Open compact window</button>
-        <button *ngIf="compact()" type="button" (click)="closeCompact()">Close</button>
+        <div><span>MATCH VISION</span><h1>Match dashboard</h1><p>Live match data and visual controls, powered by the W3Booster SDK.</p></div>
+        <button type="button" class="primary" (click)="openCompact()"><i class="fa fa-external-link-alt"></i> Open compact window</button>
     </header>
 
     <section class="score-panel">

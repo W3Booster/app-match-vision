@@ -4,8 +4,8 @@
   "description": "W3Booster's open-source live match visualization application.",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --port 8081",
-    "start-ssl": "ng serve --port 8081 --ssl --ssl-key cert\\server.key --ssl-cert cert\\server.crt",
+    "start": "ng serve --port 8082",
+    "start-ssl": "ng serve --port 8082 --ssl --ssl-key cert/server.key --ssl-cert cert/server.crt",
     "build": "ng build --configuration production",
     "test": "vitest run",
     "check": "npm test && npm run build"

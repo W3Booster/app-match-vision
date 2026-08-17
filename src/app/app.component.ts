@@ -2,12 +2,13 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { MatchVisionClientService } from './core/match-vision-client.service';
 import { surfaceFromSearch } from './core/surface';
+import { CompactDashboardSurfaceComponent } from './features/dashboard/compact-dashboard-surface.component';
 import { DashboardSurfaceComponent } from './features/dashboard/dashboard-surface.component';
 import { OverlaySurfaceComponent } from './features/overlay/overlay-surface.component';
 
 @Component({
     selector: 'app-root',
-    imports: [CommonModule, DashboardSurfaceComponent, OverlaySurfaceComponent],
+    imports: [CommonModule, CompactDashboardSurfaceComponent, DashboardSurfaceComponent, OverlaySurfaceComponent],
     templateUrl: './app.component.html',
     styleUrl: './app.component.scss'
 })
@@ -27,6 +28,5 @@ export class AppComponent implements OnInit, OnDestroy {
         document.body.classList.remove('application-surface');
         this.unsubscribeReload?.();
         this.unsubscribeReload = null;
-        void this.connection.stop();
     }
 }

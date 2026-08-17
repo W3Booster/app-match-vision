@@ -11,7 +11,7 @@ npm install
 npm start
 ```
 
-Open [http://localhost:8081/?view=dashboard&demo=1](http://localhost:8081/?view=dashboard&demo=1). `demo=1` uses generated SDK data, so Warcraft III and the W3Booster client do not need to be running.
+Open [http://localhost:8082/?view=dashboard&demo=1](http://localhost:8082/?view=dashboard&demo=1). `demo=1` uses generated SDK data, so Warcraft III and the W3Booster client do not need to be running.
 
 Run the quality checks with:
 

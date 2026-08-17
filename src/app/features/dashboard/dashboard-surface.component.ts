@@ -15,7 +15,6 @@ import { MatchHistoryStore } from './match-history.store';
 export class DashboardSurfaceComponent implements OnDestroy {
     readonly client = input.required<W3BoosterClient<MatchVisionSettings>>();
     readonly state = input.required<MatchState<MatchVisionSettings>>();
-    readonly compact = input(false);
     readonly history = new MatchHistoryStore();
 
     private readonly clientBinding = effect(() => this.history.connect(this.client()));
@@ -46,9 +45,8 @@ export class DashboardSurfaceComponent implements OnDestroy {
         this.client().host.setSetting('observer.reversePlayerOrder', !current);
     }
     openCompact(): void {
-        this.client().host.openWindow({ path: '?view=compact', width: 540, height: 680, title: 'Match Vision' });
+        this.client().host.openWindow({ path: '?view=compact', width: 500, height: 300, title: 'Match Vision' });
     }
-    closeCompact(): void { window.close(); }
     formatTime(seconds: number): string {
         const value = Math.max(0, Number(seconds) || 0);
         return `${Math.floor(value / 60)}:${String(value % 60).padStart(2, '0')}`;

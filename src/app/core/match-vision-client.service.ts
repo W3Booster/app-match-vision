@@ -19,36 +19,48 @@ export class MatchVisionClientService {
     readonly error = this.connectionError.asReadonly();
 
     async start(search: string): Promise<W3BoosterClient<MatchVisionSettings> | null> {
+        const current = this.clientState();
+        if (current && (current.status === 'connected' || current.status === 'reconnecting')) return current;
         const generation = ++this.generation;
         await this.closeCurrentClient();
         this.connectionError.set('');
         this.connectionStatus.set('connecting');
 
-        try {
-            const client = await connect(connectionOptions(search));
-            if (generation !== this.generation) {
-                await client.disconnect();
-                return null;
-            }
+        let attempt = 0;
+        while (generation === this.generation) {
+            try {
+                const client = await connect(connectionOptions(search));
+                if (generation !== this.generation) {
+                    await client.disconnect();
+                    return null;
+                }
 
-            this.clientState.set(client);
-            this.connectionStatus.set(client.status);
-            this.subscriptions = [
-                client.state.subscribe(state => this.matchState.set(state)),
-                client.on('status', status => this.connectionStatus.set(status)),
-                client.on('error', error => {
-                    console.warn('W3Booster SDK:', error);
-                    this.connectionError.set(connectionErrorMessage(error));
-                })
-            ];
-            return client;
-        } catch (error: unknown) {
-            if (generation !== this.generation) return null;
-            console.error('W3Booster SDK connection failed:', error);
-            this.connectionStatus.set('error');
-            this.connectionError.set(connectionErrorMessage(error));
-            return null;
+                this.clientState.set(client);
+                this.connectionStatus.set(client.status);
+                this.connectionError.set('');
+                this.subscriptions = [
+                    client.state.subscribe(state => this.matchState.set(state)),
+                    client.on('status', status => this.connectionStatus.set(status)),
+                    client.on('error', error => {
+                        console.warn('W3Booster SDK:', error);
+                        this.connectionError.set(connectionErrorMessage(error));
+                    })
+                ];
+                return client;
+            } catch (error: unknown) {
+                if (generation !== this.generation) return null;
+                this.connectionStatus.set('error');
+                this.connectionError.set(connectionErrorMessage(error));
+                // Missing app authorization cannot heal by retrying the same URL.
+                // Surface the actionable message once and wait for a valid launch.
+                if (error instanceof PermissionRequiredError) return null;
+                console.warn('W3Booster SDK connection retry:', error);
+                const delay = Math.min(5000, 250 * (2 ** attempt++));
+                await new Promise(resolve => setTimeout(resolve, delay));
+                if (generation === this.generation) this.connectionStatus.set('connecting');
+            }
         }
+        return null;
     }
 
     async stop(): Promise<void> {
