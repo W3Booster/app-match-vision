@@ -1,7 +1,9 @@
 import type { MatchState, OverlayRuntimeState, Player } from '@w3booster/sdk';
-import type { AbilityCooldownState } from '@w3booster/sdk/standard-game';
+import type { AbilityCooldownState } from '@w3booster/sdk/standard-game/objects';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import { matchVisionPlayers, matchVisionSettings, overlayRuntime } from '../../domain';
+import * as standardGameObjects from '@w3booster/sdk/standard-game/objects';
+import { broadcasterPlayer, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
+import { matchVisionPlayers, matchVisionSettings, overlayRuntime, reversePlayerOrderForMatch } from '../../domain';
 import type { MatchVisionOverlaySettings, MatchVisionSettings } from '../../domain';
 
 export interface OverlayPresentation {
@@ -15,25 +17,25 @@ export interface OverlayPresentation {
     showsTeamObserverBar: boolean;
     requiredAvatarCovers: number;
     teamAvatarCovers: number;
-    abilityCooldowns: ReadonlyMap<string, AbilityCooldownState>;
+    abilityCooldowns: ReadonlyMap<import('@w3booster/sdk').HeroAbility, AbilityCooldownState>;
 }
 
 export function createOverlayPresentation(state: MatchState<MatchVisionSettings>): OverlayPresentation {
     const settings = matchVisionSettings(state);
     const runtime = overlayRuntime(state);
     const players = matchVisionPlayers(state, settings);
-    const observerOrReplay = state.match.isObserver === true || state.match.isReplay === true;
+    const observerOrReplay = isObserverOrReplayMatch(state.match);
     const showsObserverBar = observerOrReplay && standardGame.isMode(state.match.mode, '1v1');
-    const showsTeamObserverBar = observerOrReplay && ['2v2', '3v3', '4v4'].some(mode => standardGame.isMode(state.match.mode, mode));
-    const broadcasterId = state.match.broadcasterPlayerId ?? players[0]?.id;
+    const showsTeamObserverBar = observerOrReplay && standardGame.modeInfo(state.match.mode)?.kind === 'team';
+    const broadcasterId = broadcasterPlayer(state.match, players, { fallbackToFirst: true })?.id;
     let streamer = players.find(player => player.id === broadcasterId) ?? null;
     let opponent = players.length === 2 ? players.find(player => player.id !== streamer?.id) ?? null : null;
 
     if (showsObserverBar && streamer && opponent) {
-        if ((opponent.startPosition?.x ?? 0) < (streamer.startPosition?.x ?? 0)) {
-            [streamer, opponent] = [opponent, streamer];
-        }
-        if (settings.reversePlayerOrder) [streamer, opponent] = [opponent, streamer];
+        [streamer, opponent] = standardGame.orderHeadToHeadPlayers(
+            [streamer, opponent],
+            { reverse: reversePlayerOrderForMatch(state.match, settings) }
+        ) as [Player, Player];
     }
 
     const broadcaster = players.find(player => player.id === broadcasterId);
@@ -55,22 +57,6 @@ export function createOverlayPresentation(state: MatchState<MatchVisionSettings>
         showsTeamObserverBar,
         requiredAvatarCovers,
         teamAvatarCovers,
-        abilityCooldowns: calculateAbilityCooldowns(state)
+        abilityCooldowns: standardGameObjects.abilityCooldownsForState(state)
     };
-}
-
-function calculateAbilityCooldowns(state: MatchState<MatchVisionSettings>): ReadonlyMap<string, AbilityCooldownState> {
-    const cooldowns = new Map<string, AbilityCooldownState>();
-    if (!state.match.gameTime || state.match.status === 'none' || state.match.status === 'finished') return cooldowns;
-
-    for (const player of state.players) {
-        for (const hero of player.heroes ?? []) {
-            for (const ability of hero.abilities ?? []) {
-                if (!ability.lastActivation || ability.lastActivation <= 0) continue;
-                const cooldown = standardGame.abilityCooldown(ability, state.match.gameTime);
-                if (cooldown) cooldowns.set(ability.id, cooldown);
-            }
-        }
-    }
-    return cooldowns;
 }

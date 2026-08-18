@@ -11,7 +11,7 @@
       </div>
     </ng-template>
     <div class="topbar1">
-      <ng-container *ngFor="let e of [{player: player1, resources: player1Resources, revert: false}, {player: player2, resources: player2Resources, revert: true}]; let i = index">
+      <ng-container *ngFor="let e of [{player: player1, resources: player1Resources, revert: false}, {player: player2, resources: player2Resources, revert: true}]; let i = index; trackBy: trackPlayerResource">
             <!-- for player2, show race first -->
             <ng-container *ngIf="e.revert" [ngTemplateOutlet]="raceDisplay" [ngTemplateOutletContext]="{ $implicit: e }"></ng-container>
             <div class="field field-gold" [style.borderTopColor]="getColorCode(e.player)"><span>{{ e.resources.gold | number:'1.0-0' }}</span></div>
@@ -47,7 +47,7 @@
             <div class="player-name player-name-left">
                 <div class="player-country"
                     *ngIf="player1.mainAccount && player1.mainAccount.country && player1.mainAccount.country != 'tw'"
-                    [style.backgroundImage]="'url(/assets/img/flags/'+ player1.mainAccount.country +'.png)'">
+                    [style.backgroundImage]="countryFlagBackground(player1.mainAccount.country)">
                 </div>
                 {{player1.name}}
             </div>
@@ -75,7 +75,7 @@
             <div class="player-name player-name-right">
                 <div class="player-country"
                     *ngIf="player2.mainAccount && player2.mainAccount.country && player2.mainAccount.country != 'tw'"
-                    [style.backgroundImage]="'url(/assets/img/flags/'+ player2.mainAccount.country +'.png)'">
+                    [style.backgroundImage]="countryFlagBackground(player2.mainAccount.country)">
                 </div>
                 {{player2.name}}
             </div>

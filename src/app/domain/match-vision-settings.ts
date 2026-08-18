@@ -1,33 +1,9 @@
-export interface MatchVisionOverlaySettings {
-    additionalCSSClasses?: Record<string, string>;
-    controlgroupsEnabled?: boolean;
-    headlineBot?: string;
-    headlineTop?: string;
-    headlineTopIsMainHeadline?: boolean;
-    heroAbilitiesEnabled?: boolean;
-    heroExpProgressEnabled?: boolean;
-    heroItemsEnabled?: boolean;
-    heroLevelEnabled?: boolean;
-    mapBarEnabled?: boolean;
-    mapNameEnabled?: boolean;
-    matchscoreEnabled?: boolean;
-    matchscoreEnabledInReplay?: boolean;
-    nationality?: string;
-    researchesEnabled?: boolean;
-    researchesOfAttackAndArmorEnabled?: boolean;
-    researchesShowAllEnabled?: boolean;
-    reversePlayerOrder?: boolean;
-    showRacesOnlyTextual?: boolean;
-    topBarEnabled?: boolean;
-    topBarGameDurationEnabled?: boolean;
-    topBarPlayerColorsEnabled?: boolean;
-    topBarPlayerColorsEnabledIn1V1?: boolean;
-    topBarStatisticsOfMeEnabled?: boolean;
-    topBarStatisticsOfOpponentEnabled?: boolean;
-    username?: string;
-}
+import type { DeepReadonly } from '@w3booster/sdk';
+import type { W3BoosterAppDeliveredSettings, W3BoosterAppSettings } from '../core/w3booster-app.generated';
 
-export interface MatchVisionSettings {
-    player?: MatchVisionOverlaySettings;
-    observer?: MatchVisionOverlaySettings;
-}
+/** Host settings may arrive incrementally; field names and values come from the generated database schema binding. */
+export type MatchVisionSettings = W3BoosterAppDeliveredSettings;
+/** Complete presentation settings after generated database defaults are applied. */
+export type MatchVisionOverlaySettings = DeepReadonly<
+    W3BoosterAppSettings['player'] & W3BoosterAppSettings['observer']
+>;

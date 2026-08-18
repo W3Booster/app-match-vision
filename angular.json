@@ -68,7 +68,8 @@
         "serve": {
           "builder": "@angular/build:dev-server",
           "options": {
-            "buildTarget": "match-vision:build"
+            "buildTarget": "match-vision:build",
+            "prebundle": false
           },
           "configurations": {
             "production": {

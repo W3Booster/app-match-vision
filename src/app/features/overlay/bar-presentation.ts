@@ -1,11 +1,10 @@
 import type { Match } from '@w3booster/sdk';
+import { isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import type { MatchVisionOverlaySettings } from '../../domain';
 
-const SUPPORTED_MODES = ['1v1', '2v2', '3v3', '4v4', '3ffa', '4ffa'];
-
 export function showsMatchBar(match: Match): boolean {
-    return SUPPORTED_MODES.some(mode => standardGame.isMode(match.mode, mode));
+    return standardGame.modeInfo(match.mode) !== undefined;
 }
 
 export function matchBarClasses(match: Match, settings: MatchVisionOverlaySettings): string {
@@ -17,11 +16,6 @@ export function matchBarClasses(match: Match, settings: MatchVisionOverlaySettin
     return classes.join(' ');
 }
 
-export function formatGameTime(seconds: number, compactHours = false): string {
-    const time = new Date(Math.max(0, seconds) * 1000).toISOString().substring(14, 19);
-    return compactHours ? time.replace(/^00/, '0') : time;
-}
-
 export function truncated(value: number, digits: number): string {
     const precision = Math.max(0, Math.trunc(digits));
     const factor = 10 ** precision;
@@ -29,5 +23,5 @@ export function truncated(value: number, digits: number): string {
 }
 
 function isBnetLadderFfa(match: Match): boolean {
-    return standardGame.isMode(match.mode, '4ffa') && !match.isReplay && !match.isObserver;
+    return standardGame.isMode(match.mode, '4ffa') && !isObserverOrReplayMatch(match);
 }

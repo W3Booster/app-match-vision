@@ -13,17 +13,20 @@ App shell
 Features -> Domain presentation -> @w3booster/sdk types
 Features -> @w3booster/sdk/selectors
 Features -> @w3booster/sdk/standard-game
-Features -> Shared Warcraft assets
+Features -> @w3booster/sdk/assets
+Features -> Shared asset URL service
 ```
 
 - `app.component.*` selects a surface and owns the application lifetime. It contains no match presentation logic.
-- `core/` connects and disconnects the SDK and interprets launch parameters. It does not render UI.
+- `core/` gives the SDK one abort-scoped application lifetime and waits for synchronized state. It does not implement transport selection, retry timers, or rendering.
 - `domain/` contains Match Vision settings and pure, immutable selectors. There is no duplicate state model or state adapter.
 - `features/overlay/` owns the visible HUD. `overlay-presentation.ts` derives a view model; components render it.
 - `features/dashboard/` owns app controls. Match-history persistence is isolated in `MatchHistoryStore`.
 - `@w3booster/sdk/selectors` owns reusable, framework-free derivations from live state.
-- `@w3booster/sdk/standard-game` owns reusable shipped Warcraft III object metadata and standard-rules helpers.
-- `shared/warcraft/` only maps that SDK knowledge to versioned hosted asset URLs.
+- `@w3booster/sdk/standard-game` owns lightweight standard-rules helpers, canonical game-time formatting, and preferred-statistics selection; `@w3booster/sdk/standard-game/objects` owns the optional shipped object metadata, icon URLs, and whole-state cooldown derivation.
+- The platform database owns the application contract. A deliberate `npm run w3booster:sync` refreshes the committed `w3booster-app.generated.ts` binding; install, development startup, and builds remain deterministic and make no network request.
+- `@w3booster/sdk/assets` owns reusable URLs for shared media such as account country flags.
+- `shared/warcraft/` selects the hosted asset origin and maps SDK helpers into Angular; Match Vision-specific visibility and layout remain in the overlay feature.
 
 ## Platform boundary
 
@@ -34,5 +37,13 @@ The compositor hosts enabled overlay apps and aligns the in-game Electron window
 1. SDK `MatchState` is the source of truth.
 2. Selectors never mutate SDK state.
 3. Presentation state is derived, not synchronized through component setters.
-4. App settings come only from `state.application.settings`.
+4. App settings come only from `state.application.settings` and are completed with the generated database-default resolver.
 5. Recorder overlay runtime values are typed by the SDK and read from `state.overlay.misc`.
+
+## Lifecycle rules
+
+1. One `AbortController` owns the client connection, SDK retry loop, readiness wait, and application-wide listeners; one atomic SDK lifecycle subscription feeds Angular's status, state, freshness, and error signals.
+2. Feature stores use their own abort signal, so replacing or destroying a feature removes all of its listeners atomically.
+3. `connect()` means a transport is open; `whenReady()` may return preserved state, while `whenSynchronized()` means a fresh complete state is safe to render.
+4. Permission, configuration, and protocol errors are surfaced by the SDK. Application code does not classify failures for a custom retry loop.
+5. Aborting the application lifetime is the primary teardown. An explicit `disconnect()` is retained at the Angular boundary so teardown can be awaited.

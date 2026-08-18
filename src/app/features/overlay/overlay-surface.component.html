@@ -8,7 +8,7 @@
 
                             <div *ngIf="settings.controlgroupsEnabled !== false && !isObserverOrReplay() && streamer.controlgroups && runtime.chatbarOpen !== true"
                                 class="ctrlgroup-wrapper">
-                                <ng-container *ngFor="let index of [0,1,2,3,4,5,6,7,8,9]">
+                                <ng-container *ngFor="let index of [0,1,2,3,4,5,6,7,8,9]; trackBy: trackPosition">
                                     <div [style.visibility]="(streamer.controlgroups[index] ? 'visible' : 'hidden')"
                                         class="ctrlgroup">
                                         <ng-container *ngIf="streamer.controlgroups[index]">
@@ -16,7 +16,7 @@
                                                 {{(index + 1) % 10}}
                                             </div>
                                             <div class="ctrlgroup-icon"
-                                                [style.backgroundImage]="'url(' + getIconPath('all', streamer.controlgroups[index].frontunit) + ')'">
+                                                [style.backgroundImage]="'url(' + getIconPath(streamer.controlgroups[index].frontunit) + ')'">
                                             </div>
                                             <div class="ctrlgroup-text">
                                                 {{ streamer.controlgroups[index].size }}
@@ -45,42 +45,42 @@
                                 *ngIf="settings.topBarEnabled && showObserverTeamBar()">
                             </mv-team-observer-bar>
 
-                            <mv-upgrade-panel
-                                *ngIf="!showObserverTeamBar() && settings.researchesEnabled && settings.researchesOfAttackAndArmorEnabled"
-                                [match]="state.match" [streamer]="streamer" [opponent]="opponent" [settings]="settings">
-                            </mv-upgrade-panel>
                         </div>
                     </div>
 
+                    <mv-upgrade-panel
+                        *ngIf="!showObserverTeamBar() && settings.researchesEnabled && settings.researchesOfAttackAndArmorEnabled"
+                        [match]="state.match" [streamer]="streamer" [opponent]="opponent" [settings]="settings">
+                    </mv-upgrade-panel>
 
                     <div *ngIf="isObserverOrReplay() && !showObserverTeamBar()">
                         <div *ngIf="streamer.heroes?.length">
-                            <div *ngFor="let hero of streamer.heroes"
+                            <div *ngFor="let hero of streamer.heroes; trackBy: trackHero"
                                 class="hero-area hero-area-streamer" id="ID_AVATAR_{{hero.id}}">
                                 <div [class]="'hero-avatar' + (isHeroDefeated(hero) ? ' grayscaled-filter' : ' ')"
-                                    [style.backgroundImage]="'url(' + getIconPath('heroes', hero.id) + ')'">
+                                    [style.backgroundImage]="'url(' + getHeroIconPath(hero) + ')'">
                                 </div>
                             </div>
                         </div>
 
-                        <div *ngFor="let item of  [].constructor(requiredAvatarCoverCount); let i = index"
+                        <div *ngFor="let item of  [].constructor(requiredAvatarCoverCount); let i = index; trackBy: trackPosition"
                             class="hero-area hero-area-streamer hero-area-cover" id="ID_AVATAR_COVER_{{i}}">
                             <div class="hero-avatar hero-avatar-cover">
                             </div>
                         </div>
 
                         <div *ngIf="opponent?.heroes?.length">
-                            <div *ngFor="let hero of opponent!.heroes"
+                            <div *ngFor="let hero of opponent!.heroes; trackBy: trackHero"
                                 class="hero-area hero-area-opponent" id="ID_AVATAR_{{hero.id}}">
                                 <div [class]="'hero-avatar' + (isHeroDefeated(hero) ? ' grayscaled-filter' : ' ')"
-                                    [style.backgroundImage]="'url(' + getIconPath('heroes', hero.id) + ')'">
+                                    [style.backgroundImage]="'url(' + getHeroIconPath(hero) + ')'">
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div *ngIf="showObserverTeamBar() && state.match.isReplay && !state.match.isObserver">
-                        <div *ngFor="let item of [].constructor(getRequiredAvatarCoverCountForObserverTeamBar()); let i = index"
+                        <div *ngFor="let item of [].constructor(getRequiredAvatarCoverCountForObserverTeamBar()); let i = index; trackBy: trackPosition"
                             class="hero-area hero-area-streamer hero-area-cover" id="ID_AVATAR_COVER_TEAM_{{i}}"
                             [style.top]="getAvatarCoverTop(i)">
                             <div class="hero-avatar hero-avatar-cover">
@@ -93,7 +93,7 @@
 
                         <div *ngIf="settings.heroExpProgressEnabled !== false">
                             <div *ngIf="streamer.heroes?.length">
-                                <div *ngFor="let hero of streamer.heroes"
+                                <div *ngFor="let hero of streamer.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-streamer hero-exp-area" id="ID_HEROEXP_{{hero.id}}">
                                         <div class="hero-exp-bar-wrapper">
                                             <div class="hero-exp-bar-background">
@@ -106,7 +106,7 @@
                             </div>
 
                             <div *ngIf="opponent?.heroes?.length">
-                                <div *ngFor="let hero of opponent!.heroes"
+                                <div *ngFor="let hero of opponent!.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-opponent hero-exp-area"
                                     id="ID_OPPONENT_HEROEXP_{{hero.id}}">
                                         <div class="hero-exp-bar-wrapper">
@@ -122,7 +122,7 @@
 
                         <div>
                             <div *ngIf="streamer.heroes?.length">
-                                <div *ngFor="let hero of streamer.heroes"
+                                <div *ngFor="let hero of streamer.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-streamer hero-hp-area" id="ID_HEROHP_{{hero.id}}">
                                     <ng-template
                                         *ngIf="heroHealthRatio(hero) > 0"
@@ -142,7 +142,7 @@
                             </div>
 
                             <div *ngIf="opponent?.heroes?.length">
-                                <div *ngFor="let hero of opponent!.heroes"
+                                <div *ngFor="let hero of opponent!.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-opponent hero-hp-area" id="ID_HEROHP_{{hero.id}}">
                                     <ng-template
                                         *ngIf="heroHealthRatio(hero) > 0"
@@ -164,7 +164,7 @@
 
                         <div>
                             <div *ngIf="streamer.heroes?.length">
-                                <div *ngFor="let hero of streamer.heroes"
+                                <div *ngFor="let hero of streamer.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-streamer hero-mana-area" id="ID_HEROMANA_{{hero.id}}">
                                         <div class="hero-mana-bar-wrapper"
                                             *ngIf="hero.mana && hero.hitpoints && hero.hitpoints.current > 0">
@@ -179,7 +179,7 @@
                             </div>
 
                             <div *ngIf="opponent?.heroes?.length">
-                                <div *ngFor="let hero of opponent!.heroes"
+                                <div *ngFor="let hero of opponent!.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-opponent hero-mana-area" id="ID_OPPONENT_HEROMANA_{{hero.id}}">
                                         <div class="hero-mana-bar-wrapper"
                                             *ngIf="hero.mana && hero.hitpoints && hero.hitpoints.current > 0">
@@ -196,14 +196,14 @@
 
                         <div *ngIf="settings.heroLevelEnabled !== false">
                             <div *ngIf="streamer.heroes?.length">
-                                <div *ngFor="let hero of streamer.heroes"
+                                <div *ngFor="let hero of streamer.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-streamer" id="ID_HEROLVL_{{hero.id}}">
                                         <div class="hero-level">{{getHeroLevel(hero)}}</div>
                                 </div>
                             </div>
 
                             <div *ngIf="opponent?.heroes?.length">
-                                <div *ngFor="let hero of opponent!.heroes"
+                                <div *ngFor="let hero of opponent!.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-opponent" id="ID_OPPONENT_HEROLVL_{{hero.id}}">
                                         <div class="hero-level">{{getHeroLevel(hero)}}</div>
                                 </div>
@@ -212,15 +212,15 @@
 
                         <div *ngIf="settings.heroAbilitiesEnabled">
                             <div *ngIf="streamer.heroes?.length">
-                                <div *ngFor="let hero of streamer.heroes"
+                                <div *ngFor="let hero of streamer.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-streamer" id="ID_HEROABILITY_{{hero.id}}">
 
-                                        <div *ngFor="let ability of hero.abilities || []" id="ID_ABILITY_{{ability.name}}"
+                                        <div *ngFor="let ability of hero.abilities || []; trackBy: trackAbility" id="ID_ABILITY_{{ability.name}}"
                                             [class]="'ability-icon-wrapper ' + (settings.heroItemsEnabled !== false ? 'inventory-spacer' : '') ">
 
                                             <div class="ability-icon {{ability.level == 0 ? 'ulti' : '' }}"
-                                                [style.backgroundImage]="'url(' + getIconPath('heroabilities', ability.name) + ')'">
-                                                <div *ngIf="getCooldown(ability.id) as cooldown"
+                                                [style.backgroundImage]="'url(' + getAbilityIconPath(ability) + ')'">
+                                                <div *ngIf="getCooldown(ability) as cooldown"
                                                     class="cooldown-wrapper">
                                                     <div *ngIf="cooldown.remaining > 0" class="cooldown">
                                                         {{cooldown.remaining}}
@@ -240,14 +240,14 @@
                             </div>
 
                             <div *ngIf="opponent?.heroes?.length">
-                                <div *ngFor="let hero of opponent!.heroes"
+                                <div *ngFor="let hero of opponent!.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-opponent" id="ID_OPPONENT_HEROABILITY_{{hero.id}}">
-                                        <div *ngFor="let ability of hero.abilities || []"
+                                        <div *ngFor="let ability of hero.abilities || []; trackBy: trackAbility"
                                             id="ID_OPPONENT_ABILITY_{{ability.name}}"
                                             [class]="'ability-icon-wrapper ' + (settings.heroItemsEnabled !== false ? 'inventory-spacer' : '') ">
                                             <div class="ability-icon"
-                                                [style.backgroundImage]="'url(' + getIconPath('heroabilities', ability.name) + ')'">
-                                                <div *ngIf="getCooldown(ability.id) as cooldown"
+                                                [style.backgroundImage]="'url(' + getAbilityIconPath(ability) + ')'">
+                                                <div *ngIf="getCooldown(ability) as cooldown"
                                                     class="cooldown-wrapper">
                                                     <div *ngIf="cooldown.remaining > 0" class="cooldown">
                                                         {{cooldown.remaining}}
@@ -269,25 +269,25 @@
 
                         <div *ngIf="settings.heroItemsEnabled !== false">
                             <div *ngIf="streamer.heroes?.length">
-                                <div *ngFor="let hero of streamer.heroes"
+                                <div *ngFor="let hero of streamer.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-streamer inventory" id="ID_HEROINVENTORY_{{hero.id}}">
-                                        <div *ngFor="let item of heroItems(hero)" id="ID_ITEM_{{item}}"
+                                        <div *ngFor="let item of heroItems(hero); trackBy: trackInventorySlot" id="ID_ITEM_{{item}}"
                                             class="item-icon-wrapper">
                                             <div class="item-icon" *ngIf="item !== ''"
-                                                [style.backgroundImage]="'url(' + getIconPath('item', item) + ')'">
+                                                [style.backgroundImage]="'url(' + getItemIconPath(item) + ')'">
                                             </div>
                                         </div>
                                 </div>
                             </div>
 
                             <div *ngIf="opponent?.heroes?.length">
-                                <div *ngFor="let hero of opponent!.heroes"
+                                <div *ngFor="let hero of opponent!.heroes; trackBy: trackHero"
                                     class="hero-area hero-area-opponent inventory"
                                     id="ID_OPPONENT_HEROINVENTORY_{{hero.id}}">
-                                        <div *ngFor="let item of heroItems(hero)" id="ID_ITEM_{{item}}"
+                                        <div *ngFor="let item of heroItems(hero); trackBy: trackInventorySlot" id="ID_ITEM_{{item}}"
                                             class="item-icon-wrapper">
                                             <div class="item-icon" *ngIf="item !== ''"
-                                                [style.backgroundImage]="'url(' + getIconPath('item', item) + ')'">
+                                                [style.backgroundImage]="'url(' + getItemIconPath(item) + ')'">
                                             </div>
                                         </div>
                                 </div>

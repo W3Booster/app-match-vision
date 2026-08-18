@@ -2,9 +2,9 @@
     <div class="match-box gamemode-{{normalizedGameMode()}} {{additionalCss()}}">
         <div class="match-box-content">
             <div class="teams">
-                <div *ngFor="let team of teams(); let teamIndex = index" class="team team-{{teamIndex}}">
+                <div *ngFor="let team of teams(); let teamIndex = index; trackBy: trackTeam" class="team team-{{teamIndex}}">
                     <div class="team-label">Team {{Number(teamIndex) + 1}}</div>
-                    <div *ngFor="let player of team; let playerIndex = index"
+                    <div *ngFor="let player of team; let playerIndex = index; trackBy: trackPlayer"
                         class="player player-{{playerIndex}} {{player.mainAccount ? 'player-has-alias' : 'player-has-no-alias'}}"
                         [style.color]="getColorCode(player)">
                         <ng-template #templateRef let-stats="stats">
@@ -31,7 +31,7 @@
                             </div>
                             <div class="player-country"
                                 *ngIf="player.mainAccount && player.mainAccount.country && player.mainAccount.country != 'tw'"
-                                [style.backgroundImage]="'url(/assets/img/flags/'+ player.mainAccount.country +'.png)'">
+                                [style.backgroundImage]="countryFlagBackground(player.mainAccount.country)">
                             </div>
                             <div *ngIf="player.mainAccount" class="player-alias"><span>{{player.name}}</span></div>
                             <ng-template [ngTemplateOutlet]="templateRef"></ng-template>

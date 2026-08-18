@@ -1,6 +1,7 @@
-import type { Match, OverlayRuntimeState, Player, Race } from '@w3booster/sdk';
-import { broadcasterPlayer, groupPlayersByTeam, playerRelationship } from '@w3booster/sdk/selectors';
+import type { ActiveUpgrade, Match, OverlayRuntimeState, Player, Race } from '@w3booster/sdk';
+import { playerRelationship } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
+import { broadcasterFirstTeams } from '../../domain';
 
 const TEAM_COLOR_PALETTE = {
     self: standardGame.playerColors[1],
@@ -17,15 +18,38 @@ const RACE_SPRITE_INDEX: Readonly<Record<Race, number>> = {
 const CLOCK_PHASE_SECONDS = 30;
 const CLOCK_PHASE_COUNT = 16;
 const CLOCK_SPRITE_ALIGNMENT_SECONDS = 11;
+const INVENTORY_RAIL_WIDTH = 138;
+const ABILITY_COLUMN_WIDTH = 45;
+const UPGRADE_PANEL_GAP = 24;
+
+/** Stable until a slot's contents change, so real item events animate once. */
+export function inventorySlotKey(index: number, item: string): string {
+    return `${index}:${item}`;
+}
+
+/** Stable until the researched level changes, so upgrades animate once per event. */
+export function activeUpgradeKey(upgrade: Pick<ActiveUpgrade, 'name' | 'level'>): string {
+    return `${upgrade.name}:${upgrade.level}`;
+}
+
+/** Places upgrades directly after the first hero's occupied ability columns. */
+export function upgradePanelInset(
+    player: Player,
+    showInventory: boolean,
+    showAbilities: boolean
+): number {
+    const abilityCount = showAbilities ? (player.heroes?.[0]?.abilities?.length ?? 0) : 0;
+    const abilityColumns = Math.ceil(abilityCount / 2);
+    return (showInventory ? INVENTORY_RAIL_WIDTH : 0) + abilityColumns * ABILITY_COLUMN_WIDTH + UPGRADE_PANEL_GAP;
+}
 
 /** Match Vision's team ordering is presentation, not protocol state. */
-export function orderedOverlayTeams(players: readonly Player[], match: Pick<Match, 'broadcasterPlayerId'>): Player[][] {
-    const groups = groupPlayersByTeam(players);
-    const broadcaster = broadcasterPlayer(match, players);
-    if (!broadcaster) return groups.map(group => [...group.players]);
-    return groups
-        .sort((left, right) => Number(right.teamId === broadcaster.team) - Number(left.teamId === broadcaster.team))
-        .map(group => [...group.players]);
+export function orderedOverlayTeams(
+    players: readonly Player[],
+    match: Pick<Match, 'broadcasterPlayerId'>,
+    reversePlayerOrder = false
+): Player[][] {
+    return broadcasterFirstTeams(players, match, reversePlayerOrder).map(team => team.players);
 }
 
 /** Match Vision palette for the optional simplified team-color view. */

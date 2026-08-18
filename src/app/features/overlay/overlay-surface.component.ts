@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
-import type { Hero, MatchState, Player } from '@w3booster/sdk';
-import { heroInventory } from '@w3booster/sdk/selectors';
+import type { Hero, HeroAbility, MatchState, Player } from '@w3booster/sdk';
+import { heroInventory, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { heroDisplayLevel } from '../../domain';
 import type { MatchVisionSettings } from '../../domain';
@@ -10,6 +10,7 @@ import { MapBarComponent } from './map-bar/map-bar.component';
 import { MatchBarComponent } from './match-bar/match-bar.component';
 import { ObserverBarComponent } from './observer-bar/observer-bar.component';
 import { createOverlayPresentation } from './overlay-presentation';
+import { inventorySlotKey } from './overlay-visuals';
 import { TeamObserverBarComponent } from './team-observer-bar/team-observer-bar.component';
 import { UpgradePanelComponent } from './upgrade-panel/upgrade-panel.component';
 
@@ -37,13 +38,20 @@ export class OverlaySurfaceComponent {
     getHeroExperienceProgress(hero: Hero): number { return standardGame.heroExperienceState(hero.experience).progress; }
     getHeroLevel(hero: Hero): string { return heroDisplayLevel(hero); }
     heroItems(hero: Hero): readonly string[] { return heroInventory(hero); }
-    getIconPath(_type: string, key: string): string | null { return this.assets.iconPath(this.state.match, key); }
-    isObserverOrReplay(): boolean { return this.state.match.isReplay === true || this.state.match.isObserver === true; }
+    getIconPath(key: string): string | null { return this.assets.iconPath(this.state.match, key); }
+    getHeroIconPath(hero: Hero): string | null { return this.assets.heroIconPath(this.state.match, hero); }
+    getAbilityIconPath(ability: HeroAbility): string | null { return this.assets.abilityIconPath(this.state.match, ability); }
+    getItemIconPath(rawcode: string): string | null { return this.assets.itemIconPath(this.state.match, rawcode); }
+    isObserverOrReplay(): boolean { return isObserverOrReplayMatch(this.state.match); }
     showObserverBar(): boolean { return this.presentation().showsObserverBar; }
     showObserverTeamBar(): boolean { return this.presentation().showsTeamObserverBar; }
-    isHeroDefeated(hero: Hero): boolean { return Boolean(hero.hitpoints && hero.hitpoints.current <= 0); }
-    heroHealthRatio(hero: Hero): number { return !hero.hitpoints?.max ? 0 : hero.hitpoints.current / hero.hitpoints.max; }
-    getCooldown(abilityId: string) { return this.presentation().abilityCooldowns.get(abilityId); }
+    isHeroDefeated(hero: Hero): boolean { return standardGame.isValuePoolDepleted(hero.hitpoints); }
+    heroHealthRatio(hero: Hero): number { return standardGame.valuePoolRatio(hero.hitpoints); }
+    getCooldown(ability: HeroAbility) { return this.presentation().abilityCooldowns.get(ability); }
     getRequiredAvatarCoverCountForObserverTeamBar(): number { return this.presentation().teamAvatarCovers; }
     getAvatarCoverTop(index: number): string { return index === 1 ? '12.90%' : index === 2 ? '21.55%' : '4.30%'; }
+    trackHero(_index: number, hero: Hero): string { return hero.id; }
+    trackAbility(_index: number, ability: HeroAbility): string { return ability.id; }
+    trackInventorySlot(index: number, item: string): string { return inventorySlotKey(index, item); }
+    trackPosition(index: number): number { return index; }
 }

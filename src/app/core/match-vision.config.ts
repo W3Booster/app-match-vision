@@ -1,15 +1,18 @@
-import type { ConnectOptions } from '@w3booster/sdk';
-import type { MatchVisionSettings } from '../domain/match-vision-settings';
+import { w3boosterApp, type W3BoosterAppConnectOptions } from './w3booster-app.generated';
 
-export const MATCH_VISION_CLIENT_ID = 'app_7bd7c42015297f608f1e5436';
-
-/** Build app-specific SDK options without handling platform transport or credentials. */
-export function connectionOptions(search: string): ConnectOptions<MatchVisionSettings> {
+/** Build application-owned SDK options. The SDK handles platform backend hints itself. */
+export function connectionOptions(search: string, signal: AbortSignal): W3BoosterAppConnectOptions {
     const parameters = new URLSearchParams(search);
+    const demo = parameters.has('demo');
 
     return {
-        // Assigned once by W3Booster; unrelated to the editable app title.
-        clientId: MATCH_VISION_CLIENT_ID,
-        demo: parameters.has('demo')
+        demo: demo ? { settings: w3boosterApp.settingsDefaults } : false,
+        // The regular dashboard fills its host viewport and owns scrolling.
+        // Other surfaces keep SDK content-height reporting enabled.
+        autoResize: parameters.get('view') === 'dashboard' ? false : undefined,
+        signal,
+        // Let the SDK retry transient startup failures. Authorization,
+        // configuration, and protocol failures still surface immediately.
+        retry: demo ? false : true
     };
 }

@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { type Signal, signal, type WritableSignal } from '@angular/core';
 import type { MatchState, W3BoosterClient } from '@w3booster/sdk';
 import type { MatchVisionSettings } from '../../domain';
 
@@ -14,23 +14,30 @@ export interface MatchHistoryEntry {
 const HISTORY_KEY = 'w3booster:match-vision:matches';
 
 export class MatchHistoryStore {
-    private readonly history = signal<MatchHistoryEntry[]>(this.read());
-    private subscriptions: Array<() => void> = [];
-    readonly entries = this.history.asReadonly();
+    private readonly history: WritableSignal<MatchHistoryEntry[]>;
+    private lifetime: AbortController | null = null;
+    readonly entries: Signal<MatchHistoryEntry[]>;
 
-    constructor(private readonly storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage) {}
+    constructor(private readonly storage: Pick<Storage, 'getItem' | 'setItem'> = localStorage) {
+        this.history = signal<MatchHistoryEntry[]>(this.read());
+        this.entries = this.history.asReadonly();
+    }
 
     connect(client: W3BoosterClient<MatchVisionSettings>): void {
         this.disconnect();
-        this.subscriptions = [
-            client.on('match.started', event => this.record(event.state)),
-            client.on('match.ended', event => this.finish(event.match.id))
-        ];
+        const lifetime = new AbortController();
+        this.lifetime = lifetime;
+        // State subscriptions include the initial hydrated snapshot; domain
+        // events intentionally describe only transitions observed afterwards.
+        client.state.subscribe(state => {
+            if (state.match.status === 'running') this.record(state);
+        }, { signal: lifetime.signal });
+        client.on('match.ended', event => this.finish(event.match.id), { signal: lifetime.signal });
     }
 
     disconnect(): void {
-        this.subscriptions.forEach(unsubscribe => unsubscribe());
-        this.subscriptions = [];
+        this.lifetime?.abort();
+        this.lifetime = null;
     }
 
     record(state: MatchState<MatchVisionSettings>): void {
@@ -59,7 +66,9 @@ export class MatchHistoryStore {
     private read(): MatchHistoryEntry[] {
         try {
             const value = this.storage.getItem(HISTORY_KEY);
-            return value ? JSON.parse(value) : [];
+            if (!value) return [];
+            const parsed: unknown = JSON.parse(value);
+            return Array.isArray(parsed) ? parsed.filter(isMatchHistoryEntry).slice(0, 20) : [];
         } catch { return []; }
     }
 
@@ -67,4 +76,19 @@ export class MatchHistoryStore {
         try { this.storage.setItem(HISTORY_KEY, JSON.stringify(this.history())); }
         catch { /* Storage is optional in embedded/private browser contexts. */ }
     }
+}
+
+function isMatchHistoryEntry(value: unknown): value is MatchHistoryEntry {
+    if (!value || typeof value !== 'object') return false;
+    const entry = value as Partial<MatchHistoryEntry>;
+    return typeof entry.id === 'string' && entry.id.length > 0 &&
+        typeof entry.map === 'string' &&
+        typeof entry.mode === 'string' &&
+        typeof entry.startedAt === 'string' && Number.isFinite(Date.parse(entry.startedAt)) &&
+        (entry.endedAt === undefined || typeof entry.endedAt === 'string' && Number.isFinite(Date.parse(entry.endedAt))) &&
+        Array.isArray(entry.players) && entry.players.every(player =>
+            player !== null && typeof player === 'object' &&
+            typeof player.name === 'string' &&
+            typeof player.race === 'string' &&
+            Number.isFinite(player.team));
 }

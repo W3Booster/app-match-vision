@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, effect, input } from '@angular/core';
 import type { MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
-import { groupPlayersByTeam, isActiveMatch } from '@w3booster/sdk/selectors';
+import { isActiveMatch } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import type { MatchVisionSettings } from '../../domain';
+import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
 import { MatchHistoryStore } from './match-history.store';
+import { MatchControls } from './match-controls';
 
 @Component({
     selector: 'mv-dashboard-surface',
@@ -16,11 +17,11 @@ export class DashboardSurfaceComponent implements OnDestroy {
     readonly client = input.required<W3BoosterClient<MatchVisionSettings>>();
     readonly state = input.required<MatchState<MatchVisionSettings>>();
     readonly history = new MatchHistoryStore();
+    private readonly controls = new MatchControls();
 
     private readonly clientBinding = effect(() => this.history.connect(this.client()));
-    private readonly activeMatchTracking = effect(() => {
-        const state = this.state();
-        if (isActiveMatch(state.match)) this.history.record(state);
+    private readonly reversePlayerOrderSync = effect(() => {
+        this.controls.reconcileReversePlayerOrder(this.savedReversePlayerOrder());
     });
 
     ngOnDestroy(): void { this.history.disconnect(); }
@@ -30,33 +31,36 @@ export class DashboardSurfaceComponent implements OnDestroy {
     }
 
     get teams(): Array<{ id: number; players: Player[] }> {
-        return groupPlayersByTeam(this.state().players).map(team => ({ id: team.teamId ?? 0, players: [...team.players] }));
+        return matchVisionTeams(this.state(), this.displayedReversePlayerOrder());
     }
 
     get wins(): number { return Number(this.state().overlay?.misc?.matchscoreWins || 0); }
     get losses(): number { return Number(this.state().overlay?.misc?.matchscoreLosses || 0); }
 
-    changeScore(side: 'wins' | 'losses', delta: 1 | -1): void {
-        this.client().host.command('overlay.match-score.change', { side, delta });
+    async changeScore(side: 'wins' | 'losses', delta: 1 | -1): Promise<void> {
+        await this.controls.changeScore(this.client(), side, delta);
     }
-    resetScore(): void { this.client().host.command('overlay.match-score.reset'); }
-    reversePlayers(): void {
-        const current = this.state().application?.settings.observer?.reversePlayerOrder === true;
-        this.client().host.setSetting('observer.reversePlayerOrder', !current);
+    async resetScore(): Promise<void> {
+        await this.controls.resetScore(this.client());
+    }
+    async reversePlayers(): Promise<void> {
+        await this.controls.reversePlayers(this.client(), this.state().match.id, this.savedReversePlayerOrder());
     }
     openCompact(): void {
-        this.client().host.openWindow({ path: '?view=compact', width: 500, height: 300, title: 'Match Vision' });
+        void this.client().host.openWindowAndWait({ path: '?view=compact', width: 500, height: 300, title: 'Match Vision' })
+            .catch(error => console.error('Could not open the compact Match Vision window:', error));
     }
     formatTime(seconds: number): string {
-        const value = Math.max(0, Number(seconds) || 0);
-        return `${Math.floor(value / 60)}:${String(value % 60).padStart(2, '0')}`;
+        return standardGame.formatGameTime(seconds, { compactHours: true });
     }
     raceName(player: Player): string { return player.race || 'random'; }
     playerStats(player: Player): PlayerStats | undefined {
-        return standardGame.statsForMode(player, this.state().match.mode)
-            ?? player.stats?.solo
-            ?? player.stats?.team
-            ?? player.stats?.team4
-            ?? player.stats?.ffa;
+        return standardGame.preferredStats(player, this.state().match.mode);
+    }
+    private savedReversePlayerOrder(): boolean {
+        return reversePlayerOrderForMatch(this.state().match, matchVisionSettings(this.state()));
+    }
+    private displayedReversePlayerOrder(): boolean {
+        return this.controls.displayedReversePlayerOrder(this.savedReversePlayerOrder());
     }
 }

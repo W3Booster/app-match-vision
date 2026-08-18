@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, effect, input } from '@angular/core';
 import type { ConnectionStatus, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
-import { groupPlayersByTeam, isActiveMatch } from '@w3booster/sdk/selectors';
+import { isActiveMatch } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import type { MatchVisionSettings } from '../../domain';
+import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
+import { dashboardStatusLabel } from './dashboard-status';
 import { MatchHistoryStore, type MatchHistoryEntry } from './match-history.store';
+import { MatchControls } from './match-controls';
 
 interface CompactTeam { id: number; players: Player[]; }
 interface CompactHistoryTeam { id: number; players: MatchHistoryEntry['players']; }
@@ -20,44 +22,35 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
     readonly state = input.required<MatchState<MatchVisionSettings>>();
     readonly status = input.required<ConnectionStatus>();
     readonly history = new MatchHistoryStore();
+    private readonly controls = new MatchControls();
     fontSize = 12;
 
     private readonly clientBinding = effect(() => this.history.connect(this.client()));
-    private readonly activeMatchTracking = effect(() => {
-        const state = this.state();
-        if (isActiveMatch(state.match)) this.history.record(state);
+    private readonly reversePlayerOrderSync = effect(() => {
+        this.controls.reconcileReversePlayerOrder(this.savedReversePlayerOrder());
     });
 
     ngOnDestroy(): void { this.history.disconnect(); }
     get matchActive(): boolean { return isActiveMatch(this.state().match); }
     get teams(): CompactTeam[] {
-        return groupPlayersByTeam(this.state().players).map(team => ({ id: team.teamId ?? 0, players: [...team.players] }));
+        return matchVisionTeams(this.state(), this.displayedReversePlayerOrder());
     }
     get wins(): number { return Number(this.state().overlay?.misc?.matchscoreWins || 0); }
     get losses(): number { return Number(this.state().overlay?.misc?.matchscoreLosses || 0); }
-    get connectionLabel(): string {
-        switch (this.status()) {
-            case 'connected': return this.matchActive ? 'Match data live' : 'Connected — waiting for a match';
-            case 'reconnecting': return 'Connection interrupted — reconnecting';
-            case 'connecting': return 'Connecting to W3Booster';
-            case 'error': return 'Connection error';
-            case 'closed': return 'Disconnected';
-            default: return 'Waiting for W3Booster';
-        }
-    }
+    get connectionLabel(): string { return dashboardStatusLabel(this.status(), this.matchActive); }
 
-    changeScore(side: 'wins' | 'losses', delta: 1 | -1): void {
-        this.client().host.command('overlay.match-score.change', { side, delta });
+    async changeScore(side: 'wins' | 'losses', delta: 1 | -1): Promise<void> {
+        await this.controls.changeScore(this.client(), side, delta);
     }
-    resetScore(): void { this.client().host.command('overlay.match-score.reset'); }
-    reversePlayers(): void {
-        const current = this.state().application?.settings.observer?.reversePlayerOrder === true;
-        this.client().host.setSetting('observer.reversePlayerOrder', !current);
+    async resetScore(): Promise<void> {
+        await this.controls.resetScore(this.client());
+    }
+    async reversePlayers(): Promise<void> {
+        await this.controls.reversePlayers(this.client(), this.state().match.id, this.savedReversePlayerOrder());
     }
     changeFont(delta: 1 | -1): void { this.fontSize = Math.min(20, Math.max(10, this.fontSize + delta)); }
     playerStats(player: Player): PlayerStats | undefined {
-        return standardGame.statsForMode(player, this.state().match.mode)
-            ?? player.stats?.solo ?? player.stats?.team ?? player.stats?.team4 ?? player.stats?.ffa;
+        return standardGame.preferredStats(player, this.state().match.mode);
     }
     displayName(player: Player): string {
         const accountName = player.mainAccount?.name;
@@ -74,8 +67,10 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
         }
         return [...grouped.entries()].sort(([a], [b]) => a - b).map(([id, players]) => ({ id, players }));
     }
-    decodedMap(map: string): string {
-        try { return decodeURIComponent(map); }
-        catch { return map; }
+    private savedReversePlayerOrder(): boolean {
+        return reversePlayerOrderForMatch(this.state().match, matchVisionSettings(this.state()));
+    }
+    private displayedReversePlayerOrder(): boolean {
+        return this.controls.displayedReversePlayerOrder(this.savedReversePlayerOrder());
     }
 }

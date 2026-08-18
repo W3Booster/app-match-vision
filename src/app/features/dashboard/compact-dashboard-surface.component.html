@@ -11,7 +11,13 @@
         <section class="compact-section score-section">
             <header>
                 <div><span>SESSION</span><h1>Match score</h1></div>
-                <button type="button" class="quiet" (click)="resetScore()" title="Reset match score"><i aria-hidden="true">↺</i> Reset</button>
+                <button type="button" class="quiet" (click)="resetScore()" title="Reset match score">
+                    <svg class="reset-icon" aria-hidden="true" viewBox="0 0 16 16">
+                        <path d="M3.25 3.75v3h3"></path>
+                        <path d="M3.7 6.5A4.75 4.75 0 1 1 3.45 10"></path>
+                    </svg>
+                    Reset
+                </button>
             </header>
             <div class="score-control">
                 <span class="score-label">Wins</span>
@@ -46,7 +52,7 @@
             <header><div><span>RECENT</span><h2>Match history</h2></div></header>
             <div class="empty" *ngIf="!history.entries().length">No history yet</div>
             <article class="history-entry" *ngFor="let match of history.entries()">
-                <header><strong>{{match.startedAt | date:'shortTime'}} · {{decodedMap(match.map)}}</strong><span [class.live]="!match.endedAt">{{match.endedAt ? 'Finished' : 'Running'}}</span></header>
+                <header><strong>{{match.startedAt | date:'shortTime'}} · {{match.map}}</strong><span [class.live]="!match.endedAt">{{match.endedAt ? 'Finished' : 'Running'}}</span></header>
                 <div class="history-teams">
                     <ng-container *ngFor="let team of historyTeams(match); let first = first">
                         <b *ngIf="!first">vs</b>

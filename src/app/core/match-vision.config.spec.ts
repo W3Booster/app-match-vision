@@ -1,17 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { connectionOptions, MATCH_VISION_CLIENT_ID } from './match-vision.config';
+import { connectionOptions } from './match-vision.config';
 
 describe('Match Vision SDK configuration', () => {
-    it('uses the stable app identity', () => {
-        expect(connectionOptions('').clientId).toBe(MATCH_VISION_CLIENT_ID);
+    const signal = new AbortController().signal;
+
+    it('leaves stable app identity ownership to the generated client helper', () => {
+        expect(connectionOptions('', signal)).not.toHaveProperty('clientId');
     });
 
     it('enables the SDK demo transport only when requested', () => {
-        expect(connectionOptions('?view=dashboard').demo).toBe(false);
-        expect(connectionOptions('?view=dashboard&demo=1').demo).toBe(true);
+        expect(connectionOptions('?view=dashboard', signal).demo).toBe(false);
+        expect(connectionOptions('?view=dashboard&demo=1', signal).demo).toMatchObject({
+            settings: { player: { mapBarEnabled: true }, observer: { mapBarEnabled: true } }
+        });
     });
 
     it('leaves platform transport selection to the SDK', () => {
-        expect(connectionOptions('?view=dashboard&backend=local').backend).toBeUndefined();
+        expect(connectionOptions('', signal).backend).toBeUndefined();
+        expect(connectionOptions('?backend=local', signal).backend).toBeUndefined();
+    });
+
+    it('lets the regular dashboard own its viewport height and scrolling', () => {
+        expect(connectionOptions('?view=dashboard', signal).autoResize).toBe(false);
+        expect(connectionOptions('?view=compact', signal).autoResize).toBeUndefined();
+        expect(connectionOptions('?view=overlay', signal).autoResize).toBeUndefined();
+    });
+
+    it('gives the SDK ownership of the live connection lifetime and retries', () => {
+        const live = connectionOptions('', signal);
+        expect(live.signal).toBe(signal);
+        expect(live.retry).toBe(true);
+        expect(connectionOptions('?demo=1', signal).retry).toBe(false);
     });
 });

@@ -13,7 +13,8 @@ button:hover { border-color: #4d7990; background: #20313a; }
 .compact-section > header { display: flex; min-height: 25px; align-items: center; justify-content: space-between; gap: 5px; padding: 2px 5px; border-bottom: 1px solid #29373f; background: rgba(31,43,50,.8); }
 .compact-section header span:first-child { display: block; color: #56bce9; font-size: .72em; font-weight: 900; letter-spacing: .12em; }
 h1, h2 { margin: 0; color: #f1eadf; font-size: 1em; line-height: 1.1; }
-.quiet { padding: 2px 5px; color: #aebbc2; }
+.quiet { display: inline-flex; align-items: center; gap: 4px; padding: 2px 5px; color: #aebbc2; }
+.reset-icon { width: 12px; height: 12px; overflow: visible; fill: none; stroke: currentColor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 1.5; }
 .score-control { display: grid; grid-template-columns: auto auto minmax(28px,1fr) auto minmax(28px,1fr) auto auto; align-items: center; gap: 4px; padding: 4px 5px; text-align: center; }
 .score-buttons { display: flex; gap: 2px; }
 .score-buttons button { width: 21px; height: 21px; padding: 0; font-size: 1.12em; font-weight: 700; line-height: 1; }

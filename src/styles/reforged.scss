@@ -83,7 +83,7 @@
         .ability-icon-wrapper:nth-child(4) {
             position: absolute;
             left: auto;
-            right: 2.3%;
+            right: 45px;
         }
 
 
@@ -381,18 +381,8 @@
 
     .upgrade-box {
         position: absolute;
-        /* below stats bar*/
-        left: 0px;
+        left: 0;
         top: 60px;
-        /* obove grid
-    left:1330px;
-    top: 760px;*/
-        /* bottom left
-    left:10px;
-    top: 750px;*/
-        /* top right
-    left:1030px;
-    top: 46px;*/
         margin-bottom: 90px;
         animation: slide-up 0.4s ease;
         transition: width 0.4s;
@@ -400,7 +390,12 @@
 
     .upgrade-box.opponent {
         left: auto;
-        right: 0px;
+        right: 0;
+
+        .upgrade-icon {
+            float: right;
+            margin: 0 2px 0 12px;
+        }
     }
 
     .upgrade-icon .upgrade-icon-label {

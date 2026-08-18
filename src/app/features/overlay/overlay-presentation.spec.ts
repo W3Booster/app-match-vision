@@ -19,6 +19,22 @@ describe('overlay presentation', () => {
         expect(state).toEqual(original);
     });
 
+    it('reverses every observer-side presentation when configured', () => {
+        const state = createState();
+        state.match.isObserver = true;
+        state.players[0]!.startPosition = { x: -10, y: 0 };
+        state.players[1]!.startPosition = { x: 10, y: 0 };
+        state.application = {
+            clientId: 'match-vision',
+            settings: { observer: { reversePlayerOrderMatchId: 'match' } }
+        };
+
+        const view = createOverlayPresentation(state);
+
+        expect(view.streamer?.id).toBe('1');
+        expect(view.opponent?.id).toBe('0');
+    });
+
     it('derives ability cooldowns from complete SDK state', () => {
         const state = createState();
         state.match.gameTime = 15;
@@ -27,7 +43,8 @@ describe('overlay presentation', () => {
             abilities: [{ id: 'AHhb', name: 'AHhb', level: 1, lastActivation: 10_000 }]
         }];
 
-        const cooldown = createOverlayPresentation(state).abilityCooldowns.get('AHhb');
+        const ability = state.players[0]!.heroes![0]!.abilities![0]!;
+        const cooldown = createOverlayPresentation(state).abilityCooldowns.get(ability);
         expect(cooldown).toEqual({ total: 5, elapsed: 5, remaining: 0, progress: 1, active: false });
     });
 
