@@ -1,14 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, effect, input } from '@angular/core';
-import type { ConnectionStatus, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
-import { isActiveMatch } from '@w3booster/sdk/selectors';
+import type { ConnectionStatus, HostLifecycleSnapshot, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
+import { isActiveMatch, matchScore } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
 import { dashboardStatusLabel } from './dashboard-status';
 import { MatchHistoryStore, type MatchHistoryEntry } from './match-history.store';
-import { MatchControls } from './match-controls';
+import { hostActionAvailable, MatchControls } from './match-controls';
 
-interface CompactTeam { id: number; players: Player[]; }
+interface CompactTeam { id: number | null; players: Player[]; }
 interface CompactHistoryTeam { id: number; players: MatchHistoryEntry['players']; }
 
 @Component({
@@ -19,10 +19,12 @@ interface CompactHistoryTeam { id: number; players: MatchHistoryEntry['players']
 })
 export class CompactDashboardSurfaceComponent implements OnDestroy {
     readonly client = input.required<W3BoosterClient<MatchVisionSettings>>();
+    readonly host = input.required<HostLifecycleSnapshot>();
     readonly state = input.required<MatchState<MatchVisionSettings>>();
     readonly status = input.required<ConnectionStatus>();
+    readonly synchronized = input.required<boolean>();
     readonly history = new MatchHistoryStore();
-    private readonly controls = new MatchControls();
+    readonly controls = new MatchControls();
     fontSize = 12;
 
     private readonly clientBinding = effect(() => this.history.connect(this.client()));
@@ -35,9 +37,11 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
     get teams(): CompactTeam[] {
         return matchVisionTeams(this.state(), this.displayedReversePlayerOrder());
     }
-    get wins(): number { return Number(this.state().overlay?.misc?.matchscoreWins || 0); }
-    get losses(): number { return Number(this.state().overlay?.misc?.matchscoreLosses || 0); }
-    get connectionLabel(): string { return dashboardStatusLabel(this.status(), this.matchActive); }
+    get wins(): number { return matchScore(this.state()).wins; }
+    get losses(): number { return matchScore(this.state()).losses; }
+    get connectionLabel(): string { return dashboardStatusLabel(this.status(), this.matchActive, this.synchronized()); }
+    get canChangeScore(): boolean { return hostActionAvailable(this.host(), 'match-score:write'); }
+    get canReversePlayers(): boolean { return hostActionAvailable(this.host(), 'settings:write'); }
 
     async changeScore(side: 'wins' | 'losses', delta: 1 | -1): Promise<void> {
         await this.controls.changeScore(this.client(), side, delta);

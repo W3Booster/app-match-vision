@@ -11,7 +11,7 @@
         <section class="compact-section score-section">
             <header>
                 <div><span>SESSION</span><h1>Match score</h1></div>
-                <button type="button" class="quiet" (click)="resetScore()" title="Reset match score">
+                <button type="button" class="quiet" [disabled]="controls.busy() || !canChangeScore" (click)="resetScore()" title="Reset match score">
                     <svg class="reset-icon" aria-hidden="true" viewBox="0 0 16 16">
                         <path d="M3.25 3.75v3h3"></path>
                         <path d="M3.7 6.5A4.75 4.75 0 1 1 3.45 10"></path>
@@ -21,9 +21,9 @@
             </header>
             <div class="score-control">
                 <span class="score-label">Wins</span>
-                <div class="score-buttons"><button type="button" (click)="changeScore('wins', 1)" aria-label="Add win">+</button><button type="button" (click)="changeScore('wins', -1)" aria-label="Remove win">−</button></div>
+                <div class="score-buttons"><button type="button" [disabled]="controls.busy() || !canChangeScore" (click)="changeScore('wins', 1)" aria-label="Add win">+</button><button type="button" [disabled]="controls.busy() || !canChangeScore" (click)="changeScore('wins', -1)" aria-label="Remove win">−</button></div>
                 <strong class="wins">{{wins}}</strong><span class="score-separator">:</span><strong class="losses">{{losses}}</strong>
-                <div class="score-buttons"><button type="button" (click)="changeScore('losses', 1)" aria-label="Add loss">+</button><button type="button" (click)="changeScore('losses', -1)" aria-label="Remove loss">−</button></div>
+                <div class="score-buttons"><button type="button" [disabled]="controls.busy() || !canChangeScore" (click)="changeScore('losses', 1)" aria-label="Add loss">+</button><button type="button" [disabled]="controls.busy() || !canChangeScore" (click)="changeScore('losses', -1)" aria-label="Remove loss">−</button></div>
                 <span class="score-label">Losses</span>
             </div>
         </section>
@@ -31,7 +31,7 @@
         <section class="compact-section current-match">
             <header>
                 <div><span>LIVE</span><h2>Current match</h2></div>
-                <button *ngIf="matchActive && (state().match.isReplay || state().match.isObserver)" type="button" class="quiet" (click)="reversePlayers()"><i aria-hidden="true">⇅</i> Reverse order</button>
+                <button *ngIf="matchActive && (state().match.isReplay || state().match.isObserver)" type="button" class="quiet" [disabled]="controls.busy() || !canReversePlayers" (click)="reversePlayers()"><i aria-hidden="true">⇅</i> Reverse order</button>
             </header>
             <div class="empty" *ngIf="!matchActive">No match running</div>
             <div class="current-match-content" *ngIf="matchActive">
@@ -63,5 +63,6 @@
         </section>
     </div>
 
-    <footer class="connection-status" [attr.data-status]="status()"><i aria-hidden="true"></i><strong>{{connectionLabel}}</strong></footer>
+    <div class="action-error" role="alert" *ngIf="controls.error() as error">{{error}} <button type="button" (click)="controls.clearError()" aria-label="Dismiss action error">×</button></div>
+    <footer class="connection-status" [attr.data-status]="status()" [attr.data-synchronized]="synchronized()"><i aria-hidden="true"></i><strong>{{connectionLabel}}</strong></footer>
 </main>

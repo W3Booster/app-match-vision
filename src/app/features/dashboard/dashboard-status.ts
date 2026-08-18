@@ -1,9 +1,15 @@
 import type { ConnectionStatus } from '@w3booster/sdk';
 
 /** Consistent match-data status copy for every application dashboard surface. */
-export function dashboardStatusLabel(status: ConnectionStatus, matchActive: boolean): string {
+export function dashboardStatusLabel(
+    status: ConnectionStatus,
+    matchActive: boolean,
+    synchronized = true
+): string {
     switch (status) {
-        case 'connected': return matchActive
+        case 'connected': return !synchronized
+            ? 'Synchronizing match data'
+            : matchActive
             ? 'Match in progress'
             : 'Ready';
         case 'reconnecting': return 'Reconnecting match data';

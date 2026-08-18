@@ -1,28 +1,43 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 import { classifyW3BoosterError, ConnectionError, isAbortError } from '@w3booster/sdk';
-import type { ConnectionStatus, MatchState, W3BoosterClient } from '@w3booster/sdk';
+import type { HostLifecycleSnapshot, W3BoosterClient } from '@w3booster/sdk';
+import type { ApplicationRuntime, ApplicationRuntimeSnapshot } from '@w3booster/sdk/app';
 import { connectionOptions } from './match-vision.config';
 import type { MatchVisionSettings } from '../domain/match-vision-settings';
-import { createW3BoosterAppClient } from './w3booster-app.generated';
+import { w3boosterApp } from './w3booster-app.generated';
+import type { W3BoosterAppSettings } from './w3booster-app.generated';
+
+const UNAVAILABLE_HOST: HostLifecycleSnapshot = Object.freeze({
+    available: false,
+    capabilities: Object.freeze([]),
+    capabilityStatus: 'unavailable'
+});
 
 @Injectable({ providedIn: 'root' })
 export class MatchVisionClientService {
-    private readonly clientState = signal<W3BoosterClient<MatchVisionSettings> | null>(null);
-    private readonly matchState = signal<MatchState<MatchVisionSettings> | null>(null);
-    private readonly connectionStatus = signal<ConnectionStatus>('idle');
-    private readonly connectionError = signal('');
-    private readonly stateSynchronized = signal(false);
-    private lifetime: AbortController | null = null;
+    private readonly connection = signal<MatchVisionConnection>({
+        client: null,
+        status: 'idle',
+        state: null,
+        isSynchronized: false,
+        error: null,
+        errorMessage: '',
+        host: UNAVAILABLE_HOST
+    });
+    private runtime: ApplicationRuntime<W3BoosterAppSettings> | null = null;
+    private unsubscribeRuntime: (() => void) | null = null;
+    private unsubscribeIssues: (() => void) | null = null;
     private startup: Promise<W3BoosterClient<MatchVisionSettings> | null> | null = null;
 
-    readonly client = this.clientState.asReadonly();
-    readonly state = this.matchState.asReadonly();
-    readonly status = this.connectionStatus.asReadonly();
-    readonly error = this.connectionError.asReadonly();
-    readonly synchronized = this.stateSynchronized.asReadonly();
+    readonly client = computed(() => this.connection().client);
+    readonly state = computed(() => this.connection().state);
+    readonly status = computed(() => this.connection().status);
+    readonly error = computed(() => this.connection().errorMessage);
+    readonly synchronized = computed(() => this.connection().isSynchronized);
+    readonly host = computed(() => this.connection().host);
 
     async start(search: string): Promise<W3BoosterClient<MatchVisionSettings> | null> {
-        const current = this.clientState();
+        const current = this.connection().client;
         if (current && (current.status === 'connected' || current.status === 'reconnecting')) return current;
         if (this.startup) return this.startup;
         const operation = this.startClient(search);
@@ -33,74 +48,117 @@ export class MatchVisionClientService {
 
     private async startClient(search: string): Promise<W3BoosterClient<MatchVisionSettings> | null> {
         await this.closeCurrentClient();
-        const lifetime = new AbortController();
-        this.lifetime = lifetime;
-        this.connectionError.set('');
-        this.connectionStatus.set('connecting');
-        let client: W3BoosterClient<MatchVisionSettings> | null = null;
+        const runtime = w3boosterApp.createRuntime(connectionOptions(search));
+        this.runtime = runtime;
+        this.connection.set({
+            client: runtime.client,
+            status: 'connecting',
+            state: null,
+            isSynchronized: false,
+            error: null,
+            errorMessage: '',
+            host: runtime.client.host.lifecycle.get()
+        });
 
         try {
-            client = createW3BoosterAppClient(connectionOptions(search, lifetime.signal));
-            this.clientState.set(client);
             let reportedError: unknown = null;
-            client.lifecycle.subscribe(snapshot => {
-                this.matchState.set(snapshot.state);
-                this.connectionStatus.set(snapshot.status);
-                this.stateSynchronized.set(snapshot.isSynchronized);
+            this.unsubscribeRuntime = runtime.lifecycle.subscribe(snapshot => {
                 if (snapshot.error && snapshot.error !== reportedError) {
                     reportedError = snapshot.error;
                     console.warn('W3Booster SDK:', snapshot.error);
-                    this.connectionError.set(connectionErrorMessage(snapshot.error));
                 } else if (!snapshot.error) {
                     reportedError = null;
-                    this.connectionError.set('');
                 }
-            }, { signal: lifetime.signal });
-            client.on('issue', issue => {
+                this.connection.set(connectionView(snapshot));
+            });
+            this.unsubscribeIssues = runtime.client.on('issue', issue => {
                 if (issue.source === 'recorder' || issue.source === 'listener') {
                     console.warn(`W3Booster SDK ${issue.source} issue:`, issue.error);
                 }
-            }, { signal: lifetime.signal });
+            });
 
             // Startup remains pending across broker reconnects until a fresh
             // complete state is available or the application lifetime ends.
-            await client.start({ signal: lifetime.signal });
-            if (this.lifetime !== lifetime) return null;
-            const initialState = client.state.get();
+            const connectedClient = await runtime.start();
+            if (this.runtime !== runtime) return null;
+            const initialState = connectedClient.state.get();
             if (!initialState) throw new ConnectionError('W3Booster synchronized without match state.', [], 'STATE_TIMEOUT');
-            this.matchState.set(initialState);
-            this.stateSynchronized.set(true);
-            return client;
+            this.connection.set(connectionView(runtime.lifecycle.get()));
+            return connectedClient;
         } catch (error: unknown) {
-            if (this.lifetime !== lifetime || lifetime.signal.aborted || isAbortError(error)) return null;
-            this.lifetime = null;
-            lifetime.abort();
-            await client?.disconnect();
-            this.clientState.set(null);
-            this.matchState.set(null);
-            this.stateSynchronized.set(false);
+            if (this.runtime !== runtime || isAbortError(error)) return null;
+            this.runtime = null;
+            this.unsubscribeRuntime?.();
+            this.unsubscribeRuntime = null;
+            this.unsubscribeIssues?.();
+            this.unsubscribeIssues = null;
+            await runtime.stop();
             console.error('W3Booster SDK connection failed:', error);
-            this.connectionStatus.set('error');
-            this.connectionError.set(connectionErrorMessage(error));
+            this.connection.set({
+                client: null,
+                status: 'error',
+                state: null,
+                isSynchronized: false,
+                error,
+                errorMessage: connectionErrorMessage(error),
+                host: UNAVAILABLE_HOST
+            });
             return null;
         }
     }
 
     async stop(): Promise<void> {
         await this.closeCurrentClient();
-        this.connectionStatus.set('closed');
+        this.connection.set({
+            client: null,
+            status: 'closed',
+            state: null,
+            isSynchronized: false,
+            error: null,
+            errorMessage: '',
+            host: UNAVAILABLE_HOST
+        });
     }
 
     private async closeCurrentClient(): Promise<void> {
-        const lifetime = this.lifetime;
-        this.lifetime = null;
-        const client = this.clientState();
-        this.clientState.set(null);
-        this.matchState.set(null);
-        this.stateSynchronized.set(false);
-        lifetime?.abort();
-        await client?.disconnect();
+        const runtime = this.runtime;
+        this.runtime = null;
+        this.connection.update(current => ({
+            ...current,
+            client: null,
+            state: null,
+            isSynchronized: false
+        }));
+        this.unsubscribeRuntime?.();
+        this.unsubscribeRuntime = null;
+        this.unsubscribeIssues?.();
+        this.unsubscribeIssues = null;
+        await runtime?.stop();
     }
+}
+
+interface MatchVisionConnection {
+    readonly client: W3BoosterClient<MatchVisionSettings> | null;
+    readonly status: ApplicationRuntimeSnapshot<W3BoosterAppSettings>['status'];
+    readonly state: ApplicationRuntimeSnapshot<W3BoosterAppSettings>['state'];
+    readonly isSynchronized: boolean;
+    readonly error: unknown | null;
+    readonly errorMessage: string;
+    readonly host: HostLifecycleSnapshot;
+}
+
+function connectionView(
+    snapshot: ApplicationRuntimeSnapshot<W3BoosterAppSettings>
+): MatchVisionConnection {
+    return {
+        client: snapshot.client,
+        status: snapshot.status,
+        state: snapshot.state,
+        isSynchronized: snapshot.isSynchronized,
+        error: snapshot.error,
+        host: snapshot.host,
+        errorMessage: snapshot.error ? connectionErrorMessage(snapshot.error) : ''
+    };
 }
 
 export function connectionErrorMessage(error: unknown): string {

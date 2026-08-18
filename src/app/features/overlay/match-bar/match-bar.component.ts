@@ -5,7 +5,7 @@ import * as standardGame from '@w3booster/sdk/standard-game';
 import type { MatchVisionOverlaySettings } from '../../../domain';
 import { WarcraftAssetsService } from '../../../shared/warcraft/warcraft-assets.service';
 import { matchBarClasses, showsMatchBar, truncated } from '../bar-presentation';
-import { orderedOverlayTeams, overlayPlayerColor } from '../overlay-visuals';
+import { orderedOverlayTeams } from '../overlay-visuals';
 
 @Component({
     selector: 'mv-match-bar',
@@ -16,7 +16,7 @@ import { orderedOverlayTeams, overlayPlayerColor } from '../overlay-visuals';
 export class MatchBarComponent {
     private readonly assets = inject(WarcraftAssetsService);
     readonly match = input.required<Match>();
-    readonly players = input.required<Player[]>();
+    readonly players = input.required<readonly Player[]>();
     readonly settings = input.required<MatchVisionOverlaySettings>();
     readonly runtime = input<OverlayRuntimeState>({});
     readonly gameTime = input(0);
@@ -40,7 +40,7 @@ export class MatchBarComponent {
     }
 
     getColorCode(player: Player): string {
-        return overlayPlayerColor(player, this.match(), this.players(), this.runtime());
+        return standardGame.presentationPlayerColor(player, this.match(), this.players(), this.runtime());
     }
     getRaceName(player: Player): string { return standardGame.raceName(player.race); }
     countryFlagBackground(country: string): string | null { return this.assets.countryFlagBackground(country); }

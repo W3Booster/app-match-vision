@@ -1,16 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import type { Hero, HeroAbility, MatchState, Player } from '@w3booster/sdk';
-import { heroInventory, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
+import { heroInventory, inventorySlotIdentity, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import { heroDisplayLevel } from '../../domain';
 import type { MatchVisionSettings } from '../../domain';
 import { WarcraftAssetsService } from '../../shared/warcraft/warcraft-assets.service';
 import { MapBarComponent } from './map-bar/map-bar.component';
 import { MatchBarComponent } from './match-bar/match-bar.component';
 import { ObserverBarComponent } from './observer-bar/observer-bar.component';
 import { createOverlayPresentation } from './overlay-presentation';
-import { inventorySlotKey } from './overlay-visuals';
 import { TeamObserverBarComponent } from './team-observer-bar/team-observer-bar.component';
 import { UpgradePanelComponent } from './upgrade-panel/upgrade-panel.component';
 
@@ -28,7 +26,7 @@ export class OverlaySurfaceComponent {
     get state(): MatchState<MatchVisionSettings> { return this.matchState(); }
     get settings() { return this.presentation().settings; }
     get runtime() { return this.presentation().runtime; }
-    get players(): Player[] { return this.presentation().players; }
+    get players(): readonly Player[] { return this.presentation().players; }
     get streamer(): Player | null { return this.presentation().streamer; }
     get opponent(): Player | null { return this.presentation().opponent; }
     get additionalCSSClasses(): string { return this.presentation().additionalCssClasses; }
@@ -36,7 +34,7 @@ export class OverlaySurfaceComponent {
     get requiredAvatarCoverCount(): number { return this.presentation().requiredAvatarCovers; }
 
     getHeroExperienceProgress(hero: Hero): number { return standardGame.heroExperienceState(hero.experience).progress; }
-    getHeroLevel(hero: Hero): string { return heroDisplayLevel(hero); }
+    getHeroLevel(hero: Hero): string { return standardGame.formatHeroLevelProgress(hero); }
     heroItems(hero: Hero): readonly string[] { return heroInventory(hero); }
     getIconPath(key: string): string | null { return this.assets.iconPath(this.state.match, key); }
     getHeroIconPath(hero: Hero): string | null { return this.assets.heroIconPath(this.state.match, hero); }
@@ -52,6 +50,6 @@ export class OverlaySurfaceComponent {
     getAvatarCoverTop(index: number): string { return index === 1 ? '12.90%' : index === 2 ? '21.55%' : '4.30%'; }
     trackHero(_index: number, hero: Hero): string { return hero.id; }
     trackAbility(_index: number, ability: HeroAbility): string { return ability.id; }
-    trackInventorySlot(index: number, item: string): string { return inventorySlotKey(index, item); }
+    trackInventorySlot(index: number, item: string): string { return inventorySlotIdentity(index, item); }
     trackPosition(index: number): number { return index; }
 }

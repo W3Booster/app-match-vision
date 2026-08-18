@@ -38,12 +38,12 @@ The compositor hosts enabled overlay apps and aligns the in-game Electron window
 2. Selectors never mutate SDK state.
 3. Presentation state is derived, not synchronized through component setters.
 4. App settings come only from `state.application.settings` and are completed with the generated database-default resolver.
-5. Recorder overlay runtime values are typed by the SDK and read from `state.overlay.misc`.
+5. Recorder overlay runtime values are normalized by the SDK and read from `state.overlay.runtime`; recorder-specific wire fields never enter application code.
 
 ## Lifecycle rules
 
-1. One `AbortController` owns the client connection, SDK retry loop, readiness wait, and application-wide listeners; one atomic SDK lifecycle subscription feeds Angular's status, state, freshness, and error signals.
+1. One SDK application runtime owns the client connection, retry loop, readiness wait, host capability discovery, resolved settings, and teardown; one atomic runtime subscription feeds Angular's status, state, freshness, error, and host signals.
 2. Feature stores use their own abort signal, so replacing or destroying a feature removes all of its listeners atomically.
 3. `connect()` means a transport is open; `whenReady()` may return preserved state, while `whenSynchronized()` means a fresh complete state is safe to render.
 4. Permission, configuration, and protocol errors are surfaced by the SDK. Application code does not classify failures for a custom retry loop.
-5. Aborting the application lifetime is the primary teardown. An explicit `disconnect()` is retained at the Angular boundary so teardown can be awaited.
+5. `runtime.stop()` is the awaited teardown boundary and is safe to call repeatedly.

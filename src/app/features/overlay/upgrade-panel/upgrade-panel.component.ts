@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, input } from '@angular/core';
 import type { ActiveUpgrade, Match, Player } from '@w3booster/sdk';
-import { currentUpgrades } from '@w3booster/sdk/selectors';
+import { currentUpgrades, upgradeIdentity } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import type { MatchVisionOverlaySettings } from '../../../domain';
 import { WarcraftAssetsService } from '../../../shared/warcraft/warcraft-assets.service';
-import { activeUpgradeKey, upgradePanelInset } from '../overlay-visuals';
+import { upgradePanelInset } from '../overlay-visuals';
 
 @Component({
     selector: 'mv-upgrade-panel',
@@ -36,5 +36,5 @@ export class UpgradePanelComponent {
             this.settings().heroAbilitiesEnabled === true
         );
     }
-    trackUpgrade(_index: number, upgrade: ActiveUpgrade): string { return activeUpgradeKey(upgrade); }
+    trackUpgrade(_index: number, upgrade: ActiveUpgrade): string { return upgradeIdentity(upgrade); }
 }

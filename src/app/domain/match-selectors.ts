@@ -1,17 +1,17 @@
-import type { Hero, MatchState, OverlayRuntimeState, Player } from '@w3booster/sdk';
-import { battleTagName, broadcasterPlayer, groupPlayersByTeam, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
+import type { MatchState, Player } from '@w3booster/sdk';
+import { battleTagName, broadcasterPlayer, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import { resolveW3BoosterAppSettings } from '../core/w3booster-app.generated';
+import { w3boosterApp } from '../core/w3booster-app.generated';
 import type { MatchVisionOverlaySettings, MatchVisionSettings } from './match-vision-settings';
 
 const overlaySettingsCache = new WeakMap<object, {
     player: MatchVisionOverlaySettings;
     observer: MatchVisionOverlaySettings;
 }>();
-const displayPlayersCache = new WeakMap<readonly Player[], Map<string, Player[]>>();
+const displayPlayersCache = new WeakMap<readonly Player[], Map<string, readonly Player[]>>();
 
 export function matchVisionSettings(state: MatchState<MatchVisionSettings>): MatchVisionOverlaySettings {
-    const settings = resolveW3BoosterAppSettings(state.application?.settings);
+    const settings = w3boosterApp.settingsFor(state);
     let profiles = overlaySettingsCache.get(settings);
     if (!profiles) {
         profiles = {
@@ -36,48 +36,16 @@ export function reversePlayerOrderForMatch(
 export function matchVisionTeams(
     state: MatchState<MatchVisionSettings>,
     reversePlayerOrder = reversePlayerOrderForMatch(state.match, matchVisionSettings(state))
-): Array<{ id: number; players: Player[] }> {
-    const teams = groupedMatchVisionTeams(state.players);
-    if (!isObserverOrReplayMatch(state.match) || teams.length !== 2) return teams;
-
-    const playerCount = teams.reduce((count, team) => count + team.players.length, 0);
-    if (playerCount === 2) {
-        const orderedPlayers = standardGame.orderHeadToHeadPlayers(
-            teams.map(team => team.players[0]!),
-            { reverse: reversePlayerOrder }
-        );
-        return orderedPlayers.map(player => teams.find(team => team.players[0]?.id === player.id)!);
-    }
-    return broadcasterFirstTeams(state.players, state.match, reversePlayerOrder);
-}
-
-/** Stable application-owned team order shared by dashboard and overlay surfaces. */
-export function broadcasterFirstTeams(
-    players: readonly Player[],
-    match: Pick<MatchState['match'], 'broadcasterPlayerId'>,
-    reverse = false
-): Array<{ id: number; players: Player[] }> {
-    const teams = groupedMatchVisionTeams(players);
-    const broadcaster = broadcasterPlayer(match, players);
-    if (broadcaster) {
-        teams.sort((left, right) =>
-            Number(right.id === broadcaster.team) - Number(left.id === broadcaster.team));
-    }
-    if (reverse) teams.reverse();
-    return teams;
-}
-
-function groupedMatchVisionTeams(players: readonly Player[]): Array<{ id: number; players: Player[] }> {
-    return groupPlayersByTeam(players)
-        .map(team => ({ id: team.teamId ?? 0, players: [...team.players] }));
-}
-
-export function overlayRuntime(state: MatchState<MatchVisionSettings>): OverlayRuntimeState {
-    return state.overlay?.misc ?? {};
+): Array<{ id: number | null; players: Player[] }> {
+    return standardGame.orderMatchTeams(state.players, state.match, { reverse: reversePlayerOrder })
+        .map(team => ({ id: team.teamId, players: [...team.players] }));
 }
 
 /** Derives display-only player values without changing the SDK state. */
-export function matchVisionPlayers(state: MatchState<MatchVisionSettings>, settings: MatchVisionOverlaySettings): Player[] {
+export function matchVisionPlayers(
+    state: MatchState<MatchVisionSettings>,
+    settings: MatchVisionOverlaySettings
+): readonly Player[] {
     const context = JSON.stringify([
         state.match.mode,
         state.match.realm,
@@ -122,16 +90,10 @@ export function matchVisionPlayers(state: MatchState<MatchVisionSettings>, setti
         }
     }
 
-    variants.set(context, players);
-    return players;
-}
-
-/** Match Vision deliberately shows the progress within the current hero level. */
-export function heroDisplayLevel(hero: Hero): string {
-    if (typeof hero.experience !== 'number') return String(hero.level);
-    const experience = standardGame.heroExperienceState(hero.experience);
-    const displayLevel = experience.level + (experience.level >= 10 ? 0 : experience.progress);
-    const digits = experience.level >= 10 ? 0 : 1;
-    const factor = 10 ** digits;
-    return (Math.trunc(displayLevel * factor) / factor).toFixed(digits);
+    const immutablePlayers = Object.freeze(players.map(player => Object.freeze({
+        ...player,
+        ...(player.mainAccount ? { mainAccount: Object.freeze({ ...player.mainAccount }) } : {})
+    })));
+    variants.set(context, immutablePlayers);
+    return immutablePlayers;
 }

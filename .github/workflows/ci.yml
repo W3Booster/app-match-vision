@@ -11,7 +11,6 @@ jobs:
   check:
     runs-on: ubuntu-latest
     env:
-      W3BOOSTER_SETTINGS_KEY: ${{ secrets.W3BOOSTER_SETTINGS_KEY }}
       W3BOOSTER_SETTINGS_URL: ${{ secrets.W3BOOSTER_SETTINGS_URL }}
     steps:
       - uses: actions/checkout@v6
@@ -23,5 +22,5 @@ jobs:
       - run: npm ci
       - run: npm run check
       - name: Check database settings revision
-        if: ${{ env.W3BOOSTER_SETTINGS_KEY != '' || env.W3BOOSTER_SETTINGS_URL != '' }}
+        if: ${{ env.W3BOOSTER_SETTINGS_URL != '' }}
         run: npm run w3booster:check

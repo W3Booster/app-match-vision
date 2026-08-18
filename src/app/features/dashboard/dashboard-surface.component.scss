@@ -5,12 +5,16 @@
 :host::-webkit-scrollbar-thumb:hover { background: #5792ae; }
 * { box-sizing: border-box; }
 button { border: 1px solid #354650; border-radius: 3px; background: #182229; color: #dce5ea; cursor: pointer; }
+button:disabled { cursor: not-allowed; opacity: .45; }
 .overlay-dashboard { width: 100%; padding: 30px; }
 .dashboard-hero { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-bottom: 22px; }
 .dashboard-hero span, .dashboard-card header span, .score-label span { color: #56bce9; font-size: 10px; font-weight: 900; letter-spacing: .14em; }
 h1, h2, h3, p { margin: 0; } h1 { margin-top: 4px; color: #f3eadb; font-size: 30px; } h2 { color: #f1eadf; font-size: 18px; }
 .dashboard-hero p { margin-top: 5px; color: #8998a2; }
 .dashboard-hero button { padding: 11px 15px; } .dashboard-hero button.primary { border-color: #438eb2; background: #246a8d; }
+.sync-notice, .action-error { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 9px 12px; margin-bottom: 12px; border: 1px solid #705b36; border-radius: 4px; background: #2a2318; color: #edc87d; }
+.action-error { border-color: #713d3b; background: #2b1919; color: #f19a94; }
+.action-error button { width: 24px; height: 24px; flex: 0 0 24px; }
 .score-panel, .dashboard-card { border: 1px solid #2d3c45; border-radius: 5px; background: linear-gradient(145deg, rgba(24,33,39,.97), rgba(12,17,21,.98)); box-shadow: 0 16px 42px rgba(0,0,0,.25); }
 .score-panel { display: flex; align-items: center; gap: 14px; padding: 16px 18px; margin-bottom: 16px; }
 .score-label { flex: 1; }.score-label small { display: block; margin-top: 3px; color: #84929b; }

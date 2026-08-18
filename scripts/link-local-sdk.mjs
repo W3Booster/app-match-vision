@@ -5,9 +5,11 @@ import { fileURLToPath } from 'node:url';
 const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const candidates = [
   process.env.W3BOOSTER_SDK_PATH,
+  path.resolve(projectRoot, '..', 'sdk'),
   path.resolve(projectRoot, '..', 'w3booster-sdk'),
+  path.resolve(projectRoot, '..', '..', 'sdk'),
   path.resolve(projectRoot, '..', '..', 'w3booster-sdk')
-].filter(Boolean);
+].filter((candidate, index, values) => candidate && values.indexOf(candidate) === index);
 let sdkRoot;
 for (const candidate of candidates) {
   try {
@@ -16,7 +18,7 @@ for (const candidate of candidates) {
     break;
   } catch { /* Try the next conventional workspace location. */ }
 }
-if (!sdkRoot) throw new Error('Could not find a sibling w3booster-sdk checkout. Set W3BOOSTER_SDK_PATH to override discovery.');
+if (!sdkRoot) throw new Error('Could not find a local @w3booster/sdk checkout. Set W3BOOSTER_SDK_PATH to override discovery.');
 
 const manifest = JSON.parse(await readFile(path.join(sdkRoot, 'package.json'), 'utf8'));
 if (manifest.name !== '@w3booster/sdk') throw new Error(`${sdkRoot} is not the @w3booster/sdk package.`);

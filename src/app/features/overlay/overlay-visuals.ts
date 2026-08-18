@@ -1,13 +1,7 @@
-import type { ActiveUpgrade, Match, OverlayRuntimeState, Player, Race } from '@w3booster/sdk';
-import { playerRelationship } from '@w3booster/sdk/selectors';
+import type { Match, Player, Race } from '@w3booster/sdk';
+import { broadcasterFirstTeams } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import { broadcasterFirstTeams } from '../../domain';
 
-const TEAM_COLOR_PALETTE = {
-    self: standardGame.playerColors[1],
-    ally: standardGame.playerColors[2],
-    opponent: standardGame.playerColors[0]
-} as const;
 const RACE_SPRITE_INDEX: Readonly<Record<Race, number>> = {
     random: 0,
     human: 1,
@@ -21,16 +15,6 @@ const CLOCK_SPRITE_ALIGNMENT_SECONDS = 11;
 const INVENTORY_RAIL_WIDTH = 138;
 const ABILITY_COLUMN_WIDTH = 45;
 const UPGRADE_PANEL_GAP = 24;
-
-/** Stable until a slot's contents change, so real item events animate once. */
-export function inventorySlotKey(index: number, item: string): string {
-    return `${index}:${item}`;
-}
-
-/** Stable until the researched level changes, so upgrades animate once per event. */
-export function activeUpgradeKey(upgrade: Pick<ActiveUpgrade, 'name' | 'level'>): string {
-    return `${upgrade.name}:${upgrade.level}`;
-}
 
 /** Places upgrades directly after the first hero's occupied ability columns. */
 export function upgradePanelInset(
@@ -48,22 +32,8 @@ export function orderedOverlayTeams(
     players: readonly Player[],
     match: Pick<Match, 'broadcasterPlayerId'>,
     reversePlayerOrder = false
-): Player[][] {
-    return broadcasterFirstTeams(players, match, reversePlayerOrder).map(team => team.players);
-}
-
-/** Match Vision palette for the optional simplified team-color view. */
-export function overlayPlayerColor(
-    player: Player,
-    match: Pick<Match, 'broadcasterPlayerId' | 'isObserver'>,
-    players: readonly Player[],
-    runtime: Pick<OverlayRuntimeState, 'teamColors'>
-): string {
-    if (!runtime.teamColors) return standardGame.playerColor(player.colorId);
-    const relationship = playerRelationship(player, match, players);
-    if (relationship === 'unknown') return standardGame.playerColor(player.colorId);
-    if (match.isObserver && relationship === 'self') return TEAM_COLOR_PALETTE.ally;
-    return TEAM_COLOR_PALETTE[relationship];
+): readonly (readonly Player[])[] {
+    return broadcasterFirstTeams(players, match, { reverse: reversePlayerOrder }).map(team => team.players);
 }
 
 /** Index into Match Vision's race sprite sheet. */

@@ -16,6 +16,15 @@ export class AppComponent implements OnInit, OnDestroy {
     readonly connection = inject(MatchVisionClientService);
     readonly surface = surfaceFromSearch(window.location.search);
 
+    get connectionStatusMessage(): string {
+        switch (this.connection.status()) {
+            case 'connecting': return 'Connecting to W3Booster…';
+            case 'reconnecting': return 'Reconnecting to W3Booster…';
+            case 'closed': return 'The W3Booster connection is closed.';
+            default: return 'Waiting for match data…';
+        }
+    }
+
     ngOnInit(): void {
         document.body.classList.toggle('application-surface', this.surface !== 'overlay');
         void this.connection.start(window.location.search);

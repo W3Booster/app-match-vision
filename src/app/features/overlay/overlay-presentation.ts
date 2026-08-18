@@ -2,14 +2,14 @@ import type { MatchState, OverlayRuntimeState, Player } from '@w3booster/sdk';
 import type { AbilityCooldownState } from '@w3booster/sdk/standard-game/objects';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import * as standardGameObjects from '@w3booster/sdk/standard-game/objects';
-import { broadcasterPlayer, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
-import { matchVisionPlayers, matchVisionSettings, overlayRuntime, reversePlayerOrderForMatch } from '../../domain';
+import { broadcasterPlayer, isObserverOrReplayMatch, overlayRuntime } from '@w3booster/sdk/selectors';
+import { matchVisionPlayers, matchVisionSettings, reversePlayerOrderForMatch } from '../../domain';
 import type { MatchVisionOverlaySettings, MatchVisionSettings } from '../../domain';
 
 export interface OverlayPresentation {
     settings: MatchVisionOverlaySettings;
     runtime: OverlayRuntimeState;
-    players: Player[];
+    players: readonly Player[];
     streamer: Player | null;
     opponent: Player | null;
     additionalCssClasses: string;

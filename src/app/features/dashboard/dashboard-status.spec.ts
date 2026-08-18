@@ -12,4 +12,9 @@ describe('dashboard status copy', () => {
         expect(dashboardStatusLabel('reconnecting', false)).toBe('Reconnecting match data');
         expect(dashboardStatusLabel('error', false)).toBe('Match data unavailable');
     });
+
+    it('keeps connected but stale state visibly distinct from synchronized data', () => {
+        expect(dashboardStatusLabel('connected', true, false)).toBe('Synchronizing match data');
+        expect(dashboardStatusLabel('connected', true, true)).toBe('Match in progress');
+    });
 });

@@ -1,2 +1,4 @@
 :host { display: contents; }
 .connection-error { color: #ff5454; font: 16px/1.4 Arial, sans-serif; padding: 16px; }
+.connection-state { display: flex; min-height: 100vh; align-items: center; justify-content: center; gap: 10px; background: #0b1116; color: #aebbc2; font: 15px/1.4 Arial, sans-serif; }
+.connection-state i { width: 10px; height: 10px; border-radius: 50%; background: #f0bf69; box-shadow: 0 0 9px rgba(240,191,105,.5); }

@@ -1,11 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, effect, input } from '@angular/core';
-import type { MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
-import { isActiveMatch } from '@w3booster/sdk/selectors';
+import type { HostLifecycleSnapshot, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
+import { isActiveMatch, matchScore } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
 import { MatchHistoryStore } from './match-history.store';
-import { MatchControls } from './match-controls';
+import { hostActionAvailable, MatchControls } from './match-controls';
 
 @Component({
     selector: 'mv-dashboard-surface',
@@ -15,9 +15,11 @@ import { MatchControls } from './match-controls';
 })
 export class DashboardSurfaceComponent implements OnDestroy {
     readonly client = input.required<W3BoosterClient<MatchVisionSettings>>();
+    readonly host = input.required<HostLifecycleSnapshot>();
     readonly state = input.required<MatchState<MatchVisionSettings>>();
+    readonly synchronized = input.required<boolean>();
     readonly history = new MatchHistoryStore();
-    private readonly controls = new MatchControls();
+    readonly controls = new MatchControls();
 
     private readonly clientBinding = effect(() => this.history.connect(this.client()));
     private readonly reversePlayerOrderSync = effect(() => {
@@ -30,12 +32,15 @@ export class DashboardSurfaceComponent implements OnDestroy {
         return isActiveMatch(this.state().match);
     }
 
-    get teams(): Array<{ id: number; players: Player[] }> {
+    get teams(): Array<{ id: number | null; players: Player[] }> {
         return matchVisionTeams(this.state(), this.displayedReversePlayerOrder());
     }
 
-    get wins(): number { return Number(this.state().overlay?.misc?.matchscoreWins || 0); }
-    get losses(): number { return Number(this.state().overlay?.misc?.matchscoreLosses || 0); }
+    get wins(): number { return matchScore(this.state()).wins; }
+    get losses(): number { return matchScore(this.state()).losses; }
+    get canChangeScore(): boolean { return hostActionAvailable(this.host(), 'match-score:write'); }
+    get canOpenCompact(): boolean { return hostActionAvailable(this.host(), 'window:open'); }
+    get canReversePlayers(): boolean { return hostActionAvailable(this.host(), 'settings:write'); }
 
     async changeScore(side: 'wins' | 'losses', delta: 1 | -1): Promise<void> {
         await this.controls.changeScore(this.client(), side, delta);
@@ -46,9 +51,10 @@ export class DashboardSurfaceComponent implements OnDestroy {
     async reversePlayers(): Promise<void> {
         await this.controls.reversePlayers(this.client(), this.state().match.id, this.savedReversePlayerOrder());
     }
-    openCompact(): void {
-        void this.client().host.openWindowAndWait({ path: '?view=compact', width: 500, height: 300, title: 'Match Vision' })
-            .catch(error => console.error('Could not open the compact Match Vision window:', error));
+    async openCompact(): Promise<void> {
+        await this.controls.openWindow(this.client(), {
+            path: '?view=compact', width: 500, height: 300, title: 'Match Vision'
+        });
     }
     formatTime(seconds: number): string {
         return standardGame.formatGameTime(seconds, { compactHours: true });

@@ -1,13 +1,13 @@
 import type { MatchState } from '@w3booster/sdk';
 import { describe, expect, it } from 'vitest';
 import type { MatchVisionSettings } from './match-vision-settings';
-import { heroDisplayLevel, matchVisionPlayers, matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch } from './match-selectors';
+import { matchVisionPlayers, matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch } from './match-selectors';
 
 describe('Match Vision view selectors', () => {
     it('selects app-owned settings without reading recorder overlay settings', () => {
         const state = createState();
         state.application = { clientId: 'app', settings: { player: { mapBarEnabled: false } } };
-        state.overlay = { settings: { mapBarEnabled: true }, misc: {} };
+        state.overlay = { runtime: { teamColors: true } };
 
         expect(matchVisionSettings(state).mapBarEnabled).toBe(false);
     });
@@ -23,6 +23,8 @@ describe('Match Vision view selectors', () => {
 
         expect(players[1]?.name).toBe('Player 3');
         expect(players[1]?.race).toBe('random');
+        expect(Object.isFrozen(players)).toBe(true);
+        expect(Object.isFrozen(players[1])).toBe(true);
         expect(state).toEqual(original);
     });
 
@@ -71,6 +73,16 @@ describe('Match Vision view selectors', () => {
         expect(matchVisionTeams(state, true).map(team => team.id)).toEqual([1, 0]);
     });
 
+    it('keeps an unassigned team distinct from protocol team zero', () => {
+        const state = createState();
+        state.players = [
+            { id: 'assigned', team: 0 },
+            { id: 'unassigned' }
+        ];
+
+        expect(matchVisionTeams(state).map(team => team.id)).toEqual([0, null]);
+    });
+
     it('resets reverse order for a new match and preserves it across restarts of the same match', () => {
         const state = createState();
         const settings = { reversePlayerOrderMatchId: 'match' };
@@ -80,10 +92,6 @@ describe('Match Vision view selectors', () => {
         expect(reversePlayerOrderForMatch(state.match, settings)).toBe(false);
     });
 
-    it('preserves Match Vision hero-level progress while using the SDK hero model', () => {
-        expect(heroDisplayLevel({ id: 'Hpal', name: 'Hpal', level: 2, experience: 300 })).toBe('2.3');
-        expect(heroDisplayLevel({ id: 'Hpal', name: 'Hpal', level: 4 })).toBe('4');
-    });
 });
 
 function createState(): MatchState<MatchVisionSettings> {

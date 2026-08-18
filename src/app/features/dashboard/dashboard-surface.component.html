@@ -1,25 +1,28 @@
 <main class="overlay-dashboard">
     <header class="dashboard-hero">
         <div><span>MATCH VISION</span><h1>Match dashboard</h1><p>Live match data and visual controls, powered by the W3Booster SDK.</p></div>
-        <button type="button" class="primary" (click)="openCompact()"><i class="fa fa-external-link-alt"></i> Open compact window</button>
+        <button type="button" class="primary" [disabled]="controls.busy() || !canOpenCompact" (click)="openCompact()"><i class="fa fa-external-link-alt"></i> Open compact window</button>
     </header>
+
+    <div class="sync-notice" role="status" *ngIf="!synchronized()">Showing the last complete match state while fresh data synchronizes.</div>
+    <div class="action-error" role="alert" *ngIf="controls.error() as error">{{error}} <button type="button" (click)="controls.clearError()" aria-label="Dismiss action error">×</button></div>
 
     <section class="score-panel">
         <div class="score-label"><span>SESSION SCORE</span><small>Update the score shown by your overlay.</small></div>
-        <div class="score-side win"><button (click)="changeScore('wins', -1)">−</button><strong>{{wins}}</strong><button (click)="changeScore('wins', 1)">+</button><span>Wins</span></div>
+        <div class="score-side win"><button [disabled]="controls.busy() || !canChangeScore" (click)="changeScore('wins', -1)">−</button><strong>{{wins}}</strong><button [disabled]="controls.busy() || !canChangeScore" (click)="changeScore('wins', 1)">+</button><span>Wins</span></div>
         <div class="score-separator">:</div>
-        <div class="score-side loss"><button (click)="changeScore('losses', -1)">−</button><strong>{{losses}}</strong><button (click)="changeScore('losses', 1)">+</button><span>Losses</span></div>
-        <button class="reset" type="button" (click)="resetScore()"><i class="fa fa-undo"></i> Reset</button>
+        <div class="score-side loss"><button [disabled]="controls.busy() || !canChangeScore" (click)="changeScore('losses', -1)">−</button><strong>{{losses}}</strong><button [disabled]="controls.busy() || !canChangeScore" (click)="changeScore('losses', 1)">+</button><span>Losses</span></div>
+        <button class="reset" type="button" [disabled]="controls.busy() || !canChangeScore" (click)="resetScore()"><i class="fa fa-undo"></i> Reset</button>
     </section>
 
     <section class="dashboard-card current-match">
         <header><div><span>LIVE</span><h2>Current match</h2></div><div class="match-clock" *ngIf="matchActive">{{formatTime(state().match.gameTime)}}</div></header>
         <div class="empty" *ngIf="!matchActive"><i class="fa fa-hourglass-half"></i><b>No match running</b><span>This page updates automatically when Warcraft III starts a match.</span></div>
         <ng-container *ngIf="matchActive">
-            <div class="match-meta"><b>{{state().match.map || 'Unknown map'}}</b><span>{{state().match.mode || 'Unknown mode'}} · {{state().match.realm || 'Warcraft III'}}</span><button *ngIf="state().match.isObserver || state().match.isReplay" (click)="reversePlayers()"><i class="fa fa-exchange-alt"></i> Reverse players</button></div>
+            <div class="match-meta"><b>{{state().match.map || 'Unknown map'}}</b><span>{{state().match.mode || 'Unknown mode'}} · {{state().match.realm || 'Warcraft III'}}</span><button *ngIf="state().match.isObserver || state().match.isReplay" [disabled]="controls.busy() || !canReversePlayers" (click)="reversePlayers()"><i class="fa fa-exchange-alt"></i> Reverse players</button></div>
             <div class="team-grid">
                 <article *ngFor="let team of teams">
-                    <h3>Team {{team.id + 1}}</h3>
+                    <h3>{{team.id === null ? 'Unassigned team' : 'Team ' + (team.id + 1)}}</h3>
                     <div class="player-row" *ngFor="let player of team.players">
                         <i [attr.data-race]="player.race">{{raceName(player).charAt(0).toUpperCase()}}</i>
                         <span><b>{{player.mainAccount?.name || player.name}}</b><small>{{raceName(player)}}</small></span>

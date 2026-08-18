@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Match, Player } from '@w3booster/sdk';
-import { activeUpgradeKey, dayNightSprite, inventorySlotKey, orderedOverlayTeams, overlayPlayerColor, raceSpriteIndex, upgradePanelInset } from './overlay-visuals';
+import { dayNightSprite, orderedOverlayTeams, raceSpriteIndex, upgradePanelInset } from './overlay-visuals';
 
 const match = { broadcasterPlayerId: 'me', isObserver: false } as Match;
 const players: Player[] = [
@@ -24,22 +24,9 @@ describe('Match Vision overlay presentation rules', () => {
         ]);
     });
 
-    it('owns its optional team-color palette', () => {
-        expect(overlayPlayerColor(players[1], match, players, { teamColors: false })).toBe('#fe8a0e');
-        expect(overlayPlayerColor(players[1], match, players, { teamColors: true })).toBe('#0042ff');
-        expect(overlayPlayerColor(players[2], match, players, { teamColors: true })).toBe('#1ce6b9');
-        expect(overlayPlayerColor(players[0], match, players, { teamColors: true })).toBe('#ff0303');
-    });
-
     it('keeps sprite-sheet indexes and animation alignment inside the application', () => {
         expect(raceSpriteIndex('orc')).toBe(2);
         expect(dayNightSprite(0)).toEqual({ phase: 0, previousPhase: 15, phaseProgress: 11 / 30 });
-    });
-
-    it('keeps live nodes stable but changes animation keys for real item and upgrade events', () => {
-        expect(inventorySlotKey(0, 'ratf')).toBe(inventorySlotKey(0, 'ratf'));
-        expect(inventorySlotKey(0, '')).not.toBe(inventorySlotKey(0, 'ratf'));
-        expect(activeUpgradeKey({ name: 'Rema', level: 1 })).not.toBe(activeUpgradeKey({ name: 'Rema', level: 2 }));
     });
 
     it('moves upgrades only when the first hero occupies another ability column', () => {

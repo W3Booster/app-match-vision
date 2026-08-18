@@ -27,10 +27,10 @@ export class MatchHistoryStore {
         this.disconnect();
         const lifetime = new AbortController();
         this.lifetime = lifetime;
-        // State subscriptions include the initial hydrated snapshot; domain
-        // events intentionally describe only transitions observed afterwards.
+        // State subscriptions include the current snapshot (which is null
+        // before hydration); domain events describe only later transitions.
         client.state.subscribe(state => {
-            if (state.match.status === 'running') this.record(state);
+            if (state?.match.status === 'running') this.record(state);
         }, { signal: lifetime.signal });
         client.on('match.ended', event => this.finish(event.match.id), { signal: lifetime.signal });
     }

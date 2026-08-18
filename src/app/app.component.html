@@ -1,16 +1,23 @@
-<div class="connection-error" *ngIf="connection.error()">{{connection.error()}}</div>
+<div class="connection-error" role="alert" *ngIf="connection.error()">{{connection.error()}}</div>
+<div class="connection-state" role="status" *ngIf="surface !== 'overlay' && !connection.state() && !connection.error()">
+    <i aria-hidden="true"></i><span>{{connectionStatusMessage}}</span>
+</div>
 
 <ng-container *ngIf="connection.state() as state">
     <mv-overlay-surface *ngIf="surface === 'overlay'" [state]="state"></mv-overlay-surface>
     <mv-dashboard-surface
         *ngIf="surface === 'dashboard' && connection.client() as client"
         [client]="client"
-        [state]="state">
+        [host]="connection.host()"
+        [state]="state"
+        [synchronized]="connection.synchronized()">
     </mv-dashboard-surface>
     <mv-compact-dashboard-surface
         *ngIf="surface === 'compact' && connection.client() as client"
         [client]="client"
+        [host]="connection.host()"
         [state]="state"
-        [status]="connection.status()">
+        [status]="connection.status()"
+        [synchronized]="connection.synchronized()">
     </mv-compact-dashboard-surface>
 </ng-container>
