@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import type { CompletedUpgrade, Hero, HeroAbility, Match } from '@w3booster/sdk';
 import * as sharedAssets from '@w3booster/sdk/assets';
-import * as standardGameObjects from '@w3booster/sdk/standard-game/objects';
+import * as standardGameIcons from '@w3booster/sdk/standard-game/icons';
 
 export function resolveWarcraftAssetBaseUrl(
     location: Pick<Location, 'search'> | undefined = globalThis.location
@@ -13,7 +13,7 @@ export function resolveWarcraftAssetBaseUrl(
 export class WarcraftAssetsService {
     private readonly missingIcons = new Set<string>();
     private readonly baseUrl = resolveWarcraftAssetBaseUrl();
-    private readonly standardGame = standardGameObjects.createAssetResolver({ baseUrl: this.baseUrl });
+    private readonly standardGame = standardGameIcons.createAssetResolver({ baseUrl: this.baseUrl });
 
     iconPath(match: Pick<Match, 'isReforged'>, key: string): string | null {
         return this.resolveIcon(key, this.standardGame.icon(match, key));

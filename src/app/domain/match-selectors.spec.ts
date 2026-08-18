@@ -12,11 +12,9 @@ describe('Match Vision view selectors', () => {
         expect(matchVisionSettings(state).mapBarEnabled).toBe(false);
     });
 
-    it('derives privacy-safe display players without mutating SDK state', () => {
+    it('formats server-redacted display players without mutating SDK state', () => {
         const state = createState();
-        state.match.mode = '4ffa';
-        state.match.realm = 'W3Champions';
-        state.players.push({ id: '1', name: 'Secret#123', race: 'orc', team: 2 });
+        state.players.push({ id: '1', name: 'Player 3', race: 'random', team: 2 });
         const original = structuredClone(state);
 
         const players = matchVisionPlayers(state, matchVisionSettings(state));

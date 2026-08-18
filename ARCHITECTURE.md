@@ -23,7 +23,7 @@ Features -> Shared asset URL service
 - `features/overlay/` owns the visible HUD. `overlay-presentation.ts` derives a view model; components render it.
 - `features/dashboard/` owns app controls. Match-history persistence is isolated in `MatchHistoryStore`.
 - `@w3booster/sdk/selectors` owns reusable, framework-free derivations from live state.
-- `@w3booster/sdk/standard-game` owns lightweight standard-rules helpers, canonical game-time formatting, and preferred-statistics selection; `@w3booster/sdk/standard-game/objects` owns the optional shipped object metadata, icon URLs, and whole-state cooldown derivation.
+- `@w3booster/sdk/standard-game` owns lightweight standard-rules helpers, canonical game-time formatting, and preferred-statistics selection; the independently loadable `/standard-game/icons` and `/standard-game/cooldowns` entry points own their respective metadata and derivations.
 - The platform database owns the application contract. A deliberate `npm run w3booster:sync` refreshes the committed `w3booster-app.generated.ts` binding; install, development startup, and builds remain deterministic and make no network request.
 - `@w3booster/sdk/assets` owns reusable URLs for shared media such as account country flags.
 - `shared/warcraft/` selects the hosted asset origin and maps SDK helpers into Angular; Match Vision-specific visibility and layout remain in the overlay feature.
@@ -39,6 +39,7 @@ The compositor hosts enabled overlay apps and aligns the in-game Electron window
 3. Presentation state is derived, not synchronized through component setters.
 4. App settings come only from `state.application.settings` and are completed with the generated database-default resolver.
 5. Recorder overlay runtime values are normalized by the SDK and read from `state.overlay.runtime`; recorder-specific wire fields never enter application code.
+6. Trust-sensitive identity policy, including W3Champions four-player FFA masking, is enforced by the platform server before scoped state reaches the SDK or application.
 
 ## Lifecycle rules
 

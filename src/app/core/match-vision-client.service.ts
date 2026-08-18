@@ -1,5 +1,5 @@
 import { computed, Injectable, signal } from '@angular/core';
-import { classifyW3BoosterError, ConnectionError, isAbortError } from '@w3booster/sdk';
+import { classifyW3BoosterError, isAbortError } from '@w3booster/sdk';
 import type { HostLifecycleSnapshot, W3BoosterClient } from '@w3booster/sdk';
 import type { ApplicationRuntime, ApplicationRuntimeSnapshot } from '@w3booster/sdk/app';
 import { connectionOptions } from './match-vision.config';
@@ -50,15 +50,6 @@ export class MatchVisionClientService {
         await this.closeCurrentClient();
         const runtime = w3boosterApp.createRuntime(connectionOptions(search));
         this.runtime = runtime;
-        this.connection.set({
-            client: runtime.client,
-            status: 'connecting',
-            state: null,
-            isSynchronized: false,
-            error: null,
-            errorMessage: '',
-            host: runtime.client.host.lifecycle.get()
-        });
 
         try {
             let reportedError: unknown = null;
@@ -81,9 +72,6 @@ export class MatchVisionClientService {
             // complete state is available or the application lifetime ends.
             const connectedClient = await runtime.start();
             if (this.runtime !== runtime) return null;
-            const initialState = connectedClient.state.get();
-            if (!initialState) throw new ConnectionError('W3Booster synchronized without match state.', [], 'STATE_TIMEOUT');
-            this.connection.set(connectionView(runtime.lifecycle.get()));
             return connectedClient;
         } catch (error: unknown) {
             if (this.runtime !== runtime || isAbortError(error)) return null;

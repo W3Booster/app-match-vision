@@ -1,7 +1,7 @@
 import type { MatchState, OverlayRuntimeState, Player } from '@w3booster/sdk';
-import type { AbilityCooldownState } from '@w3booster/sdk/standard-game/objects';
+import type { AbilityCooldownState } from '@w3booster/sdk/standard-game/cooldowns';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import * as standardGameObjects from '@w3booster/sdk/standard-game/objects';
+import * as standardGameCooldowns from '@w3booster/sdk/standard-game/cooldowns';
 import { broadcasterPlayer, isObserverOrReplayMatch, overlayRuntime } from '@w3booster/sdk/selectors';
 import { matchVisionPlayers, matchVisionSettings, reversePlayerOrderForMatch } from '../../domain';
 import type { MatchVisionOverlaySettings, MatchVisionSettings } from '../../domain';
@@ -57,6 +57,6 @@ export function createOverlayPresentation(state: MatchState<MatchVisionSettings>
         showsTeamObserverBar,
         requiredAvatarCovers,
         teamAvatarCovers,
-        abilityCooldowns: standardGameObjects.abilityCooldownsForState(state)
+        abilityCooldowns: standardGameCooldowns.abilityCooldownsForState(state)
     };
 }

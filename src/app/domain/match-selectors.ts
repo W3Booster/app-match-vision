@@ -70,15 +70,6 @@ export function matchVisionPlayers(
     }));
     const broadcasterId = broadcasterPlayer(state.match, players, { fallbackToFirst: true })?.id;
 
-    if (standardGame.isMode(state.match.mode, '4ffa') && state.match.realm === 'W3Champions') {
-        for (const player of players) {
-            if (player.id === broadcasterId) continue;
-            player.name = `Player ${Number(player.team ?? 0) + 1}`;
-            player.race = 'random';
-            delete player.mainAccount;
-        }
-    }
-
     if (players.length === 2 && !isObserverOrReplayMatch(state.match)) {
         const broadcaster = players.find(player => player.id === broadcasterId);
         if (broadcaster) {

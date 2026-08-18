@@ -4,20 +4,26 @@
 </div>
 
 <ng-container *ngIf="connection.state() as state">
-    <mv-overlay-surface *ngIf="surface === 'overlay'" [state]="state"></mv-overlay-surface>
-    <mv-dashboard-surface
-        *ngIf="surface === 'dashboard' && connection.client() as client"
-        [client]="client"
-        [host]="connection.host()"
-        [state]="state"
-        [synchronized]="connection.synchronized()">
-    </mv-dashboard-surface>
-    <mv-compact-dashboard-surface
-        *ngIf="surface === 'compact' && connection.client() as client"
-        [client]="client"
-        [host]="connection.host()"
-        [state]="state"
-        [status]="connection.status()"
-        [synchronized]="connection.synchronized()">
-    </mv-compact-dashboard-surface>
+    @defer (when surface === 'overlay') {
+        <mv-overlay-surface [state]="state"></mv-overlay-surface>
+    }
+    @defer (when surface === 'dashboard') {
+        <mv-dashboard-surface
+            *ngIf="connection.client() as client"
+            [client]="client"
+            [host]="connection.host()"
+            [state]="state"
+            [synchronized]="connection.synchronized()">
+        </mv-dashboard-surface>
+    }
+    @defer (when surface === 'compact') {
+        <mv-compact-dashboard-surface
+            *ngIf="connection.client() as client"
+            [client]="client"
+            [host]="connection.host()"
+            [state]="state"
+            [status]="connection.status()"
+            [synchronized]="connection.synchronized()">
+        </mv-compact-dashboard-surface>
+    }
 </ng-container>
