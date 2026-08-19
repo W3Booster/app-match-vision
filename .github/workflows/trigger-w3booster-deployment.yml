@@ -1,0 +1,38 @@
+# W3Booster production integration.
+#
+# Starter projects and forks must remove this workflow or adapt the target
+# repository, workflow name, and W3BOOSTER_PLATFORM_ACTIONS_TOKEN secret to
+# their own deployment. The application build itself remains deployment-neutral.
+name: Trigger W3Booster deployment
+
+on:
+  push:
+    branches: [main]
+
+permissions: {}
+
+jobs:
+  dispatch:
+    if: ${{ github.repository == 'W3Booster/app-match-vision' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Deploy the exact pushed commit through W3Booster/platform
+        env:
+          GH_TOKEN: ${{ secrets.W3BOOSTER_PLATFORM_ACTIONS_TOKEN }}
+          SOURCE_REPOSITORY: ${{ github.repository }}
+          SOURCE_REF: ${{ github.ref }}
+          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_DELIVERY: ${{ github.repository }}:${{ github.run_id }}:${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN"
+          gh api --silent \
+            --method POST \
+            repos/W3Booster/platform/actions/workflows/deploy-match-vision.yml/dispatches \
+            -f ref=main \
+            -f "inputs[ref]=$SOURCE_SHA" \
+            -f 'inputs[deploy]=true' \
+            -f "inputs[source_repository]=$SOURCE_REPOSITORY" \
+            -f "inputs[source_ref]=$SOURCE_REF" \
+            -f "inputs[source_delivery]=$SOURCE_DELIVERY"
