@@ -2,7 +2,7 @@
 
 1. Use Node.js 22.22.3 or newer.
 2. Run `npm install` and open `http://localhost:8082/?view=dashboard&demo=1`.
-   Until SDK 0.2 is published—or when changing the SDK alongside this app—run `npm run sdk:link-local` after installing dependencies.
+   The app remains on published SDK 1 until SDK 2 is released. When changing the SDK alongside this app, run `npm run sdk:link-local` after installing dependencies; restore a registry install before validating the minimum-SDK lane.
 3. Keep platform transport, authentication, retry, recorder integration, and state hydration inside `@w3booster/sdk`.
 4. Consume SDK domain types directly; keep app-specific display choices in small, pure selectors.
 5. Add or update a focused test for behavior changes.

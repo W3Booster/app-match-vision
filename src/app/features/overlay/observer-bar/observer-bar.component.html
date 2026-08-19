@@ -14,18 +14,20 @@
       <ng-container *ngFor="let e of [{player: player1, resources: player1Resources, revert: false}, {player: player2, resources: player2Resources, revert: true}]; let i = index; trackBy: trackPlayerResource">
             <!-- for player2, show race first -->
             <ng-container *ngIf="e.revert" [ngTemplateOutlet]="raceDisplay" [ngTemplateOutletContext]="{ $implicit: e }"></ng-container>
-            <div class="field field-gold" [style.borderTopColor]="getColorCode(e.player)"><span>{{ e.resources.gold | number:'1.0-0' }}</span></div>
-            <div class="field field-lumber" [style.borderTopColor]="getColorCode(e.player)"><span>{{ e.resources.lumber | number:'1.0-0' }}</span></div>
-            <div class="field field-food"
-                 [class.no-upkeep-color]="e.resources.supply <= 50"
-                 [class.low-upkeep-color]="e.resources.supply > 50 && e.resources.supply <= 80"
-                 [class.high-upkeep-color]="e.resources.supply > 80"
-                 [style.borderTopColor]="getColorCode(e.player)">
-              <span>{{ e.resources.supply | number:'1.0-0' }}</span>
-              /
-              {{ e.resources.supplyCap | number:'1.0-0' }}
-            </div>
-            <div class="field field-worker-food" [style.borderTopColor]="getColorCode(e.player)"><span>{{ e.resources.workerSupply || 0 | number:'1.0-0' }}</span></div>
+            <ng-container *ngIf="e.resources as resources">
+              <div class="field field-gold" [style.borderTopColor]="getColorCode(e.player)"><span>{{ resources.gold | number:'1.0-0' }}</span></div>
+              <div class="field field-lumber" [style.borderTopColor]="getColorCode(e.player)"><span>{{ resources.lumber | number:'1.0-0' }}</span></div>
+              <div class="field field-food"
+                   [class.no-upkeep-color]="upkeepState(resources.supply) === 'none'"
+                   [class.low-upkeep-color]="upkeepState(resources.supply) === 'low'"
+                   [class.high-upkeep-color]="upkeepState(resources.supply) === 'high'"
+                   [style.borderTopColor]="getColorCode(e.player)">
+                <span>{{ resources.supply | number:'1.0-0' }}</span>
+                /
+                {{ resources.supplyCap | number:'1.0-0' }}
+              </div>
+              <div class="field field-worker-food" [style.borderTopColor]="getColorCode(e.player)"><span>{{ resources.workerSupply || 0 | number:'1.0-0' }}</span></div>
+            </ng-container>
             <!-- for player1, show race after resources -->
             <ng-container *ngIf="!e.revert" [ngTemplateOutlet]="raceDisplay" [ngTemplateOutletContext]="{ $implicit: e }"></ng-container>
             <ng-container *ngIf="i === 0">
@@ -46,10 +48,10 @@
         <div>
             <div class="player-name player-name-left">
                 <div class="player-country"
-                    *ngIf="player1.mainAccount && player1.mainAccount.country && player1.mainAccount.country != 'tw'"
-                    [style.backgroundImage]="countryFlagBackground(player1.mainAccount.country)">
+                    *ngIf="player1.displayCountry && player1.displayCountry != 'tw'"
+                    [style.backgroundImage]="countryFlagBackground(player1.displayCountry)">
                 </div>
-                {{player1.name}}
+                {{playerName(player1)}}
             </div>
         </div>
         <div> </div>
@@ -74,10 +76,10 @@
         <div>
             <div class="player-name player-name-right">
                 <div class="player-country"
-                    *ngIf="player2.mainAccount && player2.mainAccount.country && player2.mainAccount.country != 'tw'"
-                    [style.backgroundImage]="countryFlagBackground(player2.mainAccount.country)">
+                    *ngIf="player2.displayCountry && player2.displayCountry != 'tw'"
+                    [style.backgroundImage]="countryFlagBackground(player2.displayCountry)">
                 </div>
-                {{player2.name}}
+                {{playerName(player2)}}
             </div>
         </div>
 

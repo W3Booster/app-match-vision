@@ -5,7 +5,7 @@
 
 <ng-container *ngIf="connection.state() as state">
     @defer (when surface === 'overlay') {
-        <mv-overlay-surface [state]="state"></mv-overlay-surface>
+        <mv-overlay-surface [state]="state" [settings]="connection.settings()"></mv-overlay-surface>
     }
     @defer (when surface === 'dashboard') {
         <mv-dashboard-surface
@@ -13,6 +13,7 @@
             [client]="client"
             [host]="connection.host()"
             [state]="state"
+            [settings]="connection.settings()"
             [synchronized]="connection.synchronized()">
         </mv-dashboard-surface>
     }
@@ -22,6 +23,7 @@
             [client]="client"
             [host]="connection.host()"
             [state]="state"
+            [settings]="connection.settings()"
             [status]="connection.status()"
             [synchronized]="connection.synchronized()">
         </mv-compact-dashboard-surface>

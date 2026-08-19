@@ -26,8 +26,8 @@ export class UpgradePanelComponent {
         return this.settings().researchesShowAllEnabled ? active : active.filter(upgrade => standardGame.isWeaponOrArmorUpgrade(upgrade.name));
     }
     isWeaponOrArmorUpgrade(name: string): boolean { return standardGame.isWeaponOrArmorUpgrade(name); }
-    iconPath(upgrade: ActiveUpgrade): string | null {
-        return this.assets.upgradeIconPath(this.match(), upgrade);
+    iconBackground(upgrade: ActiveUpgrade): string | null {
+        return this.assets.upgradeIconBackground(this.match(), upgrade);
     }
     panelInset(player: Player): number {
         return upgradePanelInset(

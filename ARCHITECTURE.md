@@ -2,6 +2,8 @@
 
 Match Vision is one W3Booster application with three surfaces. It consumes the public SDK exactly like a third-party app and contains no platform transport, authentication, compositor, Electron, or recorder implementation.
 
+The durable rationale for choices made during SDK/application reviews is recorded in `ARCHITECTURE_DECISIONS.md`. Update that record when changing a decision so later reviews do not oscillate between designs.
+
 ## Dependency direction
 
 ```text
@@ -37,7 +39,7 @@ The compositor hosts enabled overlay apps and aligns the in-game Electron window
 1. SDK `MatchState` is the source of truth.
 2. Selectors never mutate SDK state.
 3. Presentation state is derived, not synchronized through component setters.
-4. App settings come only from `state.application.settings` and are completed with the generated database-default resolver.
+4. Resolved app settings come from the generated application runtime lifecycle and its database-default resolver; Match Vision does not maintain a second settings model.
 5. Recorder overlay runtime values are normalized by the SDK and read from `state.overlay.runtime`; recorder-specific wire fields never enter application code.
 6. Trust-sensitive identity policy, including W3Champions four-player FFA masking, is enforced by the platform server before scoped state reaches the SDK or application.
 
@@ -45,6 +47,6 @@ The compositor hosts enabled overlay apps and aligns the in-game Electron window
 
 1. One SDK application runtime owns the client connection, retry loop, readiness wait, host capability discovery, resolved settings, and teardown; one atomic runtime subscription feeds Angular's status, state, freshness, error, and host signals.
 2. Feature stores use their own abort signal, so replacing or destroying a feature removes all of its listeners atomically.
-3. `connect()` means a transport is open; `whenReady()` may return preserved state, while `whenSynchronized()` means a fresh complete state is safe to render.
+3. `open()` means a transport is open; `whenReady()` may return preserved state, while `whenSynchronized()` means a fresh complete state is safe to render. The older `connect()` name is a deprecated alias.
 4. Permission, configuration, and protocol errors are surfaced by the SDK. Application code does not classify failures for a custom retry loop.
 5. `runtime.stop()` is the awaited teardown boundary and is safe to call repeatedly.

@@ -35,7 +35,7 @@
             </header>
             <div class="empty" *ngIf="!matchActive">No match running</div>
             <div class="current-match-content" *ngIf="matchActive">
-                <article class="team" *ngFor="let team of teams">
+                <article class="team" *ngFor="let team of teams()">
                     <div class="player" *ngFor="let player of team.players">
                         <i class="race" [attr.data-race]="raceClass(player.race)">{{raceInitial(player.race)}}</i>
                         <span class="player-name">{{displayName(player)}}</span>

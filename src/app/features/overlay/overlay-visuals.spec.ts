@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { Match, Player } from '@w3booster/sdk';
 import { dayNightSprite, orderedOverlayTeams, raceSpriteIndex, upgradePanelInset } from './overlay-visuals';
 
-const match = { broadcasterPlayerId: 'me', isObserver: false } as Match;
+const match = { broadcasterPlayerId: 'me', isObserver: true } as Match;
 const players: Player[] = [
     { id: 'opponent', team: 1, colorId: 4 },
     { id: 'me', team: 0, colorId: 5 },
@@ -21,6 +21,21 @@ describe('Match Vision overlay presentation rules', () => {
         expect(orderedOverlayTeams(players, match, true).map(team => team.map(player => player.id))).toEqual([
             ['opponent'],
             ['me', 'ally']
+        ]);
+    });
+
+    it('uses canonical map-position ordering for observer head-to-head matches', () => {
+        const east = { id: 'east', team: 1, startPosition: { x: 100, y: 0 } } as Player;
+        const west = { id: 'west', team: 0, startPosition: { x: -100, y: 0 } } as Player;
+        expect(orderedOverlayTeams([east, west], { ...match, broadcasterPlayerId: 'east' })
+            .map(team => team[0]?.id)).toEqual(['west', 'east']);
+    });
+
+    it('keeps the broadcaster first on player overlays even when input starts with the opponent', () => {
+        expect(orderedOverlayTeams(players, { ...match, isObserver: false })
+            .map(team => team.map(player => player.id))).toEqual([
+            ['me', 'ally'],
+            ['opponent']
         ]);
     });
 

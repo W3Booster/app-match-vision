@@ -1,17 +1,81 @@
-import type { MatchState, Player } from '@w3booster/sdk';
-import { battleTagName, broadcasterPlayer, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
+import type { DeepReadonly, Match, MatchState, Player } from '@w3booster/sdk';
+import { broadcasterPlayer, isObserverOrReplayMatch, playerDisplayIdentity } from '@w3booster/sdk/selectors';
+import type { PlayerDisplayIdentity } from '@w3booster/sdk/selectors';
+import type { PlayerTeam } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import { w3boosterApp } from '../core/w3booster-app.generated';
+import { createMemoizedSelector } from '@w3booster/sdk/store';
+import type { W3BoosterAppSettings } from '../core/w3booster-app.generated';
 import type { MatchVisionOverlaySettings, MatchVisionSettings } from './match-vision-settings';
 
 const overlaySettingsCache = new WeakMap<object, {
     player: MatchVisionOverlaySettings;
     observer: MatchVisionOverlaySettings;
 }>();
-const displayPlayersCache = new WeakMap<readonly Player[], Map<string, readonly Player[]>>();
 
-export function matchVisionSettings(state: MatchState<MatchVisionSettings>): MatchVisionOverlaySettings {
-    const settings = w3boosterApp.settingsFor(state);
+/**
+ * Match Vision's display-name policy, kept compatible with the minimum SDK.
+ * SDK 1 only stripped the in-game discriminator, so normalize both names here.
+ */
+export function matchVisionPlayerDisplayIdentity(player: Player): PlayerDisplayIdentity {
+    const identity = playerDisplayIdentity(player, { stripBattleTagDiscriminator: true });
+    const inGameName = stripBattleTagDiscriminator(identity.inGameName);
+    const accountName = identity.accountName === undefined
+        ? undefined
+        : stripBattleTagDiscriminator(identity.accountName);
+    const primaryName = accountName || inGameName;
+    return Object.freeze({
+        ...identity,
+        primaryName,
+        inGameName,
+        accountName,
+        hasAlias: Boolean(accountName && accountName !== inGameName)
+    });
+}
+
+function stripBattleTagDiscriminator(name: string): string {
+    return name.replace(/#\d+$/, '') || name;
+}
+export interface MatchVisionPlayerView extends Player {
+    readonly displayIdentity: PlayerDisplayIdentity;
+    readonly displayCountry?: string;
+}
+const selectDisplayPlayers = createMemoizedSelector((
+    sourcePlayers: readonly Player[],
+    mode: string,
+    realm: string | undefined,
+    broadcasterPlayerId: string | undefined,
+    isObserver: boolean,
+    isReplay: boolean,
+    username: string,
+    nationality: string
+): readonly MatchVisionPlayerView[] => {
+    const match = { mode, realm, broadcasterPlayerId, isObserver, isReplay };
+    const broadcasterId = broadcasterPlayer(match, sourcePlayers)?.id;
+    const overridesBroadcaster = sourcePlayers.length === 2 && !isObserverOrReplayMatch(match);
+    return Object.freeze(sourcePlayers.map(player => {
+        let displayIdentity = matchVisionPlayerDisplayIdentity(player);
+        const overridden = overridesBroadcaster && player.id === broadcasterId;
+        if (overridden) {
+            const primaryName = username || displayIdentity.accountName || displayIdentity.inGameName || player.id;
+            displayIdentity = Object.freeze({
+                ...displayIdentity,
+                primaryName,
+                accountName: primaryName,
+                hasAlias: primaryName !== displayIdentity.inGameName
+            });
+        }
+        return Object.freeze({
+            ...player,
+            displayIdentity,
+            displayCountry: overridden ? nationality : player.mainAccount?.country
+        });
+    }));
+});
+
+export function matchVisionSettings(
+    match: Match,
+    settings: DeepReadonly<W3BoosterAppSettings>
+): MatchVisionOverlaySettings {
     let profiles = overlaySettingsCache.get(settings);
     if (!profiles) {
         profiles = {
@@ -20,7 +84,7 @@ export function matchVisionSettings(state: MatchState<MatchVisionSettings>): Mat
         };
         overlaySettingsCache.set(settings, profiles);
     }
-    return isObserverOrReplayMatch(state.match) ? profiles.observer : profiles.player;
+    return isObserverOrReplayMatch(match) ? profiles.observer : profiles.player;
 }
 
 /** A reverse choice belongs to one match and must never leak into the next one. */
@@ -35,18 +99,18 @@ export function reversePlayerOrderForMatch(
 /** Orders dashboard teams exactly like the observer overlay without mutating SDK state. */
 export function matchVisionTeams(
     state: MatchState<MatchVisionSettings>,
-    reversePlayerOrder = reversePlayerOrderForMatch(state.match, matchVisionSettings(state))
-): Array<{ id: number | null; players: Player[] }> {
-    return standardGame.orderMatchTeams(state.players, state.match, { reverse: reversePlayerOrder })
-        .map(team => ({ id: team.teamId, players: [...team.players] }));
+    reversePlayerOrder = false
+): readonly PlayerTeam<Player>[] {
+    return standardGame.orderMatchTeams(state.players, state.match, { reverse: reversePlayerOrder });
 }
 
 /** Derives display-only player values without changing the SDK state. */
 export function matchVisionPlayers(
     state: MatchState<MatchVisionSettings>,
     settings: MatchVisionOverlaySettings
-): readonly Player[] {
-    const context = JSON.stringify([
+): readonly MatchVisionPlayerView[] {
+    return selectDisplayPlayers(
+        state.players,
         state.match.mode,
         state.match.realm,
         state.match.broadcasterPlayerId,
@@ -54,37 +118,5 @@ export function matchVisionPlayers(
         state.match.isReplay === true,
         settings.username,
         settings.nationality
-    ]);
-    let variants = displayPlayersCache.get(state.players);
-    if (!variants) {
-        variants = new Map();
-        displayPlayersCache.set(state.players, variants);
-    }
-    const cached = variants.get(context);
-    if (cached) return cached;
-
-    const players = state.players.map(player => ({
-        ...player,
-        name: battleTagName(player.name),
-        mainAccount: player.mainAccount ? { ...player.mainAccount } : undefined
-    }));
-    const broadcasterId = broadcasterPlayer(state.match, players, { fallbackToFirst: true })?.id;
-
-    if (players.length === 2 && !isObserverOrReplayMatch(state.match)) {
-        const broadcaster = players.find(player => player.id === broadcasterId);
-        if (broadcaster) {
-            broadcaster.mainAccount = {
-                ...broadcaster.mainAccount,
-                name: settings.username || broadcaster.mainAccount?.name || broadcaster.name || broadcaster.id,
-                country: settings.nationality
-            };
-        }
-    }
-
-    const immutablePlayers = Object.freeze(players.map(player => Object.freeze({
-        ...player,
-        ...(player.mainAccount ? { mainAccount: Object.freeze({ ...player.mainAccount }) } : {})
-    })));
-    variants.set(context, immutablePlayers);
-    return immutablePlayers;
+    );
 }

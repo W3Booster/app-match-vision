@@ -1,13 +1,13 @@
 <div *ngIf="showMatchBar()" class="obs-matchbar-4v4-wrapper">
     <ng-template #resourcesTemplate let-player="player">
-        <div class="player-resources" [class.player-resources-full]="showFullResources()">
-            <div class="resource resource-gold">{{ getPlayerResources(player).gold | number:'1.0-0' }}</div>
-            <div class="resource resource-lumber" *ngIf="showFullResources()">{{ getPlayerResources(player).lumber | number:'1.0-0' }}</div>
+        <div *ngIf="getPlayerResources(player) as resources" class="player-resources" [class.player-resources-full]="showFullResources()">
+            <div class="resource resource-gold">{{ resources.gold | number:'1.0-0' }}</div>
+            <div class="resource resource-lumber" *ngIf="showFullResources()">{{ resources.lumber | number:'1.0-0' }}</div>
             <div class="resource resource-food"
-                [class.no-upkeep-color]="getPlayerResources(player).supply <= 50"
-                [class.low-upkeep-color]="getPlayerResources(player).supply > 50 && getPlayerResources(player).supply <= 80"
-                [class.high-upkeep-color]="getPlayerResources(player).supply > 80">
-                {{ getPlayerResources(player).supply | number:'1.0-0' }} / {{ getPlayerResources(player).supplyCap | number:'1.0-0' }}
+                [class.no-upkeep-color]="upkeepState(resources.supply) === 'none'"
+                [class.low-upkeep-color]="upkeepState(resources.supply) === 'low'"
+                [class.high-upkeep-color]="upkeepState(resources.supply) === 'high'">
+                {{ resources.supply | number:'1.0-0' }} / {{ resources.supplyCap | number:'1.0-0' }}
             </div>
         </div>
     </ng-template>
@@ -17,7 +17,7 @@
             <div class="teams">
                 <div *ngIf="teams()[0]" class="team">
                     <div *ngFor="let player of teams()[0]; let playerIndex = index; trackBy: trackPlayer"
-                        class="player player-{{playerIndex}} {{player.mainAccount ? 'player-has-alias' : 'player-has-no-alias'}}"
+                        class="player player-{{playerIndex}} {{playerIdentity(player).hasAlias ? 'player-has-alias' : 'player-has-no-alias'}}"
                         [style.color]="getColorCode(player)">
                         <div [class]="'player-color ' + (runtime.teamColors ? 'team-colors' : '')"
                             [style.color]="getColorCode(player)">
@@ -27,11 +27,11 @@
                             [style.borderColor]="getColorCode(player)"></div>
                         <div class="player-details">
                             <div class="player-name" [style.borderColor]="getColorCode(player)">
-                                {{player.mainAccount ? player.mainAccount.name : player.name}}
+                                {{playerIdentity(player).primaryName}}
                             </div>
                             <div class="player-country"
-                                *ngIf="player.mainAccount && player.mainAccount.country && player.mainAccount.country != 'tw'"
-                                [style.backgroundImage]="countryFlagBackground(player.mainAccount.country)">
+                                *ngIf="player.displayCountry && player.displayCountry != 'tw'"
+                                [style.backgroundImage]="countryFlagBackground(player.displayCountry)">
                             </div>
                         </div>
                         <ng-template [ngTemplateOutlet]="resourcesTemplate"
@@ -40,7 +40,7 @@
                             <div class="hero-chip" *ngFor="let hero of getPlayerHeroes(player); trackBy: trackHero">
                                 <div class="hero-chip-icon"
                                     [class.grayscaled-filter]="hero.hitpoints && hero.hitpoints.current <= 0"
-                                    [style.backgroundImage]="'url(' + getHeroIconPath(hero) + ')'">
+                                    [style.backgroundImage]="getHeroIconBackground(hero)">
                                     <div class="hero-chip-level">{{getHeroLevel(hero)}}</div>
                                 </div>
                             </div>
@@ -56,7 +56,7 @@
             <div class="teams">
                 <div *ngIf="teams()[1]" class="team team-reversed">
                     <div *ngFor="let player of teams()[1]; let playerIndex = index; trackBy: trackPlayer"
-                        class="player player-{{playerIndex}} {{player.mainAccount ? 'player-has-alias' : 'player-has-no-alias'}}"
+                        class="player player-{{playerIndex}} {{playerIdentity(player).hasAlias ? 'player-has-alias' : 'player-has-no-alias'}}"
                         [style.color]="getColorCode(player)">
                         <div [class]="'player-color ' + (runtime.teamColors ? 'team-colors' : '')"
                             [style.color]="getColorCode(player)">
@@ -66,11 +66,11 @@
                             [style.borderColor]="getColorCode(player)"></div>
                         <div class="player-details">
                             <div class="player-name" [style.borderColor]="getColorCode(player)">
-                                {{player.mainAccount ? player.mainAccount.name : player.name}}
+                                {{playerIdentity(player).primaryName}}
                             </div>
                             <div class="player-country"
-                                *ngIf="player.mainAccount && player.mainAccount.country && player.mainAccount.country != 'tw'"
-                                [style.backgroundImage]="countryFlagBackground(player.mainAccount.country)">
+                                *ngIf="player.displayCountry && player.displayCountry != 'tw'"
+                                [style.backgroundImage]="countryFlagBackground(player.displayCountry)">
                             </div>
                         </div>
                         <ng-template [ngTemplateOutlet]="resourcesTemplate"
@@ -79,7 +79,7 @@
                             <div class="hero-chip" *ngFor="let hero of getPlayerHeroes(player); trackBy: trackHero">
                                 <div class="hero-chip-icon"
                                     [class.grayscaled-filter]="hero.hitpoints && hero.hitpoints.current <= 0"
-                                    [style.backgroundImage]="'url(' + getHeroIconPath(hero) + ')'">
+                                    [style.backgroundImage]="getHeroIconBackground(hero)">
                                     <div class="hero-chip-level">{{getHeroLevel(hero)}}</div>
                                 </div>
                             </div>

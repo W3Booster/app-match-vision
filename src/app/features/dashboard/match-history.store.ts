@@ -1,17 +1,32 @@
 import { type Signal, signal, type WritableSignal } from '@angular/core';
-import type { MatchState, W3BoosterClient } from '@w3booster/sdk';
-import type { MatchVisionSettings } from '../../domain';
+import type { MatchLifecycleObservationEvent, MatchState, SubscriptionOptions } from '@w3booster/sdk';
+import { matchVisionPlayerDisplayIdentity, type MatchVisionSettings } from '../../domain';
 
 export interface MatchHistoryEntry {
     id: string;
     map: string;
     mode: string;
     startedAt: string;
+    startedAtSource?: 'match' | 'observed';
     endedAt?: string;
+    endedAtSource?: 'match' | 'observed';
     players: Array<{ name: string; race: string; team: number }>;
 }
 
 const HISTORY_KEY = 'w3booster:match-vision:matches';
+
+export interface MatchHistoryClient {
+    readonly state: {
+        subscribe(
+            listener: (state: MatchState<MatchVisionSettings> | null) => void | Promise<void>,
+            options?: SubscriptionOptions
+        ): () => void;
+    };
+    subscribeMatchLifecycle(
+        listener: (event: MatchLifecycleObservationEvent<MatchVisionSettings>) => void | Promise<void>,
+        options?: SubscriptionOptions
+    ): () => void;
+}
 
 export class MatchHistoryStore {
     private readonly history: WritableSignal<MatchHistoryEntry[]>;
@@ -23,16 +38,25 @@ export class MatchHistoryStore {
         this.entries = this.history.asReadonly();
     }
 
-    connect(client: W3BoosterClient<MatchVisionSettings>): void {
+    connect(client: MatchHistoryClient): void {
         this.disconnect();
         const lifetime = new AbortController();
         this.lifetime = lifetime;
-        // State subscriptions include the current snapshot (which is null
-        // before hydration); domain events describe only later transitions.
-        client.state.subscribe(state => {
-            if (state?.match.status === 'running') this.record(state);
+        client.subscribeMatchLifecycle(event => {
+            if (event.phase === 'started') this.record(event.state, event.observedAt);
+            else {
+                const endedAt = event.match.endedAt;
+                this.finish(event.match.id, endedAt ?? event.observedAt, endedAt ? 'match' : 'observed');
+            }
         }, { signal: lifetime.signal });
-        client.on('match.ended', event => this.finish(event.match.id), { signal: lifetime.signal });
+        client.state.subscribe(state => {
+            if (state?.match.status === 'running' || state?.match.status === 'starting') {
+                this.record(state);
+            } else if (state?.match.status === 'finished' && state.match.endedAt) {
+                this.record(state, state.match.startedAt ?? state.match.endedAt);
+                this.finish(state.match.id, state.match.endedAt, 'match');
+            }
+        }, { signal: lifetime.signal });
     }
 
     disconnect(): void {
@@ -40,15 +64,16 @@ export class MatchHistoryStore {
         this.lifetime = null;
     }
 
-    record(state: MatchState<MatchVisionSettings>): void {
+    record(state: MatchState<MatchVisionSettings>, observedAt = new Date().toISOString()): void {
         if (!state.match.id || this.history().some(item => item.id === String(state.match.id))) return;
         this.history.update(entries => [{
             id: String(state.match.id),
             map: state.match.map || 'Unknown map',
             mode: state.match.isReplay ? 'Replay' : (state.match.isObserver ? 'Observed' : 'Match'),
-            startedAt: String(state.match.startedAt || new Date().toISOString()),
+            startedAt: String(state.match.startedAt || observedAt),
+            startedAtSource: (state.match.startedAt ? 'match' : 'observed') as 'match' | 'observed',
             players: state.players.map(player => ({
-                name: player.mainAccount?.name || player.name || 'Unknown player',
+                name: matchVisionPlayerDisplayIdentity(player).primaryName || 'Unknown player',
                 race: player.race || 'random',
                 team: Number(player.team || 0)
             }))
@@ -56,9 +81,13 @@ export class MatchHistoryStore {
         this.write();
     }
 
-    finish(id: string): void {
+    finish(
+        id: string,
+        endedAt = new Date().toISOString(),
+        source: 'match' | 'observed' = 'observed'
+    ): void {
         this.history.update(entries => entries.map(entry => entry.id === String(id)
-            ? { ...entry, endedAt: new Date().toISOString() }
+            ? { ...entry, endedAt, endedAtSource: source }
             : entry));
         this.write();
     }
@@ -85,7 +114,9 @@ function isMatchHistoryEntry(value: unknown): value is MatchHistoryEntry {
         typeof entry.map === 'string' &&
         typeof entry.mode === 'string' &&
         typeof entry.startedAt === 'string' && Number.isFinite(Date.parse(entry.startedAt)) &&
+        (entry.startedAtSource === undefined || entry.startedAtSource === 'match' || entry.startedAtSource === 'observed') &&
         (entry.endedAt === undefined || typeof entry.endedAt === 'string' && Number.isFinite(Date.parse(entry.endedAt))) &&
+        (entry.endedAtSource === undefined || entry.endedAtSource === 'match' || entry.endedAtSource === 'observed') &&
         Array.isArray(entry.players) && entry.players.every(player =>
             player !== null && typeof player === 'object' &&
             typeof player.name === 'string' &&

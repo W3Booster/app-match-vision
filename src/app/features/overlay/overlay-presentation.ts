@@ -1,17 +1,19 @@
-import type { MatchState, OverlayRuntimeState, Player } from '@w3booster/sdk';
+import type { DeepReadonly, MatchState, OverlayRuntimeState } from '@w3booster/sdk';
 import type { AbilityCooldownState } from '@w3booster/sdk/standard-game/cooldowns';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import * as standardGameCooldowns from '@w3booster/sdk/standard-game/cooldowns';
 import { broadcasterPlayer, isObserverOrReplayMatch, overlayRuntime } from '@w3booster/sdk/selectors';
 import { matchVisionPlayers, matchVisionSettings, reversePlayerOrderForMatch } from '../../domain';
-import type { MatchVisionOverlaySettings, MatchVisionSettings } from '../../domain';
+import type { MatchVisionOverlaySettings, MatchVisionPlayerView, MatchVisionSettings } from '../../domain';
+import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
 
 export interface OverlayPresentation {
     settings: MatchVisionOverlaySettings;
     runtime: OverlayRuntimeState;
-    players: readonly Player[];
-    streamer: Player | null;
-    opponent: Player | null;
+    players: readonly MatchVisionPlayerView[];
+    observerPlayers: readonly [MatchVisionPlayerView, MatchVisionPlayerView] | null;
+    streamer: MatchVisionPlayerView | null;
+    opponent: MatchVisionPlayerView | null;
     additionalCssClasses: string;
     showsObserverBar: boolean;
     showsTeamObserverBar: boolean;
@@ -20,22 +22,33 @@ export interface OverlayPresentation {
     abilityCooldowns: ReadonlyMap<import('@w3booster/sdk').HeroAbility, AbilityCooldownState>;
 }
 
-export function createOverlayPresentation(state: MatchState<MatchVisionSettings>): OverlayPresentation {
-    const settings = matchVisionSettings(state);
+export function createOverlayPresentation(
+    state: MatchState<MatchVisionSettings>,
+    resolvedSettings: DeepReadonly<W3BoosterAppSettings>
+): OverlayPresentation {
+    const settings = matchVisionSettings(state.match, resolvedSettings);
     const runtime = overlayRuntime(state);
     const players = matchVisionPlayers(state, settings);
+    // Keep the app compatible with its published SDK lock until the shared
+    // headToHeadPair() selector ships in the next SDK release.
+    const observerPlayers = players.length === 2
+        ? [players[0]!, players[1]!] as const
+        : null;
     const observerOrReplay = isObserverOrReplayMatch(state.match);
-    const showsObserverBar = observerOrReplay && standardGame.isMode(state.match.mode, '1v1');
+    const showsObserverBar = observerOrReplay && standardGame.isMode(state.match.mode, '1v1') && observerPlayers !== null;
     const showsTeamObserverBar = observerOrReplay && standardGame.modeInfo(state.match.mode)?.kind === 'team';
-    const broadcasterId = broadcasterPlayer(state.match, players, { fallbackToFirst: true })?.id;
+    const broadcasterId = broadcasterPlayer(state.match, players)?.id;
     let streamer = players.find(player => player.id === broadcasterId) ?? null;
-    let opponent = players.length === 2 ? players.find(player => player.id !== streamer?.id) ?? null : null;
+    const streamerId = streamer?.id;
+    let opponent = players.length === 2 && streamerId !== undefined
+        ? players.find(player => player.id !== streamerId) ?? null
+        : null;
 
     if (showsObserverBar && streamer && opponent) {
         [streamer, opponent] = standardGame.orderHeadToHeadPlayers(
-            [streamer, opponent],
+            [streamer, opponent] as const,
             { reverse: reversePlayerOrderForMatch(state.match, settings) }
-        ) as [Player, Player];
+        );
     }
 
     const broadcaster = players.find(player => player.id === broadcasterId);
@@ -50,6 +63,7 @@ export function createOverlayPresentation(state: MatchState<MatchVisionSettings>
         settings,
         runtime,
         players,
+        observerPlayers,
         streamer,
         opponent,
         additionalCssClasses: Object.values(settings.additionalCSSClasses ?? {}).filter(Boolean).join(' '),

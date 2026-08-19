@@ -1,5 +1,5 @@
 import type { Match, Player, Race } from '@w3booster/sdk';
-import { broadcasterFirstTeams } from '@w3booster/sdk/selectors';
+import { broadcasterFirstTeams, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 
 const RACE_SPRITE_INDEX: Readonly<Record<Race, number>> = {
@@ -8,6 +8,12 @@ const RACE_SPRITE_INDEX: Readonly<Record<Race, number>> = {
     orc: 2,
     undead: 3,
     'night-elf': 4
+};
+const ENGLISH_RACE_NAMES: Readonly<Record<Race, string>> = {
+    random: 'Random', human: 'Human', orc: 'Orc', undead: 'Undead', 'night-elf': 'Night Elf'
+};
+const ENGLISH_RACE_SHORT_NAMES: Readonly<Record<Race, string>> = {
+    random: 'RDM', human: 'HU', orc: 'ORC', undead: 'UD', 'night-elf': 'NE'
 };
 const CLOCK_PHASE_SECONDS = 30;
 const CLOCK_PHASE_COUNT = 16;
@@ -28,17 +34,30 @@ export function upgradePanelInset(
 }
 
 /** Match Vision's team ordering is presentation, not protocol state. */
-export function orderedOverlayTeams(
-    players: readonly Player[],
-    match: Pick<Match, 'broadcasterPlayerId'>,
+export function orderedOverlayTeams<TPlayer extends Player>(
+    players: readonly TPlayer[],
+    match: Pick<Match, 'broadcasterPlayerId' | 'isObserver' | 'isReplay'>,
     reversePlayerOrder = false
-): readonly (readonly Player[])[] {
-    return broadcasterFirstTeams(players, match, { reverse: reversePlayerOrder }).map(team => team.players);
+): readonly (readonly TPlayer[])[] {
+    const teams = isObserverOrReplayMatch(match)
+        ? standardGame.orderMatchTeams(players, match, { reverse: reversePlayerOrder })
+        : broadcasterFirstTeams(players, match, { reverse: reversePlayerOrder });
+    return teams.map(team => team.players);
 }
 
 /** Index into Match Vision's race sprite sheet. */
 export function raceSpriteIndex(race: Race | undefined): number {
     return RACE_SPRITE_INDEX[race ?? 'random'] ?? RACE_SPRITE_INDEX.random;
+}
+
+/** Match Vision's current English presentation copy. */
+export function raceName(race: Race | undefined): string {
+    return ENGLISH_RACE_NAMES[race ?? 'random'] ?? ENGLISH_RACE_NAMES.random;
+}
+
+/** Match Vision's current English abbreviated presentation copy. */
+export function raceShortName(race: Race | undefined): string {
+    return ENGLISH_RACE_SHORT_NAMES[race ?? 'random'] ?? ENGLISH_RACE_SHORT_NAMES.random;
 }
 
 /** Frames for Match Vision's 16-frame day/night sprite animation. */

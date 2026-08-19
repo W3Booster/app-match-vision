@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   check:
+    name: Minimum registry SDK
     runs-on: ubuntu-latest
     env:
       W3BOOSTER_SETTINGS_URL: ${{ secrets.W3BOOSTER_SETTINGS_URL }}
@@ -24,3 +25,31 @@ jobs:
       - name: Check database settings revision
         if: ${{ env.W3BOOSTER_SETTINGS_URL != '' }}
         run: npm run w3booster:check
+  sdk-head:
+    name: Packed SDK HEAD
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: app
+      - uses: actions/checkout@v6
+        with:
+          repository: W3Booster/sdk
+          path: sdk
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: app/.nvmrc
+          cache: npm
+          cache-dependency-path: |
+            app/package-lock.json
+            sdk/package-lock.json
+      - run: npm ci
+        working-directory: sdk
+      - run: npm ci
+        working-directory: app
+      - run: mkdir -p ../app/.sdk-pack && npm pack --pack-destination ../app/.sdk-pack
+        working-directory: sdk
+      - run: npm install --no-save --package-lock=false ./.sdk-pack/*.tgz
+        working-directory: app
+      - run: npm run check
+        working-directory: app

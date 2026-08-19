@@ -1,15 +1,16 @@
 import type { MatchState } from '@w3booster/sdk';
 import { describe, expect, it } from 'vitest';
+import { w3boosterApp, type W3BoosterAppDeliveredSettings } from '../core/w3booster-app.generated';
 import type { MatchVisionSettings } from './match-vision-settings';
-import { matchVisionPlayers, matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch } from './match-selectors';
+import { matchVisionPlayerDisplayIdentity, matchVisionPlayers, matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch } from './match-selectors';
 
 describe('Match Vision view selectors', () => {
     it('selects app-owned settings without reading recorder overlay settings', () => {
         const state = createState();
-        state.application = { clientId: 'app', settings: { player: { mapBarEnabled: false } } };
         state.overlay = { runtime: { teamColors: true } };
+        const settings = resolvedSettings({ player: { mapBarEnabled: false } });
 
-        expect(matchVisionSettings(state).mapBarEnabled).toBe(false);
+        expect(matchVisionSettings(state.match, settings).mapBarEnabled).toBe(false);
     });
 
     it('formats server-redacted display players without mutating SDK state', () => {
@@ -17,7 +18,7 @@ describe('Match Vision view selectors', () => {
         state.players.push({ id: '1', name: 'Player 3', race: 'random', team: 2 });
         const original = structuredClone(state);
 
-        const players = matchVisionPlayers(state, matchVisionSettings(state));
+        const players = matchVisionPlayers(state, matchVisionSettings(state.match, resolvedSettings()));
 
         expect(players[1]?.name).toBe('Player 3');
         expect(players[1]?.race).toBe('random');
@@ -26,9 +27,63 @@ describe('Match Vision view selectors', () => {
         expect(state).toEqual(original);
     });
 
+    it('keeps authoritative player fields separate from Match Vision presentation overrides', () => {
+        const state = createState();
+        state.players[0] = {
+            ...state.players[0]!,
+            name: 'InGame#123',
+            mainAccount: { name: 'AuthoritativeAccount', country: 'se' }
+        };
+        state.players.push({ id: 'opponent', name: 'Opponent', team: 1 });
+        const settings = {
+            ...matchVisionSettings(state.match, resolvedSettings()),
+            username: 'Broadcast Name',
+            nationality: 'de'
+        };
+
+        const player = matchVisionPlayers(state, settings)[0]!;
+
+        expect(player.name).toBe('InGame#123');
+        expect(player.mainAccount).toEqual({ name: 'AuthoritativeAccount', country: 'se' });
+        expect(player.displayIdentity.primaryName).toBe('Broadcast Name');
+        expect(player.displayIdentity.inGameName).toBe('InGame');
+        expect(player.displayCountry).toBe('de');
+    });
+
+    it('strips both account and in-game BattleTag discriminators on the minimum SDK', () => {
+        const identity = matchVisionPlayerDisplayIdentity({
+            id: 'player',
+            name: 'InGame#1234',
+            mainAccount: { name: 'Account#5678' }
+        });
+
+        expect(identity).toEqual({
+            primaryName: 'Account',
+            inGameName: 'InGame',
+            accountName: 'Account',
+            hasAlias: true
+        });
+    });
+
+    it('does not apply broadcaster settings when broadcaster identity is unavailable', () => {
+        const state = createState();
+        state.match.broadcasterPlayerId = undefined;
+        state.players.push({ id: 'opponent', name: 'Opponent', team: 1 });
+        const settings = {
+            ...matchVisionSettings(state.match, resolvedSettings()),
+            username: 'Broadcast Name',
+            nationality: 'de'
+        };
+
+        const players = matchVisionPlayers(state, settings);
+
+        expect(players[0]?.displayIdentity.primaryName).toBe('Player');
+        expect(players[0]?.displayCountry).toBeUndefined();
+    });
+
     it('preserves derived player identity when unrelated state branches change', () => {
         const state = createState();
-        const settings = matchVisionSettings(state);
+        const settings = matchVisionSettings(state.match, resolvedSettings());
         const first = matchVisionPlayers(state, settings);
         state.match.gameTime += 1;
         const second = matchVisionPlayers(state, settings);
@@ -44,12 +99,13 @@ describe('Match Vision view selectors', () => {
             { id: 'left', team: 0, startPosition: { x: -10, y: 0 } },
             { id: 'right', team: 1, startPosition: { x: 10, y: 0 } }
         ];
-        state.application = {
-            clientId: 'match-vision',
-            settings: { observer: { reversePlayerOrderMatchId: 'match' } }
-        };
+        const settings = resolvedSettings({ observer: { reversePlayerOrderMatchId: 'match' } });
+        const reverse = reversePlayerOrderForMatch(
+            state.match,
+            matchVisionSettings(state.match, settings)
+        );
 
-        expect(matchVisionTeams(state).map(team => team.players[0]?.id)).toEqual(['right', 'left']);
+        expect(matchVisionTeams(state, reverse).map(team => team.players[0]?.id)).toEqual(['right', 'left']);
     });
 
     it('uses the broadcaster-first team order consistently for team observers', () => {
@@ -68,7 +124,7 @@ describe('Match Vision view selectors', () => {
             ['me', 'ally'],
             ['opponent', 'opponent-ally']
         ]);
-        expect(matchVisionTeams(state, true).map(team => team.id)).toEqual([1, 0]);
+        expect(matchVisionTeams(state, true).map(team => team.teamId)).toEqual([1, 0]);
     });
 
     it('keeps an unassigned team distinct from protocol team zero', () => {
@@ -78,7 +134,7 @@ describe('Match Vision view selectors', () => {
             { id: 'unassigned' }
         ];
 
-        expect(matchVisionTeams(state).map(team => team.id)).toEqual([0, null]);
+        expect(matchVisionTeams(state).map(team => team.teamId)).toEqual([0, null]);
     });
 
     it('resets reverse order for a new match and preserves it across restarts of the same match', () => {
@@ -91,6 +147,10 @@ describe('Match Vision view selectors', () => {
     });
 
 });
+
+function resolvedSettings(settings: W3BoosterAppDeliveredSettings = {}) {
+    return w3boosterApp.resolveSettings(settings);
+}
 
 function createState(): MatchState<MatchVisionSettings> {
     return {

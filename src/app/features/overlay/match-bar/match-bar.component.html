@@ -5,7 +5,7 @@
                 <div *ngFor="let team of teams(); let teamIndex = index; trackBy: trackTeam" class="team team-{{teamIndex}}">
                     <div class="team-label">Team {{Number(teamIndex) + 1}}</div>
                     <div *ngFor="let player of team; let playerIndex = index; trackBy: trackPlayer"
-                        class="player player-{{playerIndex}} {{player.mainAccount ? 'player-has-alias' : 'player-has-no-alias'}}"
+                        class="player player-{{playerIndex}} {{playerIdentity(player).hasAlias ? 'player-has-alias' : 'player-has-no-alias'}}"
                         [style.color]="getColorCode(player)">
                         <ng-template #templateRef let-stats="stats">
                             <div *ngIf="stats === undefined" class="player-no-stats">looking up stats</div>
@@ -27,13 +27,13 @@
                             [style.borderColor]="getColorCode(player)"></div>
                         <div class="player-details">
                             <div class="player-name" [style.borderColor]="getColorCode(player)">
-                                {{player.mainAccount ? player.mainAccount.name : player.name}}
+                                {{playerIdentity(player).primaryName}}
                             </div>
                             <div class="player-country"
-                                *ngIf="player.mainAccount && player.mainAccount.country && player.mainAccount.country != 'tw'"
-                                [style.backgroundImage]="countryFlagBackground(player.mainAccount.country)">
+                                *ngIf="player.displayCountry && player.displayCountry != 'tw'"
+                                [style.backgroundImage]="countryFlagBackground(player.displayCountry)">
                             </div>
-                            <div *ngIf="player.mainAccount" class="player-alias"><span>{{player.name}}</span></div>
+                            <div *ngIf="playerIdentity(player).hasAlias" class="player-alias"><span>{{playerIdentity(player).inGameName}}</span></div>
                             <ng-template [ngTemplateOutlet]="templateRef"></ng-template>
                         </div>
                         <ng-template [ngTemplateOutlet]="templateRef"

@@ -2,10 +2,10 @@ import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import type { Match, OverlayRuntimeState, Player, PlayerStats } from '@w3booster/sdk';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import type { MatchVisionOverlaySettings } from '../../../domain';
+import type { MatchVisionOverlaySettings, MatchVisionPlayerView } from '../../../domain';
 import { WarcraftAssetsService } from '../../../shared/warcraft/warcraft-assets.service';
 import { matchBarClasses, showsMatchBar, truncated } from '../bar-presentation';
-import { orderedOverlayTeams } from '../overlay-visuals';
+import { orderedOverlayTeams, raceName } from '../overlay-visuals';
 
 @Component({
     selector: 'mv-match-bar',
@@ -16,7 +16,7 @@ import { orderedOverlayTeams } from '../overlay-visuals';
 export class MatchBarComponent {
     private readonly assets = inject(WarcraftAssetsService);
     readonly match = input.required<Match>();
-    readonly players = input.required<readonly Player[]>();
+    readonly players = input.required<readonly MatchVisionPlayerView[]>();
     readonly settings = input.required<MatchVisionOverlaySettings>();
     readonly runtime = input<OverlayRuntimeState>({});
     readonly gameTime = input(0);
@@ -32,6 +32,7 @@ export class MatchBarComponent {
     getStats(player: Player): PlayerStats | undefined {
         return standardGame.statsForMode(player, this.match().mode);
     }
+    playerIdentity(player: MatchVisionPlayerView) { return player.displayIdentity; }
 
     getGameMode(): string {
         if (standardGame.isMode(this.match().mode, '1v1')) return '1vs1';
@@ -42,7 +43,7 @@ export class MatchBarComponent {
     getColorCode(player: Player): string {
         return standardGame.presentationPlayerColor(player, this.match(), this.players(), this.runtime());
     }
-    getRaceName(player: Player): string { return standardGame.raceName(player.race); }
+    getRaceName(player: Player): string { return raceName(player.race); }
     countryFlagBackground(country: string): string | null { return this.assets.countryFlagBackground(country); }
     formatRatio(value: number): string { return truncated(value, 1); }
     trackTeam(index: number, team: readonly Player[]): string | number { return team[0]?.team ?? index; }

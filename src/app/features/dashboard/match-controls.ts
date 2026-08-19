@@ -1,10 +1,16 @@
 import { computed, signal } from '@angular/core';
-import { canUseHostCapability } from '@w3booster/sdk';
-import type { HostCapability, HostLifecycleSnapshot, MatchScoreSide, OpenWindowOptions, W3BoosterClient } from '@w3booster/sdk';
+import { isAbortError } from '@w3booster/sdk';
+import type { MatchScoreSide, OpenWindowOptions, W3BoosterClient } from '@w3booster/sdk';
 import type { MatchVisionSettings } from '../../domain';
+
+type MatchVisionHost = W3BoosterClient<MatchVisionSettings>['host'];
+type HostClient<TMethod extends keyof MatchVisionHost> = {
+    readonly host: Pick<MatchVisionHost, TMethod>;
+};
 
 /** Shared optimistic controller for the regular and compact match dashboards. */
 export class MatchControls {
+    private readonly lifetime = new AbortController();
     private readonly reverseOverride = signal<boolean | null>(null);
     private readonly pendingOperations = signal(0);
     private readonly actionError = signal('');
@@ -23,33 +29,37 @@ export class MatchControls {
         if (pending !== null && pending === saved) this.reverseOverride.set(null);
     }
 
-    async changeScore(client: W3BoosterClient<MatchVisionSettings>, side: MatchScoreSide, delta: 1 | -1): Promise<void> {
+    async changeScore(client: HostClient<'changeMatchScore'>, side: MatchScoreSide, delta: 1 | -1): Promise<void> {
         await this.perform(
-            () => client.host.changeMatchScore(side, delta),
+            () => client.host.changeMatchScore(side, delta, { signal: this.lifetime.signal }),
             'The match score could not be updated.'
         );
     }
 
-    async resetScore(client: W3BoosterClient<MatchVisionSettings>): Promise<void> {
+    async resetScore(client: HostClient<'resetMatchScore'>): Promise<void> {
         await this.perform(
-            () => client.host.resetMatchScore(),
+            () => client.host.resetMatchScore({ signal: this.lifetime.signal }),
             'The match score could not be reset.'
         );
     }
 
-    async openWindow(client: W3BoosterClient<MatchVisionSettings>, options: OpenWindowOptions): Promise<void> {
+    async openWindow(client: HostClient<'openWindow'>, options: OpenWindowOptions): Promise<void> {
         await this.perform(
-            () => client.host.openWindow(options),
+            () => client.host.openWindow(options, { signal: this.lifetime.signal }),
             'The compact Match Vision window could not be opened.'
         );
     }
 
-    async reversePlayers(client: W3BoosterClient<MatchVisionSettings>, matchId: string, saved: boolean): Promise<void> {
+    async reversePlayers(client: HostClient<'setSetting'>, matchId: string, saved: boolean): Promise<void> {
         const next = !this.displayedReversePlayerOrder(saved);
         const revision = ++this.reverseRevision;
         this.reverseOverride.set(next);
         const operation = this.reverseQueue.then(async () => {
-            await client.host.setSetting('observer.reversePlayerOrderMatchId', next ? matchId : '');
+            await client.host.setSetting(
+                'observer.reversePlayerOrderMatchId',
+                next ? matchId : '',
+                { signal: this.lifetime.signal }
+            );
         });
         this.reverseQueue = operation.catch(() => undefined);
         const savedSuccessfully = await this.perform(
@@ -62,6 +72,7 @@ export class MatchControls {
     }
 
     clearError(): void { this.actionError.set(''); }
+    destroy(): void { this.lifetime.abort(); }
 
     private async perform(action: () => Promise<unknown>, message: string): Promise<boolean> {
         const revision = ++this.actionRevision;
@@ -71,6 +82,7 @@ export class MatchControls {
             await action();
             return true;
         } catch (error) {
+            if (isAbortError(error)) return false;
             if (revision === this.actionRevision) this.actionError.set(message);
             console.error(message, error);
             return false;
@@ -78,11 +90,4 @@ export class MatchControls {
             this.pendingOperations.update(count => Math.max(0, count - 1));
         }
     }
-}
-
-export function hostActionAvailable(
-    host: HostLifecycleSnapshot,
-    capability: HostCapability
-): boolean {
-    return canUseHostCapability(host, capability);
 }
