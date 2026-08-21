@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import type { DeepReadonly, Hero, HeroAbility, MatchState } from '@w3booster/sdk';
-import { heroInventory, inventorySlotIdentity, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
+import { heroInventory, inventorySlotIdentity, isActiveMatch, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import type { MatchVisionPlayerView, MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
@@ -36,6 +36,7 @@ export class OverlaySurfaceComponent {
     get opponent(): MatchVisionPlayerView | null { return this.presentation().opponent; }
     get additionalCSSClasses(): string { return this.presentation().additionalCssClasses; }
     get isReforged(): boolean { return this.state.match.isReforged === true; }
+    get matchActive(): boolean { return isActiveMatch(this.state.match); }
     get requiredAvatarCoverCount(): number { return this.presentation().requiredAvatarCovers; }
 
     getHeroExperienceProgress(hero: Hero): number { return standardGame.heroExperienceState(hero.experience).progress; }
