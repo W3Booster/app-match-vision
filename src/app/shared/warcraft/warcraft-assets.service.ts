@@ -1,15 +1,11 @@
 import { Injectable } from '@angular/core';
 import type { CompletedUpgrade, Hero, HeroAbility, Match } from '@w3booster/sdk';
-import * as sharedAssets from '@w3booster/sdk/assets';
 import * as standardGameIcons from '@w3booster/sdk/standard-game/icons';
 
 @Injectable({ providedIn: 'root' })
 export class WarcraftAssetsService {
     private readonly missingIcons = new Set<string>();
-    // The explicit base URL and flag fallback keep clean installs compatible
-    // with the published SDK until the unified resolver ships.
-    private readonly baseUrl = sharedAssets.resolveAssetBaseUrl();
-    private readonly assets = standardGameIcons.createAssetResolver({ baseUrl: this.baseUrl });
+    private readonly assets = standardGameIcons.createAssetResolver();
 
     iconPath(match: Pick<Match, 'isReforged'>, key: string): string | null {
         return this.resolveIcon(key, this.assets.icon(match, key));
@@ -61,7 +57,7 @@ export class WarcraftAssetsService {
     }
 
     countryFlagPath(country: string): string | null {
-        return sharedAssets.countryFlagUrl(country, { baseUrl: this.baseUrl }) ?? null;
+        return this.assets.countryFlag(country) ?? null;
     }
 
     countryFlagBackground(country: string): string | null {

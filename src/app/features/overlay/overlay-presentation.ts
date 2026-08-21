@@ -2,7 +2,7 @@ import type { DeepReadonly, MatchState, OverlayRuntimeState } from '@w3booster/s
 import type { AbilityCooldownState } from '@w3booster/sdk/standard-game/cooldowns';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import * as standardGameCooldowns from '@w3booster/sdk/standard-game/cooldowns';
-import { broadcasterPlayer, isObserverOrReplayMatch, overlayRuntime } from '@w3booster/sdk/selectors';
+import { broadcasterPlayer, headToHeadPair, isObserverOrReplayMatch, overlayRuntime } from '@w3booster/sdk/selectors';
 import { matchVisionPlayers, matchVisionSettings, reversePlayerOrderForMatch } from '../../domain';
 import type { MatchVisionOverlaySettings, MatchVisionPlayerView, MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
@@ -29,11 +29,7 @@ export function createOverlayPresentation(
     const settings = matchVisionSettings(state.match, resolvedSettings);
     const runtime = overlayRuntime(state);
     const players = matchVisionPlayers(state, settings);
-    // Keep the app compatible with its published SDK lock until the shared
-    // headToHeadPair() selector ships in the next SDK release.
-    const observerPlayers = players.length === 2
-        ? [players[0]!, players[1]!] as const
-        : null;
+    const observerPlayers = headToHeadPair(players);
     const observerOrReplay = isObserverOrReplayMatch(state.match);
     const showsObserverBar = observerOrReplay && standardGame.isMode(state.match.mode, '1v1') && observerPlayers !== null;
     const showsTeamObserverBar = observerOrReplay && standardGame.modeInfo(state.match.mode)?.kind === 'team';

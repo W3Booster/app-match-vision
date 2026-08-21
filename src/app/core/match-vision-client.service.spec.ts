@@ -31,6 +31,14 @@ describe('MatchVisionClientService', () => {
         expect(connectionErrorMessage(error)).toContain('Regenerate and redeploy');
     });
 
+    it('does not describe a whole-startup timeout as missing match data', () => {
+        const error = new ConnectionError(
+            'Application runtime startup timed out.', [], 'STARTUP_TIMEOUT'
+        );
+
+        expect(connectionErrorMessage(error)).toBe('W3Booster did not start before the connection deadline.');
+    });
+
     it('projects the managed SDK runtime and reactive host state into Angular signals', async () => {
         const readyState = createReadyState();
         let listener: ((snapshot: ApplicationRuntimeSnapshot<W3BoosterAppSettings>) => void) | undefined;
@@ -46,6 +54,15 @@ describe('MatchVisionClientService', () => {
         expect(service.state()).toBe(readyState);
         expect(service.synchronized()).toBe(true);
         expect(service.settings()).toBe(snapshot.settings);
+
+        const retry = {
+            attempt: 2,
+            maxAttempts: null,
+            nextDelay: 1_500,
+            lastError: new Error('temporarily unavailable')
+        };
+        listener?.({ ...snapshot, status: 'connecting', retry } as typeof snapshot & { retry: typeof retry });
+        expect(service.retry()).toBe(retry);
 
         const knownHost: HostLifecycleSnapshot = {
             available: true, capabilities: ['window:open'], capabilityStatus: 'known'

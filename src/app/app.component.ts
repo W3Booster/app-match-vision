@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { MatchVisionClientService } from './core/match-vision-client.service';
+import { retryConnectionMessage } from './core/connection-status';
 import { surfaceFromSearch } from './core/surface';
 import { CompactDashboardSurfaceComponent } from './features/dashboard/compact-dashboard-surface.component';
 import { DashboardSurfaceComponent } from './features/dashboard/dashboard-surface.component';
@@ -17,6 +18,8 @@ export class AppComponent implements OnInit, OnDestroy {
     readonly surface = surfaceFromSearch(window.location.search);
 
     get connectionStatusMessage(): string {
+        const retry = this.connection.retry();
+        if (retry) return retryConnectionMessage(retry);
         switch (this.connection.status()) {
             case 'connecting': return 'Connecting to W3Booster…';
             case 'reconnecting': return 'Reconnecting to W3Booster…';

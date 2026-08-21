@@ -14,7 +14,6 @@ export class MatchControls {
     private readonly reverseOverride = signal<boolean | null>(null);
     private readonly pendingOperations = signal(0);
     private readonly actionError = signal('');
-    private reverseQueue: Promise<void> = Promise.resolve();
     private reverseRevision = 0;
     private actionRevision = 0;
     readonly busy = computed(() => this.pendingOperations() > 0);
@@ -54,16 +53,12 @@ export class MatchControls {
         const next = !this.displayedReversePlayerOrder(saved);
         const revision = ++this.reverseRevision;
         this.reverseOverride.set(next);
-        const operation = this.reverseQueue.then(async () => {
-            await client.host.setSetting(
+        const savedSuccessfully = await this.perform(
+            () => client.host.setSetting(
                 'observer.reversePlayerOrderMatchId',
                 next ? matchId : '',
                 { signal: this.lifetime.signal }
-            );
-        });
-        this.reverseQueue = operation.catch(() => undefined);
-        const savedSuccessfully = await this.perform(
-            () => operation,
+            ),
             'The player order could not be saved.'
         );
         if (!savedSuccessfully) {

@@ -2,7 +2,7 @@ import type { MatchState } from '@w3booster/sdk';
 import { describe, expect, it } from 'vitest';
 import { w3boosterApp, type W3BoosterAppDeliveredSettings } from '../core/w3booster-app.generated';
 import type { MatchVisionSettings } from './match-vision-settings';
-import { matchVisionPlayerDisplayIdentity, matchVisionPlayers, matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch } from './match-selectors';
+import { matchVisionPlayers, matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch } from './match-selectors';
 
 describe('Match Vision view selectors', () => {
     it('selects app-owned settings without reading recorder overlay settings', () => {
@@ -50,14 +50,37 @@ describe('Match Vision view selectors', () => {
         expect(player.displayCountry).toBe('de');
     });
 
-    it('strips both account and in-game BattleTag discriminators on the minimum SDK', () => {
-        const identity = matchVisionPlayerDisplayIdentity({
-            id: 'player',
-            name: 'InGame#1234',
-            mainAccount: { name: 'Account#5678' }
-        });
+    it('applies broadcaster presentation overrides by surface rather than visible player count', () => {
+        const state = createState();
+        state.match.mode = '2v2';
+        state.players = [
+            { id: 'opponent', name: 'Opponent', team: 1 },
+            { id: '0', name: 'Broadcaster', team: 0 },
+            { id: 'ally', name: 'Ally', team: 0 },
+            { id: 'opponent-ally', name: 'Opponent Ally', team: 1 }
+        ];
+        const settings = {
+            ...matchVisionSettings(state.match, resolvedSettings()),
+            username: 'Broadcast Name',
+            nationality: 'de'
+        };
 
-        expect(identity).toEqual({
+        const players = matchVisionPlayers(state, settings);
+        const broadcaster = players.find(player => player.id === '0');
+
+        expect(broadcaster?.displayIdentity.primaryName).toBe('Broadcast Name');
+        expect(broadcaster?.displayCountry).toBe('de');
+        expect(players.find(player => player.id === 'opponent')?.displayIdentity.primaryName).toBe('Opponent');
+    });
+
+    it('uses the SDK display identity for both account and in-game BattleTag discriminators', () => {
+        const state = createState();
+        state.players = [{
+            id: 'player', name: 'InGame#1234', mainAccount: { name: 'Account#5678' }
+        }];
+        const [player] = matchVisionPlayers(state, matchVisionSettings(state.match, resolvedSettings()));
+
+        expect(player?.displayIdentity).toEqual({
             primaryName: 'Account',
             inGameName: 'InGame',
             accountName: 'Account',
@@ -127,6 +150,21 @@ describe('Match Vision view selectors', () => {
         expect(matchVisionTeams(state, true).map(team => team.teamId)).toEqual([1, 0]);
     });
 
+    it('keeps dashboard and overlay policy broadcaster-first for player and partial team state', () => {
+        const state = createState();
+        state.match.mode = '2v2';
+        state.match.isObserver = true;
+        state.match.broadcasterPlayerId = 'me';
+        state.players = [
+            { id: 'opponent', team: 1, startPosition: { x: -10, y: 0 } },
+            { id: 'me', team: 0, startPosition: { x: 10, y: 0 } }
+        ];
+
+        expect(matchVisionTeams(state).map(team => team.players[0]?.id)).toEqual(['me', 'opponent']);
+        state.match.isObserver = false;
+        expect(matchVisionTeams(state).map(team => team.players[0]?.id)).toEqual(['me', 'opponent']);
+    });
+
     it('keeps an unassigned team distinct from protocol team zero', () => {
         const state = createState();
         state.players = [
@@ -135,6 +173,33 @@ describe('Match Vision view selectors', () => {
         ];
 
         expect(matchVisionTeams(state).map(team => team.teamId)).toEqual([0, null]);
+    });
+
+    it('keeps teamless free-for-all players as separate reversible sides', () => {
+        const state = createState();
+        state.match.mode = '4ffa';
+        state.match.isObserver = true;
+        state.players = [0, 1, 2, 3].map(index => ({ id: `ffa-${index}` }));
+
+        expect(matchVisionTeams(state).map(team => team.players[0]?.id)).toEqual([
+            'ffa-0', 'ffa-1', 'ffa-2', 'ffa-3'
+        ]);
+        expect(matchVisionTeams(state, true).map(team => team.players[0]?.id)).toEqual([
+            'ffa-3', 'ffa-2', 'ffa-1', 'ffa-0'
+        ]);
+        expect(matchVisionTeams(state).map(team => team.teamId)).toEqual([null, null, null, null]);
+    });
+
+    it('keeps two teamless player-mode opponents as separate broadcaster-first sides', () => {
+        const state = createState();
+        state.match.mode = '1v1';
+        state.match.isObserver = false;
+        state.match.broadcasterPlayerId = 'me';
+        state.players = [{ id: 'opponent' }, { id: 'me' }];
+
+        expect(matchVisionTeams(state).map(team => team.players[0]?.id)).toEqual(['me', 'opponent']);
+        expect(matchVisionTeams(state).map(team => team.teamId)).toEqual([null, null]);
+        expect(matchVisionTeams(state, true).map(team => team.players[0]?.id)).toEqual(['opponent', 'me']);
     });
 
     it('resets reverse order for a new match and preserves it across restarts of the same match', () => {

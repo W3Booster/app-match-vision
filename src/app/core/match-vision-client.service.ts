@@ -1,6 +1,6 @@
 import { computed, Injectable, signal } from '@angular/core';
 import { classifyW3BoosterError, isAbortError, UNAVAILABLE_HOST_SNAPSHOT } from '@w3booster/sdk';
-import type { HostLifecycleSnapshot } from '@w3booster/sdk';
+import type { ConnectionRetrySnapshot, HostLifecycleSnapshot } from '@w3booster/sdk';
 import { createSelectorStore } from '@w3booster/sdk/store';
 import { connectionOptions } from './match-vision.config';
 import { w3boosterApp } from './w3booster-app.generated';
@@ -13,6 +13,7 @@ export class MatchVisionClientService {
         status: 'idle',
         state: null,
         isSynchronized: false,
+        retry: null,
         error: null,
         errorMessage: '',
         settings: w3boosterApp.settingsDefaults,
@@ -20,7 +21,6 @@ export class MatchVisionClientService {
     });
     private runtime: W3BoosterAppRuntime | null = null;
     private unsubscribeRuntime: (() => void) | null = null;
-    private unsubscribeLegacyIssues: (() => void) | null = null;
     private startup: Promise<W3BoosterAppClient | null> | null = null;
     private generation = 0;
 
@@ -29,6 +29,7 @@ export class MatchVisionClientService {
     readonly status = computed(() => this.connection().status);
     readonly error = computed(() => this.connection().errorMessage);
     readonly synchronized = computed(() => this.connection().isSynchronized);
+    readonly retry = computed(() => this.connection().retry);
     readonly settings = computed(() => this.connection().settings);
     readonly host = computed(() => this.connection().host);
 
@@ -84,15 +85,11 @@ export class MatchVisionClientService {
                 }
                 this.connection.set(connection);
             });
-            const runtimeSignal = (runtime as W3BoosterAppRuntime & { readonly signal?: AbortSignal }).signal;
-            const unsubscribeIssues = runtime.client.on('issue', issue => {
+            runtime.client.on('issue', issue => {
                 if (issue.source === 'recorder' || issue.source === 'listener') {
                     console.warn(`W3Booster SDK ${issue.source} issue:`, issue.error);
                 }
-            }, runtimeSignal ? { signal: runtimeSignal } : undefined);
-            // Published SDK 1 has no runtime signal; keep an explicit fallback
-            // until the coordinated SDK 2 dependency upgrade.
-            this.unsubscribeLegacyIssues = runtimeSignal ? null : unsubscribeIssues;
+            }, { signal: runtime.signal });
 
             // Startup remains pending across broker reconnects until a fresh
             // complete state is available or the application lifetime ends.
@@ -104,8 +101,6 @@ export class MatchVisionClientService {
             this.runtime = null;
             this.unsubscribeRuntime?.();
             this.unsubscribeRuntime = null;
-            this.unsubscribeLegacyIssues?.();
-            this.unsubscribeLegacyIssues = null;
             await runtime.stop();
             console.error('W3Booster SDK connection failed:', error);
             this.connection.set({
@@ -113,6 +108,7 @@ export class MatchVisionClientService {
                 status: 'error',
                 state: null,
                 isSynchronized: false,
+                retry: null,
                 error,
                 errorMessage: connectionErrorMessage(error),
                 settings: w3boosterApp.settingsDefaults,
@@ -132,6 +128,7 @@ export class MatchVisionClientService {
             status: 'closed',
             state: null,
             isSynchronized: false,
+            retry: null,
             error: null,
             errorMessage: '',
             settings: w3boosterApp.settingsDefaults,
@@ -150,8 +147,6 @@ export class MatchVisionClientService {
         }));
         this.unsubscribeRuntime?.();
         this.unsubscribeRuntime = null;
-        this.unsubscribeLegacyIssues?.();
-        this.unsubscribeLegacyIssues = null;
         await runtime?.stop();
     }
 }
@@ -161,11 +156,14 @@ interface MatchVisionConnection {
     readonly status: W3BoosterAppRuntimeSnapshot['status'];
     readonly state: W3BoosterAppRuntimeSnapshot['state'];
     readonly isSynchronized: boolean;
+    readonly retry: MatchVisionConnectionRetry | null;
     readonly error: unknown | null;
     readonly errorMessage: string;
     readonly settings: W3BoosterAppRuntimeSnapshot['settings'];
     readonly host: HostLifecycleSnapshot;
 }
+
+export type MatchVisionConnectionRetry = ConnectionRetrySnapshot;
 
 function connectionView(
     snapshot: W3BoosterAppRuntimeSnapshot
@@ -175,6 +173,7 @@ function connectionView(
         status: snapshot.status,
         state: snapshot.state,
         isSynchronized: snapshot.isSynchronized,
+        retry: snapshot.retry,
         error: snapshot.error,
         settings: snapshot.settings,
         host: snapshot.host,
@@ -189,6 +188,7 @@ export function connectionErrorMessage(error: unknown): string {
         return 'Match Vision is outdated for this W3Booster environment. Regenerate and redeploy its application binding.';
     }
     if (problem.code === 'CONFIGURATION') return 'Match Vision is not configured in this W3Booster environment.';
+    if (problem.code === 'STARTUP_TIMEOUT') return 'W3Booster did not start before the connection deadline.';
     if (problem.code === 'STATE_TIMEOUT') return 'W3Booster connected, but no match data arrived.';
     if (problem.code === 'MISSING_BROWSER_API') return 'This browser cannot connect to W3Booster.';
     if (problem.kind === 'connection') return 'W3Booster is unavailable. Start W3Booster and try again.';

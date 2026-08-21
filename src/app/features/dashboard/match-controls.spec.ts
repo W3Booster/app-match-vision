@@ -3,18 +3,15 @@ import type { MatchVisionSettings } from '../../domain';
 import { MatchControls } from './match-controls';
 
 describe('MatchControls', () => {
-    it('serializes rapid reverse-order writes so the last choice wins', async () => {
-        const releases: Array<() => void> = [];
-        const setSetting = vi.fn(() => new Promise<MatchVisionSettings>(resolve => {
-            releases.push(() => resolve({}));
-        }));
+    it('sends rapid reverse-order intent in caller order so the SDK queue keeps the last choice', async () => {
+        const setSetting = vi.fn().mockResolvedValue({} as MatchVisionSettings);
         const client = { host: { setSetting } };
         const controls = new MatchControls();
 
         const first = controls.reversePlayers(client, 'match', false);
         const second = controls.reversePlayers(client, 'match', false);
-        await Promise.resolve();
-        expect(setSetting).toHaveBeenCalledTimes(1);
+        await Promise.all([first, second]);
+        expect(setSetting).toHaveBeenCalledTimes(2);
         expect(setSetting).toHaveBeenNthCalledWith(
             1,
             'observer.reversePlayerOrderMatchId',
@@ -22,18 +19,12 @@ describe('MatchControls', () => {
             { signal: expect.any(AbortSignal) }
         );
 
-        releases[0]?.();
-        await first;
-        await Promise.resolve();
-        expect(setSetting).toHaveBeenCalledTimes(2);
         expect(setSetting).toHaveBeenNthCalledWith(
             2,
             'observer.reversePlayerOrderMatchId',
             '',
             { signal: expect.any(AbortSignal) }
         );
-        releases[1]?.();
-        await second;
         expect(controls.displayedReversePlayerOrder(false)).toBe(false);
     });
 

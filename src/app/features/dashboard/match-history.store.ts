@@ -1,6 +1,7 @@
 import { type Signal, signal, type WritableSignal } from '@angular/core';
-import type { MatchLifecycleObservationEvent, MatchState, SubscriptionOptions } from '@w3booster/sdk';
-import { matchVisionPlayerDisplayIdentity, type MatchVisionSettings } from '../../domain';
+import type { MatchLifecycleObservationEvent, MatchLifecycleSubscriptionOptions, MatchState, SubscriptionOptions } from '@w3booster/sdk';
+import { playerDisplayIdentity } from '@w3booster/sdk/selectors';
+import type { MatchVisionSettings } from '../../domain';
 
 export interface MatchHistoryEntry {
     id: string;
@@ -10,7 +11,7 @@ export interface MatchHistoryEntry {
     startedAtSource?: 'match' | 'observed';
     endedAt?: string;
     endedAtSource?: 'match' | 'observed';
-    players: Array<{ name: string; race: string; team: number }>;
+    players: Array<{ id?: string; name: string; race: string; team: number | null }>;
 }
 
 const HISTORY_KEY = 'w3booster:match-vision:matches';
@@ -24,7 +25,7 @@ export interface MatchHistoryClient {
     };
     subscribeMatchLifecycle(
         listener: (event: MatchLifecycleObservationEvent<MatchVisionSettings>) => void | Promise<void>,
-        options?: SubscriptionOptions
+        options?: MatchLifecycleSubscriptionOptions
     ): () => void;
 }
 
@@ -48,13 +49,18 @@ export class MatchHistoryStore {
                 const endedAt = event.match.endedAt;
                 this.finish(event.match.id, endedAt ?? event.observedAt, endedAt ? 'match' : 'observed');
             }
-        }, { signal: lifetime.signal });
+        }, { signal: lifetime.signal, includeCurrentFinished: true });
         client.state.subscribe(state => {
             if (state?.match.status === 'running' || state?.match.status === 'starting') {
                 this.record(state);
-            } else if (state?.match.status === 'finished' && state.match.endedAt) {
-                this.record(state, state.match.startedAt ?? state.match.endedAt);
-                this.finish(state.match.id, state.match.endedAt, 'match');
+            } else if (state?.match.status === 'finished') {
+                const observedAt = new Date().toISOString();
+                this.record(state, state.match.startedAt ?? state.match.endedAt ?? observedAt);
+                this.finish(
+                    state.match.id,
+                    state.match.endedAt ?? observedAt,
+                    state.match.endedAt ? 'match' : 'observed'
+                );
             }
         }, { signal: lifetime.signal });
     }
@@ -65,20 +71,51 @@ export class MatchHistoryStore {
     }
 
     record(state: MatchState<MatchVisionSettings>, observedAt = new Date().toISOString()): void {
-        if (!state.match.id || this.history().some(item => item.id === String(state.match.id))) return;
-        this.history.update(entries => [{
+        if (!state.match.id) return;
+        const id = String(state.match.id);
+        const players: MatchHistoryEntry['players'] = state.players.map(player => {
+            const identity = playerDisplayIdentity(player, { stripBattleTagDiscriminator: true });
+            const hasDisplayName = Boolean(player.name?.trim() || player.mainAccount?.name?.trim());
+            return {
+                id: String(player.id),
+                name: hasDisplayName ? identity.primaryName || 'Unknown player' : 'Unknown player',
+                race: player.race || 'random',
+                team: typeof player.team === 'number' && Number.isFinite(player.team) ? player.team : null
+            };
+        });
+        const candidate: MatchHistoryEntry = {
             id: String(state.match.id),
             map: state.match.map || 'Unknown map',
             mode: state.match.isReplay ? 'Replay' : (state.match.isObserver ? 'Observed' : 'Match'),
             startedAt: String(state.match.startedAt || observedAt),
             startedAtSource: (state.match.startedAt ? 'match' : 'observed') as 'match' | 'observed',
-            players: state.players.map(player => ({
-                name: matchVisionPlayerDisplayIdentity(player).primaryName || 'Unknown player',
-                race: player.race || 'random',
-                team: Number(player.team || 0)
-            }))
-        }, ...entries].slice(0, 20));
-        this.write();
+            players
+        };
+        let changed = false;
+        this.history.update(entries => {
+            const existingIndex = entries.findIndex(item => item.id === id);
+            if (existingIndex === -1) {
+                changed = true;
+                return [candidate, ...entries].slice(0, 20);
+            }
+
+            const existing = entries[existingIndex]!;
+            const authoritativeStart = state.match.startedAt
+                ? { startedAt: String(state.match.startedAt), startedAtSource: 'match' as const }
+                : { startedAt: existing.startedAt, startedAtSource: existing.startedAtSource };
+            const nextPlayers = mergeHistoryPlayers(players, existing.players);
+            const reconciled: MatchHistoryEntry = {
+                ...existing,
+                map: state.match.map || existing.map,
+                mode: candidate.mode,
+                ...authoritativeStart,
+                players: nextPlayers
+            };
+            if (sameHistoryEntry(existing, reconciled)) return entries;
+            changed = true;
+            return entries.map((entry, index) => index === existingIndex ? reconciled : entry);
+        });
+        if (changed) this.write();
     }
 
     finish(
@@ -86,10 +123,15 @@ export class MatchHistoryStore {
         endedAt = new Date().toISOString(),
         source: 'match' | 'observed' = 'observed'
     ): void {
-        this.history.update(entries => entries.map(entry => entry.id === String(id)
-            ? { ...entry, endedAt, endedAtSource: source }
-            : entry));
-        this.write();
+        let changed = false;
+        this.history.update(entries => entries.map(entry => {
+            if (entry.id !== String(id)) return entry;
+            if (source === 'observed' && entry.endedAt) return entry;
+            if (entry.endedAt === endedAt && entry.endedAtSource === source) return entry;
+            changed = true;
+            return { ...entry, endedAt, endedAtSource: source };
+        }));
+        if (changed) this.write();
     }
 
     private read(): MatchHistoryEntry[] {
@@ -119,7 +161,50 @@ function isMatchHistoryEntry(value: unknown): value is MatchHistoryEntry {
         (entry.endedAtSource === undefined || entry.endedAtSource === 'match' || entry.endedAtSource === 'observed') &&
         Array.isArray(entry.players) && entry.players.every(player =>
             player !== null && typeof player === 'object' &&
+            (player.id === undefined || typeof player.id === 'string') &&
             typeof player.name === 'string' &&
             typeof player.race === 'string' &&
-            Number.isFinite(player.team));
+            (player.team === null || Number.isFinite(player.team)));
+}
+
+function mergeHistoryPlayers(
+    candidate: MatchHistoryEntry['players'],
+    existing: MatchHistoryEntry['players']
+): MatchHistoryEntry['players'] {
+    const usedExisting = new Set<number>();
+    const merged = candidate.map((player, index) => {
+        let existingIndex = player.id
+            ? existing.findIndex(previous => previous.id === player.id)
+            : -1;
+        // History written before player IDs were persisted can only be
+        // reconciled positionally. Claim that legacy slot once, then persist
+        // the hydrated ID so every later update uses stable identity.
+        if (existingIndex < 0 && index < existing.length &&
+            existing[index]?.id === undefined && !usedExisting.has(index)) {
+            existingIndex = index;
+        }
+        const previous = existingIndex >= 0 ? existing[existingIndex] : undefined;
+        if (existingIndex >= 0) usedExisting.add(existingIndex);
+        if (!previous) return player;
+        return {
+            id: player.id ?? previous.id,
+            name: player.name !== 'Unknown player' ? player.name : previous.name,
+            race: player.race !== 'random' ? player.race : previous.race,
+            team: player.team !== null ? player.team : previous.team
+        };
+    });
+    existing.forEach((player, index) => {
+        if (!usedExisting.has(index) && !candidate.some(next => next.id && next.id === player.id)) merged.push(player);
+    });
+    return merged;
+}
+
+function sameHistoryEntry(left: MatchHistoryEntry, right: MatchHistoryEntry): boolean {
+    return left.map === right.map && left.mode === right.mode &&
+        left.startedAt === right.startedAt && left.startedAtSource === right.startedAtSource &&
+        left.players.length === right.players.length && left.players.every((player, index) => {
+            const other = right.players[index];
+            return !!other && player.id === other.id && player.name === other.name &&
+                player.race === other.race && player.team === other.team;
+        });
 }

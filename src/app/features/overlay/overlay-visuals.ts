@@ -1,5 +1,4 @@
 import type { Match, Player, Race } from '@w3booster/sdk';
-import { broadcasterFirstTeams, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 
 const RACE_SPRITE_INDEX: Readonly<Record<Race, number>> = {
@@ -36,13 +35,10 @@ export function upgradePanelInset(
 /** Match Vision's team ordering is presentation, not protocol state. */
 export function orderedOverlayTeams<TPlayer extends Player>(
     players: readonly TPlayer[],
-    match: Pick<Match, 'broadcasterPlayerId' | 'isObserver' | 'isReplay'>,
+    match: Pick<Match, 'mode' | 'broadcasterPlayerId' | 'isObserver' | 'isReplay'>,
     reversePlayerOrder = false
 ): readonly (readonly TPlayer[])[] {
-    const teams = isObserverOrReplayMatch(match)
-        ? standardGame.orderMatchTeams(players, match, { reverse: reversePlayerOrder })
-        : broadcasterFirstTeams(players, match, { reverse: reversePlayerOrder });
-    return teams.map(team => team.players);
+    return standardGame.orderMatchTeams(players, match, { reverse: reversePlayerOrder }).map(team => team.players);
 }
 
 /** Index into Match Vision's race sprite sheet. */

@@ -13,8 +13,9 @@ describe('Match Vision SDK configuration', () => {
         });
     });
 
-    it('uses the proxied production API while leaving backend selection to the SDK', () => {
-        expect(connectionOptions('').cloudApi).toBe('https://api.w3booster.com');
+    it('leaves backend origin and launch selection to the SDK', () => {
+        expect(connectionOptions('')).not.toHaveProperty('cloudApi');
+        expect(connectionOptions('')).not.toHaveProperty('backendUrl');
         expect(connectionOptions('').backend).toBeUndefined();
         expect(connectionOptions('?backend=local').backend).toBeUndefined();
     });

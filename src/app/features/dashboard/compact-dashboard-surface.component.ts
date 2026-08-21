@@ -2,15 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, effect, input } from '@angular/core';
 import { canUseHostCapability } from '@w3booster/sdk';
 import type { ConnectionStatus, DeepReadonly, HostLifecycleSnapshot, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
-import { groupPlayersByTeam, isActiveMatch, matchScore } from '@w3booster/sdk/selectors';
+import { groupPlayersByTeam, isActiveMatch, matchScore, playerDisplayIdentity } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import { matchVisionPlayerDisplayIdentity, matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
+import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
 import { dashboardStatusLabel } from './dashboard-status';
 import { MatchHistoryStore, type MatchHistoryEntry } from './match-history.store';
 import { MatchControls } from './match-controls';
 
-interface CompactHistoryTeam { id: number; players: MatchHistoryEntry['players']; }
+interface CompactHistoryTeam { id: number | null; players: MatchHistoryEntry['players']; }
 
 @Component({
     selector: 'mv-compact-dashboard-surface',
@@ -60,15 +60,16 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
         return standardGame.preferredStats(player, this.state().match.mode);
     }
     displayName(player: Player): string {
-        const identity = matchVisionPlayerDisplayIdentity(player);
+        const identity = playerDisplayIdentity(player, { stripBattleTagDiscriminator: true });
         return identity.hasAlias ? `${identity.primaryName} as ${identity.inGameName}` : identity.primaryName;
     }
     raceInitial(race?: string): string { return (race || 'random').charAt(0).toUpperCase(); }
     raceClass(race?: string): string { return (race || 'random').replace(/[^a-z-]/gi, '').toLowerCase(); }
     historyTeams(entry: MatchHistoryEntry): CompactHistoryTeam[] {
         return [...groupPlayersByTeam(entry.players)]
-            .sort((left, right) => Number(left.teamId ?? 0) - Number(right.teamId ?? 0))
-            .map(team => ({ id: team.teamId ?? 0, players: [...team.players] }));
+            .sort((left, right) =>
+                (left.teamId ?? Number.MAX_SAFE_INTEGER) - (right.teamId ?? Number.MAX_SAFE_INTEGER))
+            .map(team => ({ id: team.teamId, players: [...team.players] }));
     }
     private savedReversePlayerOrder(): boolean {
         return reversePlayerOrderForMatch(

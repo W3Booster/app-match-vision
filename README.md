@@ -31,16 +31,19 @@ runtime.lifecycle.subscribe(snapshot => {
   renderConnection(snapshot.status, snapshot.error);
   render(snapshot.state, snapshot.settings, { fresh: snapshot.isSynchronized });
   renderHostActions(snapshot.host);
-});
+}, { signal: runtime.signal });
 runtime.client.on('hero.inventory.changed', ({ player, inventory }) => {
   updateInventory(player.id, inventory);
-});
+}, { signal: runtime.signal });
 
 await runtime.start();
 
-// Angular destroy, React cleanup, Vue unmount, or page teardown:
+// Angular destroy, React cleanup, Vue unmount, or page teardown.
+// stop() aborts runtime.signal and its scoped subscriptions.
 await runtime.stop();
 ```
+
+Use a separately owned `AbortSignal` or retain the returned unsubscribe function when a subscription should have a shorter lifetime than the runtime.
 
 The SDK selects the available W3Booster transport, retries transient startup failures, restores complete state from incremental updates, reconnects, and exposes domain events. Match Vision consumes the SDK's `MatchState` directly. Reusable state derivations come from `@w3booster/sdk/selectors`; [`match-selectors.ts`](src/app/domain/match-selectors.ts) contains only Match Vision-specific display choices.
 
@@ -100,6 +103,6 @@ Match Vision's package and lockfile always use the npm registry version, never a
 
 The W3Booster application record is the sole source for client identity, scopes, surfaces, metadata, and the settings schema. Match Vision has completed the one-time `w3booster-settings init` binding: `package.json` stores its public `clientId` and generated-file location. Refresh the committed binding deliberately with `npm run w3booster:sync`; install, development, and build commands remain offline and deterministic. `npm run w3booster:check` is strict in connected CI and fails when the repository is behind the database revision. CI may select a non-default public definition endpoint with `W3BOOSTER_SETTINGS_URL`.
 
-The repository requires published SDK 1.0.1 or newer in the 1.x line; 1.0.0 used a retired default cloud endpoint. Its lockfile records the npm registry tarball integrity, so clean installs and CI use the same reviewed SDK artifact. Use the local-link command only while deliberately developing both repositories together.
+The repository requires published SDK 1.0.2 or newer in the 1.x line. Version 1.0.2 is the coordinated hotfix containing the lifecycle, selector, asset, grouping, and setting-mutation APIs consumed directly by Match Vision. Its lockfile records the npm registry tarball integrity, so clean installs and CI use the same reviewed SDK artifact. Use the local-link command only while deliberately developing both repositories together.
 
 Match Vision source code is licensed under the [MIT License](LICENSE). Bundled media is covered separately by [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).

@@ -2,9 +2,9 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, effect, input } from '@angular/core';
 import { canUseHostCapability } from '@w3booster/sdk';
 import type { DeepReadonly, HostLifecycleSnapshot, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
-import { isActiveMatch, matchScore } from '@w3booster/sdk/selectors';
+import { isActiveMatch, matchScore, playerDisplayIdentity } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import { matchVisionPlayerDisplayIdentity, matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
+import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
 import { MatchHistoryStore } from './match-history.store';
 import { MatchControls } from './match-controls';
@@ -64,7 +64,7 @@ export class DashboardSurfaceComponent implements OnDestroy {
     }
     raceName(player: Player): string { return player.race || 'random'; }
     playerName(player: Player): string {
-        return matchVisionPlayerDisplayIdentity(player).primaryName;
+        return playerDisplayIdentity(player, { stripBattleTagDiscriminator: true }).primaryName;
     }
     playerStats(player: Player): PlayerStats | undefined {
         return standardGame.preferredStats(player, this.state().match.mode);

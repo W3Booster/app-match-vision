@@ -12,29 +12,6 @@ const overlaySettingsCache = new WeakMap<object, {
     observer: MatchVisionOverlaySettings;
 }>();
 
-/**
- * Match Vision's display-name policy, kept compatible with the minimum SDK.
- * SDK 1 only stripped the in-game discriminator, so normalize both names here.
- */
-export function matchVisionPlayerDisplayIdentity(player: Player): PlayerDisplayIdentity {
-    const identity = playerDisplayIdentity(player, { stripBattleTagDiscriminator: true });
-    const inGameName = stripBattleTagDiscriminator(identity.inGameName);
-    const accountName = identity.accountName === undefined
-        ? undefined
-        : stripBattleTagDiscriminator(identity.accountName);
-    const primaryName = accountName || inGameName;
-    return Object.freeze({
-        ...identity,
-        primaryName,
-        inGameName,
-        accountName,
-        hasAlias: Boolean(accountName && accountName !== inGameName)
-    });
-}
-
-function stripBattleTagDiscriminator(name: string): string {
-    return name.replace(/#\d+$/, '') || name;
-}
 export interface MatchVisionPlayerView extends Player {
     readonly displayIdentity: PlayerDisplayIdentity;
     readonly displayCountry?: string;
@@ -51,9 +28,9 @@ const selectDisplayPlayers = createMemoizedSelector((
 ): readonly MatchVisionPlayerView[] => {
     const match = { mode, realm, broadcasterPlayerId, isObserver, isReplay };
     const broadcasterId = broadcasterPlayer(match, sourcePlayers)?.id;
-    const overridesBroadcaster = sourcePlayers.length === 2 && !isObserverOrReplayMatch(match);
+    const overridesBroadcaster = !isObserverOrReplayMatch(match);
     return Object.freeze(sourcePlayers.map(player => {
-        let displayIdentity = matchVisionPlayerDisplayIdentity(player);
+        let displayIdentity = playerDisplayIdentity(player, { stripBattleTagDiscriminator: true });
         const overridden = overridesBroadcaster && player.id === broadcasterId;
         if (overridden) {
             const primaryName = username || displayIdentity.accountName || displayIdentity.inGameName || player.id;
@@ -96,7 +73,7 @@ export function reversePlayerOrderForMatch(
     return matchId.length > 0 && settings.reversePlayerOrderMatchId === matchId;
 }
 
-/** Orders dashboard teams exactly like the observer overlay without mutating SDK state. */
+/** Orders dashboard teams exactly like the overlay without mutating SDK state. */
 export function matchVisionTeams(
     state: MatchState<MatchVisionSettings>,
     reversePlayerOrder = false

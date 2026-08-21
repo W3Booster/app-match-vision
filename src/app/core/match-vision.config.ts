@@ -6,7 +6,6 @@ export function connectionOptions(search: string): W3BoosterAppConnectOptions {
     const demo = parameters.has('demo');
 
     return {
-        cloudApi: 'https://api.w3booster.com',
         demo: demo ? { settings: w3boosterApp.settingsDefaults } : false,
         // The regular dashboard fills its host viewport and owns scrolling.
         // Other surfaces keep SDK content-height reporting enabled.
