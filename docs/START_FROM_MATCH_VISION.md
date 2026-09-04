@@ -76,4 +76,4 @@ Run `npm run check` for tests and a production build. Use `npm run w3booster:syn
 
 Deploy the generated browser bundle under `dist/` to your own HTTPS host and update your registered surface URLs with `demo=0`. Use the W3Booster compositor URL for OBS. See the [publishing guide](https://website.w3booster.com/developer/publishing/).
 
-If this is more application than you need, start with the [minimal TypeScript starter](https://github.com/W3Booster/app-starter) or a [focused example](https://github.com/W3Booster/app-examples).
+If this is more application than you need, start with the [minimal TypeScript starter](https://github.com/W3Booster/app-starter) or a [focused example](https://website.w3booster.com/developer/examples/).
