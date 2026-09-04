@@ -2,6 +2,12 @@
 
 This file records decisions that must survive repeated clean reviews. They may change when assumptions change or new evidence appears, but a change must update the decision, rationale, compatibility plan, and tests. Reviewers should report implementation bugs and stale assumptions; they should not reopen a documented tradeoff without new evidence.
 
+## ADR-006: Forking source explicitly replaces local identity, not production ownership
+
+Status: accepted, 2026-09-05.
+
+Match Vision is both the production app and a public complex starting point. The platform exposes the same registration in its library and reference-example view. Source forks register their own app; they never reuse the official ID to acquire capabilities. `npm run app:fork -- NEW_CLIENT_ID` validates the new public definition before replacing the local generated binding and package configuration. It leaves failed fetches untouched and performs no platform writes. Tests cover identity conflicts and preflight failures. Official match-score capabilities and private deployment credentials do not transfer to forks.
+
 ## ADR-001: Consume a published SDK release and test SDK HEAD separately
 
 Status: accepted, updated 2026-08-21.

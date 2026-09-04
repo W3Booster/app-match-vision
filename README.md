@@ -2,12 +2,16 @@
 
 W3Booster's official match visualization app and the full-featured reference for building W3Booster apps.
 
+**Public source. MIT licensed. Ready to fork.** [Build your own app from Match Vision](docs/START_FROM_MATCH_VISION.md) walks through the code, your own registration, and the production-only capabilities that do not carry over. In W3Booster's Examples view this is the same app as in the library, with one shared installation—not a second example copy.
+
 ## Run it in two minutes
 
 Requirements: Node.js 22.22.3 or newer.
 
 ```bash
-npm install
+git clone https://github.com/W3Booster/app-match-vision.git
+cd app-match-vision
+npm ci
 npm start
 ```
 

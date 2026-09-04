@@ -8,7 +8,8 @@
     "start-ssl": "ng serve --port 8082 --ssl --ssl-key cert/server.key --ssl-cert cert/server.crt",
     "build": "ng build --configuration production",
     "test": "vitest run",
-    "check": "npm test && npm run build",
+    "check": "node --test scripts/fork.node-test.mjs && npm test && npm run build",
+    "app:fork": "node scripts/fork.mjs",
     "w3booster:sync": "w3booster-settings --output \"src/app/core/w3booster-app.generated.ts\"",
     "w3booster:check": "w3booster-settings --output \"src/app/core/w3booster-app.generated.ts\" --check",
     "sdk:link-local": "node scripts/link-local-sdk.mjs"
