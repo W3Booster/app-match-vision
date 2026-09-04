@@ -17,7 +17,7 @@ The package manifest and lockfile consume the published `@w3booster/sdk` registr
 CI therefore has two deliberate lanes:
 
 - Published registry SDK: clean lockfile install, tests, and production build.
-- Packed SDK HEAD: pack the sibling SDK checkout, install the tarball without changing the lockfile, then run the same checks.
+- Packed SDK HEAD: pack the sibling SDK checkout, resolve its tarball into a disposable CI-only package/lockfile, clean-install that graph, then run the same checks. This avoids npm's reproducible Arborist `edgesOut` crash with `--no-save --package-lock=false`. Never commit this temporary dependency change; the registry lane and release lockfile remain authoritative.
 
 Raise the declared minimum only after the required SDK state has been published, regenerate the lockfile from the registry, and remove any temporary compatibility branches in the same change. Do not bump or roll back the dependency based solely on a local symlink. The packed-HEAD lane is an early compatibility signal, not the release source.
 

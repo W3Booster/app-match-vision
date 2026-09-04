@@ -45,11 +45,14 @@ jobs:
             sdk/package-lock.json
       - run: npm ci
         working-directory: sdk
-      - run: npm ci
-        working-directory: app
       - run: mkdir -p ../app/.sdk-pack && npm pack --pack-destination ../app/.sdk-pack
         working-directory: sdk
-      - run: npm install --no-save --package-lock=false ./.sdk-pack/*.tgz
+      # Resolve a disposable CI lockfile first. npm's no-save/lock-disabled
+      # replacement crashes in Arborist before it can test SDK compatibility.
+      # The published-registry lane and committed release lockfile stay intact.
+      - run: npm install --save-exact --package-lock-only ./.sdk-pack/*.tgz
+        working-directory: app
+      - run: npm ci
         working-directory: app
       - run: npm run check
         working-directory: app
