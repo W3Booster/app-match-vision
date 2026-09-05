@@ -1,6 +1,7 @@
+import type { GameContext } from '@w3booster/sdk';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
-import type { Hero, Match, OverlayRuntimeState, Player, Resources } from '@w3booster/sdk';
+import type { Hero, Match, Player, Resources } from '@w3booster/sdk';
 import { playerHeroes, playerResources } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { reversePlayerOrderForMatch, type MatchVisionOverlaySettings, type MatchVisionPlayerView } from '../../../domain';
@@ -19,7 +20,7 @@ export class TeamObserverBarComponent {
     readonly matchInput = input.required<Match>({ alias: 'match' });
     readonly playersInput = input.required<readonly MatchVisionPlayerView[]>({ alias: 'players' });
     readonly settingsInput = input.required<MatchVisionOverlaySettings>({ alias: 'settings' });
-    readonly runtimeInput = input<OverlayRuntimeState>({}, { alias: 'runtime' });
+    readonly gameContextInput = input<GameContext>({ hudScale: 1 }, { alias: 'gameContext' });
     readonly showMatchBar = computed(() => showsMatchBar(this.match));
     readonly teams = computed(() => orderedOverlayTeams(
         this.players,
@@ -31,7 +32,7 @@ export class TeamObserverBarComponent {
     get match(): Match { return this.matchInput(); }
     get players(): readonly MatchVisionPlayerView[] { return this.playersInput(); }
     get settings(): MatchVisionOverlaySettings { return this.settingsInput(); }
-    get runtime(): OverlayRuntimeState { return this.runtimeInput(); }
+    get gameContext(): GameContext { return this.gameContextInput(); }
     getPlayerResources(player: Player): Readonly<Resources> | undefined { return playerResources(player); }
     playerIdentity(player: MatchVisionPlayerView) { return player.displayIdentity; }
     upkeepState(supply: number): standardGame.UpkeepState | undefined { return standardGame.upkeepState(supply); }
@@ -41,7 +42,7 @@ export class TeamObserverBarComponent {
     getHeroIconBackground(hero: Hero): string | null { return this.assets.heroIconBackground(this.match, hero); }
     countryFlagBackground(country: string): string | null { return this.assets.countryFlagBackground(country); }
     getColorCode(player: Player): string {
-        return standardGame.presentationPlayerColor(player, this.match, this.players, this.runtime);
+        return standardGame.presentationPlayerColor(player, this.match, this.players, this.gameContext);
     }
     getRaceName(player: Player): string { return raceName(player.race); }
     trackPlayer(_index: number, player: Player): string { return player.id; }

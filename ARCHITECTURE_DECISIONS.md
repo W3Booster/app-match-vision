@@ -2,6 +2,14 @@
 
 This file records decisions that must survive repeated clean reviews. They may change when assumptions change or new evidence appears, but a change must update the decision, rationale, compatibility plan, and tests. Reviewers should report implementation bugs and stale assumptions; they should not reopen a documented tradeoff without new evidence.
 
+## ADR-007: Separate shared game context from Match Vision score
+
+Status: accepted, 2026-09-05.
+
+Match Vision consumes shared gameContext for scale, chat-input visibility and team colors, and application.data.matchScore for its counter. Overlay components take game context and score as separate inputs. No overlay scope is required by the new platform. Host write capability remains restricted to the official app; the stored score is not reset.
+
+The published minimum SDK is 1.1.0. Match Vision uses the SDK's `GameContext` and `gameContext()` directly; legacy context normalization belongs to the SDK. The app-specific score reader reads only application.data.matchScore. Missing app data remains missing; there is no legacy score fallback. Deploy the API and app contract together.
+
 ## ADR-006: Forking source explicitly replaces local identity, not production ownership
 
 Status: accepted, 2026-09-05.
@@ -12,7 +20,7 @@ Match Vision is both the production app and a public complex starting point. The
 
 Status: accepted, updated 2026-08-21.
 
-The package manifest and lockfile consume the published `@w3booster/sdk` registry artifact. The current minimum is 1.0.2. That hotfix publishes the runtime lifetime signal, initial-finished lifecycle option, structured retry state, mode-aware team ordering, display identity, head-to-head, asset resolver, nullable team grouping, and globally serialized setting writes used by this app. A local `node_modules/@w3booster/sdk` symlink is a development convenience, not a release artifact and not evidence that clean consumers can install an SDK change.
+The package manifest and lockfile consume the published `@w3booster/sdk` registry artifact. The current minimum is 1.1.0, which adds unconditional game context. Earlier 1.0.2 published the runtime lifetime signal, initial-finished lifecycle option, structured retry state, mode-aware team ordering, display identity, head-to-head, asset resolver, nullable team grouping, and globally serialized setting writes used by this app. A local `node_modules/@w3booster/sdk` symlink is a development convenience, not a release artifact and not evidence that clean consumers can install an SDK change.
 
 CI therefore has two deliberate lanes:
 

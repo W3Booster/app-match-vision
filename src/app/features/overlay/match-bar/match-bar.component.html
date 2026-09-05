@@ -19,7 +19,7 @@
                                 <div class="player-stats-losses">{{stats.losses}}L</div>
                             </div>
                         </ng-template>
-                        <div [class]="'player-color ' + (runtime().teamColors ? 'team-colors' : '')"
+                        <div [class]="'player-color ' + (gameContext().teamColors ? 'team-colors' : '')"
                             [style.color]="getColorCode(player)">
                             <div class="player-color-2"></div>
                         </div>

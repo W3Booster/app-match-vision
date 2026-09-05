@@ -1,8 +1,9 @@
+import { matchVisionScore } from '../../domain';
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, effect, input } from '@angular/core';
 import { canUseHostCapability } from '@w3booster/sdk';
 import type { DeepReadonly, HostLifecycleSnapshot, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
-import { isActiveMatch, matchScore, playerDisplayIdentity } from '@w3booster/sdk/selectors';
+import { isActiveMatch, playerDisplayIdentity } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
@@ -39,8 +40,8 @@ export class DashboardSurfaceComponent implements OnDestroy {
         return isActiveMatch(this.state().match);
     }
 
-    get wins(): number | undefined { return matchScore(this.state())?.wins; }
-    get losses(): number | undefined { return matchScore(this.state())?.losses; }
+    get wins(): number | undefined { return matchVisionScore(this.state())?.wins; }
+    get losses(): number | undefined { return matchVisionScore(this.state())?.losses; }
     get canChangeScore(): boolean { return canUseHostCapability(this.host(), 'match-score:write'); }
     get canOpenCompact(): boolean { return canUseHostCapability(this.host(), 'window:open'); }
     get canReversePlayers(): boolean { return canUseHostCapability(this.host(), 'settings:write'); }

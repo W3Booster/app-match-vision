@@ -1,6 +1,7 @@
+import type { GameContext } from '@w3booster/sdk';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
-import type { Match, OverlayRuntimeState, Player, PlayerStats } from '@w3booster/sdk';
+import type { Match, Player, PlayerStats } from '@w3booster/sdk';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import type { MatchVisionOverlaySettings, MatchVisionPlayerView } from '../../../domain';
 import { WarcraftAssetsService } from '../../../shared/warcraft/warcraft-assets.service';
@@ -18,7 +19,7 @@ export class MatchBarComponent {
     readonly match = input.required<Match>();
     readonly players = input.required<readonly MatchVisionPlayerView[]>();
     readonly settings = input.required<MatchVisionOverlaySettings>();
-    readonly runtime = input<OverlayRuntimeState>({});
+    readonly gameContext = input<GameContext>({ hudScale: 1 });
     readonly gameTime = input(0);
 
     readonly showMatchBar = computed(() => showsMatchBar(this.match()));
@@ -41,7 +42,7 @@ export class MatchBarComponent {
     }
 
     getColorCode(player: Player): string {
-        return standardGame.presentationPlayerColor(player, this.match(), this.players(), this.runtime());
+        return standardGame.presentationPlayerColor(player, this.match(), this.players(), this.gameContext());
     }
     getRaceName(player: Player): string { return raceName(player.race); }
     countryFlagBackground(country: string): string | null { return this.assets.countryFlagBackground(country); }

@@ -1,8 +1,9 @@
+import { matchVisionScore } from '../../domain';
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, effect, input } from '@angular/core';
 import { canUseHostCapability } from '@w3booster/sdk';
 import type { ConnectionStatus, DeepReadonly, HostLifecycleSnapshot, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
-import { groupPlayersByTeam, isActiveMatch, matchScore, playerDisplayIdentity } from '@w3booster/sdk/selectors';
+import { groupPlayersByTeam, isActiveMatch, playerDisplayIdentity } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
@@ -40,8 +41,8 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
         this.controls.destroy();
     }
     get matchActive(): boolean { return isActiveMatch(this.state().match); }
-    get wins(): number | undefined { return matchScore(this.state())?.wins; }
-    get losses(): number | undefined { return matchScore(this.state())?.losses; }
+    get wins(): number | undefined { return matchVisionScore(this.state())?.wins; }
+    get losses(): number | undefined { return matchVisionScore(this.state())?.losses; }
     get connectionLabel(): string { return dashboardStatusLabel(this.status(), this.matchActive, this.synchronized()); }
     get canChangeScore(): boolean { return canUseHostCapability(this.host(), 'match-score:write'); }
     get canReversePlayers(): boolean { return canUseHostCapability(this.host(), 'settings:write'); }

@@ -82,7 +82,8 @@ describe('overlay presentation', () => {
         expect(view.streamer).toBeNull();
         expect(view.opponent).toBeNull();
         expect(view.players.map(player => player.id)).toEqual(['0', '1']);
-        expect(view.runtime).toEqual({});
+        expect(view.gameContext).toEqual({ hudScale: 1 });
+        expect(view.score).toBeUndefined();
     });
 });
 

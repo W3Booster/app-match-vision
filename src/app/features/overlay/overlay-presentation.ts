@@ -1,15 +1,16 @@
-import type { DeepReadonly, MatchState, OverlayRuntimeState } from '@w3booster/sdk';
+import type { DeepReadonly, GameContext, MatchState } from '@w3booster/sdk';
 import type { AbilityCooldownState } from '@w3booster/sdk/standard-game/cooldowns';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import * as standardGameCooldowns from '@w3booster/sdk/standard-game/cooldowns';
-import { broadcasterPlayer, headToHeadPair, isObserverOrReplayMatch, overlayRuntime } from '@w3booster/sdk/selectors';
-import { matchVisionPlayers, matchVisionSettings, reversePlayerOrderForMatch } from '../../domain';
-import type { MatchVisionOverlaySettings, MatchVisionPlayerView, MatchVisionSettings } from '../../domain';
+import { gameContext as selectGameContext, broadcasterPlayer, headToHeadPair, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
+import { matchVisionScore, matchVisionPlayers, matchVisionSettings, reversePlayerOrderForMatch } from '../../domain';
+import type { MatchVisionScore, MatchVisionOverlaySettings, MatchVisionPlayerView, MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
 
 export interface OverlayPresentation {
     settings: MatchVisionOverlaySettings;
-    runtime: OverlayRuntimeState;
+    gameContext: GameContext;
+    score: MatchVisionScore | undefined;
     players: readonly MatchVisionPlayerView[];
     observerPlayers: readonly [MatchVisionPlayerView, MatchVisionPlayerView] | null;
     streamer: MatchVisionPlayerView | null;
@@ -27,7 +28,8 @@ export function createOverlayPresentation(
     resolvedSettings: DeepReadonly<W3BoosterAppSettings>
 ): OverlayPresentation {
     const settings = matchVisionSettings(state.match, resolvedSettings);
-    const runtime = overlayRuntime(state);
+    const gameContext = selectGameContext(state);
+    const score = matchVisionScore(state);
     const players = matchVisionPlayers(state, settings);
     const observerPlayers = headToHeadPair(players);
     const observerOrReplay = isObserverOrReplayMatch(state.match);
@@ -57,7 +59,8 @@ export function createOverlayPresentation(
 
     return {
         settings,
-        runtime,
+        gameContext,
+        score,
         players,
         observerPlayers,
         streamer,

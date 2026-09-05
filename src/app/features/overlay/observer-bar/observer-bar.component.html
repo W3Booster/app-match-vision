@@ -58,7 +58,7 @@
         <div
             [class]="(Boolean(settings.matchscoreEnabled) && !match.isReplay || Boolean(settings.matchscoreEnabledInReplay) && match.isReplay) ? 'show-matchscore' : 'hide-matchscore'">
             <div class="score-count left-score-count">
-                {{runtime.matchScore?.wins}}
+                {{score()?.wins}}
             </div>
             <div class="content">
                 <div [class]="Boolean(settings.headlineTopIsMainHeadline) ? 'headline' : 'subline'">
@@ -69,7 +69,7 @@
                 </div>
             </div>
             <div class="score-count right-score-count">
-                {{runtime.matchScore?.losses}}
+                {{score()?.losses}}
             </div>
         </div>
         <div> </div>

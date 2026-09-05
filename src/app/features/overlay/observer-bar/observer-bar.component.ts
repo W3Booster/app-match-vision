@@ -1,6 +1,8 @@
+import type { GameContext } from '@w3booster/sdk';
+import type { MatchVisionScore } from '../../../domain';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
-import type { Match, OverlayRuntimeState, Player, Resources } from '@w3booster/sdk';
+import type { Match, Player, Resources } from '@w3booster/sdk';
 import { playerResources } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import type { MatchVisionOverlaySettings, MatchVisionPlayerView } from '../../../domain';
@@ -19,7 +21,8 @@ export class ObserverBarComponent {
     readonly matchInput = input.required<Match>({ alias: 'match' });
     readonly playersInput = input.required<readonly [MatchVisionPlayerView, MatchVisionPlayerView]>({ alias: 'players' });
     readonly settingsInput = input.required<MatchVisionOverlaySettings>({ alias: 'settings' });
-    readonly runtimeInput = input<OverlayRuntimeState>({}, { alias: 'runtime' });
+    readonly score = input<MatchVisionScore>();
+    readonly gameContextInput = input<GameContext>({ hudScale: 1 }, { alias: 'gameContext' });
     readonly gameTimeInput = input(0, { alias: 'gameTime' });
     readonly dayNight = computed(() => dayNightSprite(this.gameTimeInput()));
     private readonly orderedPlayers = computed(() => {
@@ -33,7 +36,7 @@ export class ObserverBarComponent {
     get match(): Match { return this.matchInput(); }
     get players(): readonly [MatchVisionPlayerView, MatchVisionPlayerView] { return this.playersInput(); }
     get settings(): MatchVisionOverlaySettings { return this.settingsInput(); }
-    get runtime(): OverlayRuntimeState { return this.runtimeInput(); }
+    get gameContext(): GameContext { return this.gameContextInput(); }
     get player1(): MatchVisionPlayerView { return this.orderedPlayers()[0]; }
     get player2(): MatchVisionPlayerView { return this.orderedPlayers()[1]; }
     get formattedGameTime(): string { return standardGame.formatGameTime(this.gameTimeInput(), { compactHours: true }); }
@@ -46,7 +49,7 @@ export class ObserverBarComponent {
     upkeepState(supply: number): standardGame.UpkeepState | undefined { return standardGame.upkeepState(supply); }
     countryFlagBackground(country: string): string | null { return this.assets.countryFlagBackground(country); }
     getColorCode(player: Player): string {
-        return standardGame.presentationPlayerColor(player, this.match, this.players, this.runtime);
+        return standardGame.presentationPlayerColor(player, this.match, this.players, this.gameContext);
     }
     trackPlayerResource(
         _index: number,

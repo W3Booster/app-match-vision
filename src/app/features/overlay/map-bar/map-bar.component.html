@@ -6,7 +6,7 @@
     <div class="match-score"
         *ngIf="settings.matchscoreEnabled !== false && match.isObserver !== true && match.isReplay !== true">
         <span>Today's score is&nbsp;<span
-                style="color: #2bc332; font-weight:bold">{{runtime.matchScore?.wins || 0}}W</span>&nbsp;<span
-                style="color: #dc3c3c;font-weight:bold">{{runtime.matchScore?.losses || 0}}L</span></span>
+                style="color: #2bc332; font-weight:bold">{{score()?.wins || 0}}W</span>&nbsp;<span
+                style="color: #dc3c3c;font-weight:bold">{{score()?.losses || 0}}L</span></span>
     </div>
 </div>

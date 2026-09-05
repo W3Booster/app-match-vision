@@ -40,7 +40,7 @@ The compositor hosts enabled overlay apps and aligns the in-game Electron window
 2. Selectors never mutate SDK state.
 3. Presentation state is derived, not synchronized through component setters.
 4. Resolved app settings come from the generated application runtime lifecycle and its database-default resolver; Match Vision does not maintain a second settings model.
-5. Recorder overlay runtime values are normalized by the SDK and read from `state.overlay.runtime`; recorder-specific wire fields never enter application code.
+5. Shared context is read from `state.gameContext`; Match Vision’s counter comes from `state.application.data.matchScore`. Temporary domain readers support the previous normalized runtime during the rolling SDK/API migration.
 6. Trust-sensitive identity policy, including W3Champions four-player FFA masking, is enforced by the platform server before scoped state reaches the SDK or application.
 
 ## Lifecycle rules

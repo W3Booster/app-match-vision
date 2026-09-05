@@ -19,7 +19,7 @@
                     <div *ngFor="let player of teams()[0]; let playerIndex = index; trackBy: trackPlayer"
                         class="player player-{{playerIndex}} {{playerIdentity(player).hasAlias ? 'player-has-alias' : 'player-has-no-alias'}}"
                         [style.color]="getColorCode(player)">
-                        <div [class]="'player-color ' + (runtime.teamColors ? 'team-colors' : '')"
+                        <div [class]="'player-color ' + (gameContext.teamColors ? 'team-colors' : '')"
                             [style.color]="getColorCode(player)">
                             <div class="player-color-2"></div>
                         </div>
@@ -58,7 +58,7 @@
                     <div *ngFor="let player of teams()[1]; let playerIndex = index; trackBy: trackPlayer"
                         class="player player-{{playerIndex}} {{playerIdentity(player).hasAlias ? 'player-has-alias' : 'player-has-no-alias'}}"
                         [style.color]="getColorCode(player)">
-                        <div [class]="'player-color ' + (runtime.teamColors ? 'team-colors' : '')"
+                        <div [class]="'player-color ' + (gameContext.teamColors ? 'team-colors' : '')"
                             [style.color]="getColorCode(player)">
                             <div class="player-color-2"></div>
                         </div>

@@ -3,12 +3,12 @@
         <div class='App'>
             <div class="{{additionalCSSClasses}}">
                 <div>
-                    <div class="wc3-ui-area" [style.zoom]="runtime.hudScale || 1">
+                    <div class="wc3-ui-area" [style.zoom]="gameContext.hudScale || 1">
                         <div class="wc3-ui-area-container">
-                            <mv-map-bar [match]="state.match" [settings]="settings" [runtime]="runtime"></mv-map-bar>
+                            <mv-map-bar [score]="score" [match]="state.match" [settings]="settings" [gameContext]="gameContext"></mv-map-bar>
 
                             <ng-container *ngIf="streamer?.controlgroups as controlgroups">
-                                <div *ngIf="settings.controlgroupsEnabled !== false && !isObserverOrReplay() && runtime.chatbarOpen !== true"
+                                <div *ngIf="settings.controlgroupsEnabled !== false && !isObserverOrReplay() && gameContext.chatbarOpen !== true"
                                     class="ctrlgroup-wrapper">
                                     <ng-container *ngFor="let index of [0,1,2,3,4,5,6,7,8,9]; trackBy: trackPosition">
                                         <div [style.visibility]="(controlgroups[index] ? 'visible' : 'hidden')"
@@ -34,17 +34,17 @@
                         <div class="wc3-ui-area-container">
 
                             <mv-match-bar [match]="state.match" [players]="players" [gameTime]="state.match.gameTime"
-                                [settings]="settings" [runtime]="runtime"
+                                [settings]="settings" [gameContext]="gameContext"
                                 *ngIf="settings.topBarEnabled && !showObserverBar() && !showObserverTeamBar()">
                             </mv-match-bar>
 
-                            <mv-observer-bar [match]="state.match" [players]="observerPlayers!"
-                                [gameTime]="state.match.gameTime" [settings]="settings" [runtime]="runtime"
+                            <mv-observer-bar [score]="score" [match]="state.match" [players]="observerPlayers!"
+                                [gameTime]="state.match.gameTime" [settings]="settings" [gameContext]="gameContext"
                                 *ngIf="settings.topBarEnabled && showObserverBar()">
                             </mv-observer-bar>
 
                             <mv-team-observer-bar [match]="state.match" [players]="players"
-                                [settings]="settings" [runtime]="runtime"
+                                [settings]="settings" [gameContext]="gameContext"
                                 *ngIf="settings.topBarEnabled && showObserverTeamBar()">
                             </mv-team-observer-bar>
 
@@ -228,7 +228,7 @@
                                                 <div *ngIf="getCooldown(ability) as cooldown"
                                                     class="cooldown-wrapper">
                                                     <div *ngIf="cooldown.remaining > 0" class="cooldown">
-                                                        {{cooldown.remaining}}
+                                                        {{cooldownSeconds(cooldown.remaining)}}
                                                     </div>
                                                     <div *ngIf="cooldown.remaining > 0" class="cooldown-animation"
                                                         [style.height]="(cooldown.remaining / cooldown.total) * 100 + '%'">
@@ -255,7 +255,7 @@
                                                 <div *ngIf="getCooldown(ability) as cooldown"
                                                     class="cooldown-wrapper">
                                                     <div *ngIf="cooldown.remaining > 0" class="cooldown">
-                                                        {{cooldown.remaining}}
+                                                        {{cooldownSeconds(cooldown.remaining)}}
                                                     </div>
                                                     <div *ngIf="cooldown.remaining > 0" class="cooldown-animation"
                                                         [style.height]="(cooldown.remaining / cooldown.total) * 100 + '%'">

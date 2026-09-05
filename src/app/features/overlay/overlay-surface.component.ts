@@ -27,7 +27,8 @@ export class OverlaySurfaceComponent {
 
     get state(): MatchState<MatchVisionSettings> { return this.matchState(); }
     get settings() { return this.presentation().settings; }
-    get runtime() { return this.presentation().runtime; }
+    get gameContext() { return this.presentation().gameContext; }
+    get score() { return this.presentation().score; }
     get players(): readonly MatchVisionPlayerView[] { return this.presentation().players; }
     get observerPlayers(): readonly [MatchVisionPlayerView, MatchVisionPlayerView] | null {
         return this.presentation().observerPlayers;
@@ -53,6 +54,7 @@ export class OverlaySurfaceComponent {
     heroHealthRatio(hero: Hero): number { return standardGame.valuePoolRatio(hero.hitpoints); }
     heroManaRatio(hero: Hero): number { return standardGame.valuePoolRatio(hero.mana); }
     getCooldown(ability: HeroAbility) { return this.presentation().abilityCooldowns.get(ability); }
+    cooldownSeconds(remaining: number): number { return Math.max(0, Math.ceil(remaining)); }
     getRequiredAvatarCoverCountForObserverTeamBar(): number { return this.presentation().teamAvatarCovers; }
     getAvatarCoverTop(index: number): string { return index === 1 ? '12.90%' : index === 2 ? '21.55%' : '4.30%'; }
     trackHero(_index: number, hero: Hero): string { return hero.id; }
