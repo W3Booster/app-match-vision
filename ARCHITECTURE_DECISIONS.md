@@ -1,6 +1,56 @@
 # Match Vision architecture decisions
 
+## ADR-009: SDK 2 is the single current prerelease contract
+
+Status: accepted, 2026-09-05; supersedes the SDK 1 compatibility statements below.
+
+The registry minimum is SDK 2.0.0 (published on `next`). Match Vision uses required
+`gameContext` and the SDK's declared `match.result`. Generic storage commands use
+parsers for both document reads and commit acknowledgements; unparsed generic
+results are `unknown`. The obsolete score methods in MatchControls are removed.
+The generated binding comes from the database after migration 003 removed the
+retired scope. Platform and deployed app updates must be coordinated.
+
+Preserve `scripts/migrate-legacy-score.mjs`, retained history-data migration,
+corruption handling, and user/app storage isolation. Pre-v2 production data must
+survive the v2 release. The registry and packed SDK HEAD verification lanes remain.
+
+
 This file records decisions that must survive repeated clean reviews. They may change when assumptions change or new evidence appears, but a change must update the decision, rationale, compatibility plan, and tests. Reviewers should report implementation bugs and stale assumptions; they should not reopen a documented tradeoff without new evidence.
+
+## ADR-008: Match Vision owns scoring through generic platform primitives
+
+Status: accepted, 2026-09-05; supersedes ADR-007's official-only score host controls.
+
+The app consumes the recorder outcome from SDK `state.match.result` and player
+facts from SDK state. There is no separate result channel or recorder parser.
+The API retains the current finished match so initial hydration and reconnects
+can reconcile it. A result may arrive after the first finished snapshot; the app
+therefore observes state hydration, not only the first ended lifecycle event.
+Incomplete eligibility stays pending until hydrated; absent results never count.
+
+The app owns all scoring: its own human-player wins/losses, the W3Champions
+loss-at-most-120-seconds exclusion, the automatic toggle, reset after five idle
+hours, manual adjustments and retained processed match IDs. Dashboard, compact
+and background routes use the same controller; overlay routes only render.
+
+Generic SDK host commands read and compare-and-swap the app's opaque document:
+`application.storage.get` returns `{revision,data}` and
+`application.storage.commit` accepts `{expectedRevision,data}` and returns
+`{committed}`. App fields are `matchScore` and `automaticScore`. No client handler
+knows those fields. A losing writer rereads and recomputes; lost acknowledgements
+cannot count a completed result twice. State streams deliver the stored data to
+all overlay surfaces. Persistence is per desktop profile/user/app, not cloud sync.
+
+SDK 2 declares and validates match outcomes. The app checks whether a delivered
+outcome is eligible for its scoring rules. Check the registry and packed SDK HEAD lanes.
+
+Register `backgroundPath: '?view=background'` to count while another app is open.
+Legacy import is a one-time rollout action using `scripts/migrate-legacy-score.mjs`
+in the desktop host's storage context, with the correct authenticated user and
+saved automatic preference. It never overwrites an existing app document or
+removes the old score. Background execution and API/client/app changes need a
+coordinated rollout; builds do not perform it.
 
 ## ADR-007: Separate shared game context from Match Vision score
 
@@ -8,7 +58,7 @@ Status: accepted, 2026-09-05.
 
 Match Vision consumes shared gameContext for scale, chat-input visibility and team colors, and application.data.matchScore for its counter. Overlay components take game context and score as separate inputs. No overlay scope is required by the new platform. Host write capability remains restricted to the official app; the stored score is not reset.
 
-The published minimum SDK is 1.1.0. Match Vision uses the SDK's `GameContext` and `gameContext()` directly; legacy context normalization belongs to the SDK. The app-specific score reader reads only application.data.matchScore. Missing app data remains missing; there is no legacy score fallback. Deploy the API and app contract together.
+The published minimum SDK is 2.0.0. Match Vision uses the SDK's `GameContext` and `gameContext()` directly; the SDK rejects retired context shapes. The app-specific score reader reads only application.data.matchScore. Missing app data remains missing; there is no legacy score fallback. Deploy the API and app contract together.
 
 ## ADR-006: Forking source explicitly replaces local identity, not production ownership
 
@@ -20,7 +70,7 @@ Match Vision is both the production app and a public complex starting point. The
 
 Status: accepted, updated 2026-08-21.
 
-The package manifest and lockfile consume the published `@w3booster/sdk` registry artifact. The current minimum is 1.1.0, which adds unconditional game context. Earlier 1.0.2 published the runtime lifetime signal, initial-finished lifecycle option, structured retry state, mode-aware team ordering, display identity, head-to-head, asset resolver, nullable team grouping, and globally serialized setting writes used by this app. A local `node_modules/@w3booster/sdk` symlink is a development convenience, not a release artifact and not evidence that clean consumers can install an SDK change.
+The package manifest and lockfile consume the published `@w3booster/sdk` registry artifact. The current minimum is 2.0.0, which requires unconditional game context and the current protocol. Earlier 1.0.2 published the runtime lifetime signal, initial-finished lifecycle option, structured retry state, mode-aware team ordering, display identity, head-to-head, asset resolver, nullable team grouping, and globally serialized setting writes used by this app. A local `node_modules/@w3booster/sdk` symlink is a development convenience, not a release artifact and not evidence that clean consumers can install an SDK change.
 
 CI therefore has two deliberate lanes:
 
@@ -84,6 +134,15 @@ An active history entry is an idempotent upsert, not insert-only. A later hydrat
 History written by an older app version may lack player IDs. During its first hydrated reconciliation, each id-less legacy slot is claimed positionally at most once and gains the stable ID; it must not be appended again as a duplicate. Subsequent updates use stable identity.
 
 `match.endedAt` is authoritative when supplied but optional in the SDK contract. The lifecycle subscription opts into the current finished match. A first hydrated `finished` snapshot is always recorded; when it lacks `endedAt`, history uses the first local observation time and marks its source as observed, exactly like an ended lifecycle event fallback. Repeated publications of that same terminal snapshot must not move the fallback forward or write storage again; a later authoritative timestamp upgrades it. Raw-state reconciliation remains as an idempotent hydration safeguard, not as a version compatibility path.
+
+History persists the optional confirmed local-player result independently of automatic
+score eligibility. Later result updates enrich the same entry and survive reloads;
+missing results never imply a loss. Both dashboards show the result and player races.
+Only the current match can remain live. Hydration or a new match closes other
+unfinished entries with an observed end time; an authorized no-match snapshot
+closes all of them. Disconnects and snapshots without match access do not establish
+an end. This also repairs retained history that missed earlier end events, without
+inventing their outcomes.
 
 Reverse order is scoped by match ID so a saved choice cannot leak into the next match. It applies consistently to two-team and multi-team/FFA observer layouts.
 

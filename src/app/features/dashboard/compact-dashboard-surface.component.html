@@ -8,7 +8,13 @@
     </header>
 
     <div class="compact-content" [style.--compact-font-size.px]="fontSize">
-        <section class="compact-section score-section">
+        <div class="action-error" role="alert" *ngIf="score.error()">{{score.error()}}</div>
+    <div class="automatic-score-row"><label class="automatic-score"><input type="checkbox" [checked]="score.document()?.automatic ?? false"
+        [disabled]="!canChangeScore" (change)="score.run({ automatic: $any($event.target).checked })">
+        Update wins and losses automatically</label>
+        <mv-automatic-score-help></mv-automatic-score-help>
+    </div>
+    <section class="compact-section score-section">
             <header>
                 <div><span>SESSION</span><h1>Match score</h1></div>
                 <button type="button" class="quiet" [disabled]="controls.busy() || !canChangeScore" (click)="resetScore()" title="Reset match score">
@@ -52,13 +58,9 @@
             <header><div><span>RECENT</span><h2>Match history</h2></div></header>
             <div class="empty" *ngIf="!history.entries().length">No history yet</div>
             <article class="history-entry" *ngFor="let match of history.entries()">
-                <header><strong>{{match.startedAt | date:'shortTime'}} · {{match.map}}</strong><span [class.live]="!match.endedAt">{{match.endedAt ? 'Finished' : 'Running'}}</span></header>
-                <div class="history-teams">
-                    <ng-container *ngFor="let team of historyTeams(match); let first = first">
-                        <b *ngIf="!first">vs</b>
-                        <span class="history-team"><ng-container *ngFor="let player of team.players; let last = last">{{player.name}} ({{raceInitial(player.race)}})<ng-container *ngIf="!last">, </ng-container></ng-container></span>
-                    </ng-container>
-                </div>
+                <header><strong>{{match.startedAt | date:'shortTime'}} · {{match.map}}</strong><span class="history-result" [class.live]="!match.endedAt && !match.result" [attr.data-outcome]="match.result?.outcome">{{historyStatus(match)}}</span></header>
+                <div class="history-mode">{{match.mode}} · {{match.players.length}} players</div>
+                <mv-match-history-players [entry]="match"></mv-match-history-players>
             </article>
         </section>
     </div>

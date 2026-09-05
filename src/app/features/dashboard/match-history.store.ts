@@ -11,6 +11,7 @@ export interface MatchHistoryEntry {
     startedAtSource?: 'match' | 'observed';
     endedAt?: string;
     endedAtSource?: 'match' | 'observed';
+    result?: { playerId: string; outcome: 'won' | 'lost' };
     players: Array<{ id?: string; name: string; race: string; team: number | null }>;
 }
 
@@ -46,11 +47,16 @@ export class MatchHistoryStore {
         client.subscribeMatchLifecycle(event => {
             if (event.phase === 'started') this.record(event.state, event.observedAt);
             else {
+                if (event.state.match.id === event.match.id) {
+                    this.record(event.state, event.match.startedAt ?? event.observedAt);
+                }
                 const endedAt = event.match.endedAt;
                 this.finish(event.match.id, endedAt ?? event.observedAt, endedAt ? 'match' : 'observed');
             }
         }, { signal: lifetime.signal, includeCurrentFinished: true });
         client.state.subscribe(state => {
+            // Null and an ungranted neutral match do not establish that a game ended.
+            if (!state || !state.capabilities.includes('match')) return;
             if (state?.match.status === 'running' || state?.match.status === 'starting') {
                 this.record(state);
             } else if (state?.match.status === 'finished') {
@@ -61,6 +67,8 @@ export class MatchHistoryStore {
                     state.match.endedAt ?? observedAt,
                     state.match.endedAt ? 'match' : 'observed'
                 );
+            } else if (state.match.status === 'none') {
+                this.closeOtherMatches();
             }
         }, { signal: lifetime.signal });
     }
@@ -73,6 +81,9 @@ export class MatchHistoryStore {
     record(state: MatchState<MatchVisionSettings>, observedAt = new Date().toISOString()): void {
         if (!state.match.id) return;
         const id = String(state.match.id);
+        // Current state is a single match, including after an app reload that missed
+        // an end event. Older unfinished entries can no longer be live.
+        this.closeOtherMatches(id);
         const players: MatchHistoryEntry['players'] = state.players.map(player => {
             const identity = playerDisplayIdentity(player, { stripBattleTagDiscriminator: true });
             const hasDisplayName = Boolean(player.name?.trim() || player.mainAccount?.name?.trim());
@@ -91,6 +102,8 @@ export class MatchHistoryStore {
             startedAtSource: (state.match.startedAt ? 'match' : 'observed') as 'match' | 'observed',
             players
         };
+        const result = confirmedHistoryResult(state);
+        if (result) candidate.result = result;
         let changed = false;
         this.history.update(entries => {
             const existingIndex = entries.findIndex(item => item.id === id);
@@ -109,6 +122,7 @@ export class MatchHistoryStore {
                 map: state.match.map || existing.map,
                 mode: candidate.mode,
                 ...authoritativeStart,
+                ...(result ? { result } : {}),
                 players: nextPlayers
             };
             if (sameHistoryEntry(existing, reconciled)) return entries;
@@ -143,6 +157,16 @@ export class MatchHistoryStore {
         } catch { return []; }
     }
 
+    private closeOtherMatches(currentId?: string, observedAt = new Date().toISOString()): void {
+        let changed = false;
+        this.history.update(entries => entries.map(entry => {
+            if (entry.id === currentId || entry.endedAt) return entry;
+            changed = true;
+            return { ...entry, endedAt: observedAt, endedAtSource: 'observed' as const };
+        }));
+        if (changed) this.write();
+    }
+
     private write(): void {
         try { this.storage.setItem(HISTORY_KEY, JSON.stringify(this.history())); }
         catch { /* Storage is optional in embedded/private browser contexts. */ }
@@ -159,6 +183,7 @@ function isMatchHistoryEntry(value: unknown): value is MatchHistoryEntry {
         (entry.startedAtSource === undefined || entry.startedAtSource === 'match' || entry.startedAtSource === 'observed') &&
         (entry.endedAt === undefined || typeof entry.endedAt === 'string' && Number.isFinite(Date.parse(entry.endedAt))) &&
         (entry.endedAtSource === undefined || entry.endedAtSource === 'match' || entry.endedAtSource === 'observed') &&
+        (entry.result === undefined || isHistoryResult(entry.result)) &&
         Array.isArray(entry.players) && entry.players.every(player =>
             player !== null && typeof player === 'object' &&
             (player.id === undefined || typeof player.id === 'string') &&
@@ -201,10 +226,24 @@ function mergeHistoryPlayers(
 
 function sameHistoryEntry(left: MatchHistoryEntry, right: MatchHistoryEntry): boolean {
     return left.map === right.map && left.mode === right.mode &&
+        left.result?.playerId === right.result?.playerId && left.result?.outcome === right.result?.outcome &&
         left.startedAt === right.startedAt && left.startedAtSource === right.startedAtSource &&
         left.players.length === right.players.length && left.players.every((player, index) => {
             const other = right.players[index];
             return !!other && player.id === other.id && player.name === other.name &&
                 player.race === other.race && player.team === other.team;
         });
+}
+
+function isHistoryResult(value: unknown): value is NonNullable<MatchHistoryEntry['result']> {
+    if (!value || typeof value !== 'object') return false;
+    const result = value as Partial<NonNullable<MatchHistoryEntry['result']>>;
+    return typeof result.playerId === 'string' && result.playerId.length > 0 &&
+        (result.outcome === 'won' || result.outcome === 'lost');
+}
+
+function confirmedHistoryResult(state: MatchState<MatchVisionSettings>): MatchHistoryEntry['result'] {
+    if (state.match.status !== 'finished' || state.match.isObserver || state.match.isReplay ||
+        !('result' in state.match) || !isHistoryResult(state.match.result)) return undefined;
+    return { playerId: state.match.result.playerId, outcome: state.match.result.outcome };
 }

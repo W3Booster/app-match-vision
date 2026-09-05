@@ -8,7 +8,7 @@
     "start-ssl": "ng serve --port 8082 --ssl --ssl-key cert/server.key --ssl-cert cert/server.crt",
     "build": "ng build --configuration production",
     "test": "vitest run",
-    "check": "node --test scripts/fork.node-test.mjs && npm test && npm run build",
+    "check": "node --test scripts/*.node-test.mjs && npm test && npm run build",
     "app:fork": "node scripts/fork.mjs",
     "w3booster:sync": "w3booster-settings --output \"src/app/core/w3booster-app.generated.ts\"",
     "w3booster:check": "w3booster-settings --output \"src/app/core/w3booster-app.generated.ts\" --check",
@@ -20,7 +20,7 @@
     "@angular/compiler": "^22.1.0",
     "@angular/core": "^22.1.0",
     "@angular/platform-browser": "^22.1.0",
-    "@w3booster/sdk": "^1.1.0",
+    "@w3booster/sdk": "^2.0.0",
     "rxjs": "^7.8.2",
     "tslib": "^2.8.1"
   },

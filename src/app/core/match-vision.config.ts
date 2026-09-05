@@ -9,7 +9,7 @@ export function connectionOptions(search: string): W3BoosterAppConnectOptions {
         demo: demo ? { settings: w3boosterApp.settingsDefaults } : false,
         // The regular dashboard fills its host viewport and owns scrolling.
         // Other surfaces keep SDK content-height reporting enabled.
-        autoResize: parameters.get('view') === 'dashboard' ? false : undefined,
+        autoResize: ['dashboard', 'background'].includes(parameters.get('view') || '') ? false : undefined,
         // Let the SDK retry transient startup failures. Authorization,
         // configuration, and protocol failures still surface immediately.
         retry: demo ? false : true

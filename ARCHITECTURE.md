@@ -32,7 +32,7 @@ Features -> Shared asset URL service
 
 ## Platform boundary
 
-The compositor hosts enabled overlay apps and aligns the in-game Electron window with Warcraft III. Match Vision owns all pixels rendered inside its iframe. Host actions such as opening the compact window or changing the match score go through `client.host`; application code never calls platform HTTP endpoints directly.
+The compositor hosts enabled overlay apps and aligns the in-game Electron window with Warcraft III. Match Vision owns all pixels rendered inside its iframe. Host actions such as opening the compact window and reading/committing opaque app storage go through `client.host`; application code never calls platform HTTP endpoints directly.
 
 ## State rules
 
@@ -47,6 +47,6 @@ The compositor hosts enabled overlay apps and aligns the in-game Electron window
 
 1. One SDK application runtime owns the client connection, retry loop, readiness wait, host capability discovery, resolved settings, and teardown; one atomic runtime subscription feeds Angular's status, state, freshness, error, and host signals.
 2. Feature stores use their own abort signal, so replacing or destroying a feature removes all of its listeners atomically.
-3. `open()` means a transport is open; `whenReady()` may return preserved state, while `whenSynchronized()` means a fresh complete state is safe to render. The older `connect()` name is a deprecated alias.
+3. `open()` means a transport is open; `whenReady()` may return preserved state, while `whenSynchronized()` means a fresh complete state is safe to render.
 4. Permission, configuration, and protocol errors are surfaced by the SDK. Application code does not classify failures for a custom retry loop.
 5. `runtime.stop()` is the awaited teardown boundary and is safe to call repeatedly.

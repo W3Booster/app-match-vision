@@ -1,0 +1,23 @@
+<button type="button" class="help" aria-haspopup="dialog" (click)="explanation.showModal()">How it works</button>
+<dialog #explanation aria-label="Automatic wins and losses">
+    <header>
+        <h2>Automatic wins and losses</h2>
+        <button type="button" class="close" aria-label="Close explanation" autofocus (click)="explanation.close()">×</button>
+    </header>
+    <div class="body">
+        <p>Track your performance as you play, without updating the overlay score after every game.</p>
+        <p>When Match Vision receives your finished game's result, it adds one win or loss to your session score. Each game counts only once, even if you reopen the app.</p>
+        <h3>Not counted</h3>
+        <ul>
+            <li>Games against the computer or with any AI participants.</li>
+            <li>Replays and games you observe instead of playing.</li>
+            <li>W3Champions losses in games lasting two minutes or less. Short wins still count.</li>
+            <li>Games without a confirmed result or enough player data to check these rules.</li>
+        </ul>
+        <h3>A session score, not a daily total</h3>
+        <p>The score resets after more than five hours without a score update—not at midnight. Counted games and manual score changes keep the session active.</p>
+        <h3>You stay in control</h3>
+        <p>Use + / − to correct the score, or Reset to start at zero. Turning automatic updates off leaves the score available for manual editing; results received while it is off are not added later.</p>
+    </div>
+    <footer><button type="button" (click)="explanation.close()">Got it</button></footer>
+</dialog>

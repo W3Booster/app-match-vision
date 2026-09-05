@@ -31,19 +31,19 @@ describe('MatchControls', () => {
     it('exposes acknowledged host failures and pending state to the UI', async () => {
         const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
         let rejectAction: ((error: Error) => void) | undefined;
-        const changeMatchScore = vi.fn(() => new Promise<void>((_resolve, reject) => {
+        const openWindow = vi.fn(() => new Promise<void>((_resolve, reject) => {
             rejectAction = reject;
         }));
-        const client = { host: { changeMatchScore } };
+        const client = { host: { openWindow } };
         const controls = new MatchControls();
 
-        const action = controls.changeScore(client, 'wins', 1);
+        const action = controls.openWindow(client, {});
         expect(controls.busy()).toBe(true);
         rejectAction?.(new Error('host unavailable'));
         await action;
 
         expect(controls.busy()).toBe(false);
-        expect(controls.error()).toBe('The match score could not be updated.');
+        expect(controls.error()).toBe('The compact Match Vision window could not be opened.');
         controls.clearError();
         expect(controls.error()).toBe('');
         consoleError.mockRestore();
@@ -52,16 +52,16 @@ describe('MatchControls', () => {
     it('does not let an older failed action overwrite a newer successful result', async () => {
         const consoleError = vi.spyOn(console, 'error').mockImplementation(() => undefined);
         let rejectFirst: ((error: Error) => void) | undefined;
-        const changeMatchScore = vi.fn()
+        const openWindow = vi.fn()
             .mockImplementationOnce(() => new Promise<void>((_resolve, reject) => {
                 rejectFirst = reject;
             }))
             .mockResolvedValueOnce(undefined);
-        const client = { host: { changeMatchScore } };
+        const client = { host: { openWindow } };
         const controls = new MatchControls();
 
-        const first = controls.changeScore(client, 'wins', 1);
-        await controls.changeScore(client, 'losses', 1);
+        const first = controls.openWindow(client, {});
+        await controls.openWindow(client, {});
         rejectFirst?.(new Error('late failure'));
         await first;
 
@@ -72,7 +72,7 @@ describe('MatchControls', () => {
 
     it('cancels pending host actions without presenting teardown as an error', async () => {
         let actionSignal: AbortSignal | undefined;
-        const changeMatchScore = vi.fn((_side, _delta, options: { signal: AbortSignal }) => {
+        const openWindow = vi.fn((_window, options: { signal: AbortSignal }) => {
             actionSignal = options.signal;
             return new Promise<void>((_resolve, reject) => {
                 options.signal.addEventListener(
@@ -82,10 +82,10 @@ describe('MatchControls', () => {
                 );
             });
         });
-        const client = { host: { changeMatchScore } };
+        const client = { host: { openWindow } };
         const controls = new MatchControls();
 
-        const action = controls.changeScore(client, 'wins', 1);
+        const action = controls.openWindow(client, {});
         expect(controls.busy()).toBe(true);
         controls.destroy();
         await action;

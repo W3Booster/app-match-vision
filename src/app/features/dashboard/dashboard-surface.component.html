@@ -1,12 +1,18 @@
 <main class="overlay-dashboard">
     <header class="dashboard-hero">
-        <div><span>MATCH VISION</span><h1>Match dashboard</h1><p>Live match data and visual controls, powered by the W3Booster SDK.</p></div>
+        <div><span>MATCH VISION</span><h1>Match dashboard</h1><p>Follow your match and manage your overlay score.</p></div>
         <button type="button" class="primary" [disabled]="controls.busy() || !canOpenCompact" (click)="openCompact()"><i class="fa fa-external-link-alt"></i> Open compact window</button>
     </header>
 
-    <div class="sync-notice" role="status" *ngIf="!synchronized()">Showing the last complete match state while fresh data synchronizes.</div>
+    <div class="sync-notice" role="status" *ngIf="!synchronized()">Updating match details. Showing the latest available information.</div>
     <div class="action-error" role="alert" *ngIf="controls.error() as error">{{error}} <button type="button" (click)="controls.clearError()" aria-label="Dismiss action error">×</button></div>
 
+    <div class="action-error" role="alert" *ngIf="score.error()">{{score.error()}}</div>
+    <div class="automatic-score-row"><label class="automatic-score"><input type="checkbox" [checked]="score.document()?.automatic ?? false"
+        [disabled]="!canChangeScore" (change)="score.run({ automatic: $any($event.target).checked })">
+        Update wins and losses automatically</label>
+        <mv-automatic-score-help></mv-automatic-score-help>
+    </div>
     <section class="score-panel">
         <div class="score-label"><span>SESSION SCORE</span><small>Update the score shown by your overlay.</small></div>
         <div class="score-side win"><button [disabled]="controls.busy() || !canChangeScore" (click)="changeScore('wins', -1)">−</button><strong>{{wins}}</strong><button [disabled]="controls.busy() || !canChangeScore" (click)="changeScore('wins', 1)">+</button><span>Wins</span></div>
@@ -34,13 +40,13 @@
     </section>
 
     <section class="dashboard-card match-history">
-        <header><div><span>RECENT</span><h2>Match history</h2></div><small>Stored by this app on this device</small></header>
+        <header><div><span>RECENT</span><h2>Match history</h2></div></header>
         <div class="empty small" *ngIf="!history.entries().length">No matches recorded yet.</div>
         <article *ngFor="let match of history.entries()">
             <time>{{match.startedAt | date:'shortTime'}}</time>
             <span><b>{{match.map}}</b><small>{{match.mode}} · {{match.players.length}} players</small></span>
-            <div class="history-players"><ng-container *ngFor="let player of match.players; let last = last">{{player.name}}<i *ngIf="!last"> · </i></ng-container></div>
-            <em [class.live]="!match.endedAt">{{match.endedAt ? 'Finished' : 'Live'}}</em>
+            <mv-match-history-players class="history-players" [entry]="match"></mv-match-history-players>
+            <em class="history-result" [class.live]="!match.endedAt && !match.result" [attr.data-outcome]="match.result?.outcome">{{historyStatus(match)}}</em>
         </article>
     </section>
 </main>

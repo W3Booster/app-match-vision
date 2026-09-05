@@ -1,6 +1,6 @@
 /* Generated from the W3Booster application database. Do not edit directly. */
 // @w3booster-client-id app_7bd7c42015297f608f1e5436
-// @w3booster-revision 0f0f477fe05eab1a72414e94402b2bcc0a6efc0369b919935a0fd43a791e2bf9
+// @w3booster-revision 01b998754543b87e2c52ad634a5684f9e48abe236c1e2025a107870a27df786c
 
 import type { W3BoosterClient } from '@w3booster/sdk';
 import { defineApplication, type ApplicationConnectOptions, type ApplicationRuntime, type ApplicationRuntimeSnapshot } from '@w3booster/sdk/app';
@@ -30,7 +30,7 @@ export interface W3BoosterAppSettings {
     researchesEnabled: boolean;
     researchesOfAttackAndArmorEnabled: boolean;
     researchesInQueueEnabled: boolean;
-    researchesShowAllEnabled: false | true;
+    researchesShowAllEnabled: boolean;
   };
   observer: {
     mapBarEnabled: boolean;
@@ -50,7 +50,7 @@ export interface W3BoosterAppSettings {
     researchesEnabled: boolean;
     researchesOfAttackAndArmorEnabled: boolean;
     researchesInQueueEnabled: boolean;
-    researchesShowAllEnabled: false | true;
+    researchesShowAllEnabled: boolean;
   };
 }
 export type W3BoosterAppDeliveredSettings = DeepPartial<W3BoosterAppSettings>;
@@ -59,8 +59,8 @@ export type W3BoosterAppRuntime<TOverlayExtensions extends object = object> = Ap
 export type W3BoosterAppRuntimeSnapshot<TOverlayExtensions extends object = object> = ApplicationRuntimeSnapshot<W3BoosterAppSettings, TOverlayExtensions>;
 const w3boosterAppDefinition = {
   clientId: "app_7bd7c42015297f608f1e5436",
-  revision: "0f0f477fe05eab1a72414e94402b2bcc0a6efc0369b919935a0fd43a791e2bf9",
-  scopes: ["match:read","players:read","stats:read","heroes:read","upgrades:read","resources:read","controlgroups:read","overlay:read"],
+  revision: "01b998754543b87e2c52ad634a5684f9e48abe236c1e2025a107870a27df786c",
+  scopes: ["match:read","players:read","stats:read","heroes:read","upgrades:read","resources:read","controlgroups:read"],
   settingsDefaults: {
     "player": {
       "mapBarEnabled": true,

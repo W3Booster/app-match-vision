@@ -1,5 +1,5 @@
-<div class="connection-error" role="alert" *ngIf="surface !== 'overlay' && connection.error()">{{connection.error()}}</div>
-<div class="connection-state" role="status" *ngIf="surface !== 'overlay' && !connection.state() && !connection.error()">
+<div class="connection-error" role="alert" *ngIf="surface !== 'overlay' && surface !== 'background' && connection.error()">{{connection.error()}}</div>
+<div class="connection-state" role="status" *ngIf="surface !== 'overlay' && surface !== 'background' && !connection.state() && !connection.error()">
     <i aria-hidden="true"></i><span>{{connectionStatusMessage}}</span>
 </div>
 

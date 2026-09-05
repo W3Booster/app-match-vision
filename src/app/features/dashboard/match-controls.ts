@@ -1,6 +1,6 @@
 import { computed, signal } from '@angular/core';
 import { isAbortError } from '@w3booster/sdk';
-import type { MatchScoreSide, OpenWindowOptions, W3BoosterClient } from '@w3booster/sdk';
+import type { OpenWindowOptions, W3BoosterClient } from '@w3booster/sdk';
 import type { MatchVisionSettings } from '../../domain';
 
 type MatchVisionHost = W3BoosterClient<MatchVisionSettings>['host'];
@@ -26,20 +26,6 @@ export class MatchControls {
     reconcileReversePlayerOrder(saved: boolean): void {
         const pending = this.reverseOverride();
         if (pending !== null && pending === saved) this.reverseOverride.set(null);
-    }
-
-    async changeScore(client: HostClient<'changeMatchScore'>, side: MatchScoreSide, delta: 1 | -1): Promise<void> {
-        await this.perform(
-            () => client.host.changeMatchScore(side, delta, { signal: this.lifetime.signal }),
-            'The match score could not be updated.'
-        );
-    }
-
-    async resetScore(client: HostClient<'resetMatchScore'>): Promise<void> {
-        await this.perform(
-            () => client.host.resetMatchScore({ signal: this.lifetime.signal }),
-            'The match score could not be reset.'
-        );
     }
 
     async openWindow(client: HostClient<'openWindow'>, options: OpenWindowOptions): Promise<void> {

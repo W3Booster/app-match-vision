@@ -1,6 +1,9 @@
+import { MatchHistoryPlayersComponent, matchHistoryStatus } from './match-history-players.component';
+import { AutomaticScoreService } from '../../core/automatic-score.service';
+import { AutomaticScoreHelpComponent } from './automatic-score-help.component';
 import { matchVisionScore } from '../../domain';
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, computed, effect, input } from '@angular/core';
+import { Component, OnDestroy, computed, effect, inject, input } from '@angular/core';
 import { canUseHostCapability } from '@w3booster/sdk';
 import type { DeepReadonly, HostLifecycleSnapshot, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
 import { isActiveMatch, playerDisplayIdentity } from '@w3booster/sdk/selectors';
@@ -12,7 +15,7 @@ import { MatchControls } from './match-controls';
 
 @Component({
     selector: 'mv-dashboard-surface',
-    imports: [CommonModule],
+    imports: [CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
     templateUrl: './dashboard-surface.component.html',
     styleUrl: './dashboard-surface.component.scss'
 })
@@ -23,6 +26,8 @@ export class DashboardSurfaceComponent implements OnDestroy {
     readonly settings = input.required<DeepReadonly<W3BoosterAppSettings>>();
     readonly synchronized = input.required<boolean>();
     readonly history = new MatchHistoryStore();
+    readonly historyStatus = matchHistoryStatus;
+    readonly score = inject(AutomaticScoreService);
     readonly controls = new MatchControls();
     readonly teams = computed(() => matchVisionTeams(this.state(), this.displayedReversePlayerOrder()));
 
@@ -42,15 +47,15 @@ export class DashboardSurfaceComponent implements OnDestroy {
 
     get wins(): number | undefined { return matchVisionScore(this.state())?.wins; }
     get losses(): number | undefined { return matchVisionScore(this.state())?.losses; }
-    get canChangeScore(): boolean { return canUseHostCapability(this.host(), 'match-score:write'); }
+    get canChangeScore(): boolean { return !!this.score.document() && !this.score.busy() && canUseHostCapability(this.host(), 'command'); }
     get canOpenCompact(): boolean { return canUseHostCapability(this.host(), 'window:open'); }
     get canReversePlayers(): boolean { return canUseHostCapability(this.host(), 'settings:write'); }
 
     async changeScore(side: 'wins' | 'losses', delta: 1 | -1): Promise<void> {
-        await this.controls.changeScore(this.client(), side, delta);
+        await this.score.run({ side, delta });
     }
     async resetScore(): Promise<void> {
-        await this.controls.resetScore(this.client());
+        await this.score.run({ reset: true });
     }
     async reversePlayers(): Promise<void> {
         await this.controls.reversePlayers(this.client(), this.state().match.id, this.savedReversePlayerOrder());

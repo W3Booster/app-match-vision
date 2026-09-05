@@ -1,21 +1,22 @@
+import { MatchHistoryPlayersComponent, matchHistoryStatus } from './match-history-players.component';
+import { AutomaticScoreService } from '../../core/automatic-score.service';
+import { AutomaticScoreHelpComponent } from './automatic-score-help.component';
 import { matchVisionScore } from '../../domain';
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, computed, effect, input } from '@angular/core';
+import { Component, OnDestroy, computed, effect, inject, input } from '@angular/core';
 import { canUseHostCapability } from '@w3booster/sdk';
 import type { ConnectionStatus, DeepReadonly, HostLifecycleSnapshot, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
-import { groupPlayersByTeam, isActiveMatch, playerDisplayIdentity } from '@w3booster/sdk/selectors';
+import { isActiveMatch, playerDisplayIdentity } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
 import { dashboardStatusLabel } from './dashboard-status';
-import { MatchHistoryStore, type MatchHistoryEntry } from './match-history.store';
+import { MatchHistoryStore } from './match-history.store';
 import { MatchControls } from './match-controls';
-
-interface CompactHistoryTeam { id: number | null; players: MatchHistoryEntry['players']; }
 
 @Component({
     selector: 'mv-compact-dashboard-surface',
-    imports: [CommonModule],
+    imports: [CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
     templateUrl: './compact-dashboard-surface.component.html',
     styleUrl: './compact-dashboard-surface.component.scss'
 })
@@ -27,6 +28,8 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
     readonly status = input.required<ConnectionStatus>();
     readonly synchronized = input.required<boolean>();
     readonly history = new MatchHistoryStore();
+    readonly historyStatus = matchHistoryStatus;
+    readonly score = inject(AutomaticScoreService);
     readonly controls = new MatchControls();
     readonly teams = computed(() => matchVisionTeams(this.state(), this.displayedReversePlayerOrder()));
     fontSize = 12;
@@ -44,14 +47,14 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
     get wins(): number | undefined { return matchVisionScore(this.state())?.wins; }
     get losses(): number | undefined { return matchVisionScore(this.state())?.losses; }
     get connectionLabel(): string { return dashboardStatusLabel(this.status(), this.matchActive, this.synchronized()); }
-    get canChangeScore(): boolean { return canUseHostCapability(this.host(), 'match-score:write'); }
+    get canChangeScore(): boolean { return !!this.score.document() && !this.score.busy() && canUseHostCapability(this.host(), 'command'); }
     get canReversePlayers(): boolean { return canUseHostCapability(this.host(), 'settings:write'); }
 
     async changeScore(side: 'wins' | 'losses', delta: 1 | -1): Promise<void> {
-        await this.controls.changeScore(this.client(), side, delta);
+        await this.score.run({ side, delta });
     }
     async resetScore(): Promise<void> {
-        await this.controls.resetScore(this.client());
+        await this.score.run({ reset: true });
     }
     async reversePlayers(): Promise<void> {
         await this.controls.reversePlayers(this.client(), this.state().match.id, this.savedReversePlayerOrder());
@@ -66,12 +69,6 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
     }
     raceInitial(race?: string): string { return (race || 'random').charAt(0).toUpperCase(); }
     raceClass(race?: string): string { return (race || 'random').replace(/[^a-z-]/gi, '').toLowerCase(); }
-    historyTeams(entry: MatchHistoryEntry): CompactHistoryTeam[] {
-        return [...groupPlayersByTeam(entry.players)]
-            .sort((left, right) =>
-                (left.teamId ?? Number.MAX_SAFE_INTEGER) - (right.teamId ?? Number.MAX_SAFE_INTEGER))
-            .map(team => ({ id: team.teamId, players: [...team.players] }));
-    }
     private savedReversePlayerOrder(): boolean {
         return reversePlayerOrderForMatch(
             this.state().match,

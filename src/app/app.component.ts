@@ -1,3 +1,4 @@
+import { AutomaticScoreService } from './core/automatic-score.service';
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { MatchVisionClientService } from './core/match-vision-client.service';
@@ -14,6 +15,7 @@ import { OverlaySurfaceComponent } from './features/overlay/overlay-surface.comp
     styleUrl: './app.component.scss'
 })
 export class AppComponent implements OnInit, OnDestroy {
+    readonly automaticScore = inject(AutomaticScoreService);
     readonly connection = inject(MatchVisionClientService);
     readonly surface = surfaceFromSearch(window.location.search);
 
