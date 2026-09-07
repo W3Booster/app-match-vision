@@ -5,6 +5,51 @@ import type { MatchVisionSettings } from '../../domain';
 import { createOverlayPresentation } from './overlay-presentation';
 
 describe('overlay presentation', () => {
+    it.each([false, true])('keeps the selected replay player left despite manual reversal (isObserver=%s)', (isObserver) => {
+        const state = createState();
+        Object.assign(state.match, { isReplay: true, isObserver });
+        state.players[0]!.startPosition = { x: 10, y: 0 };
+        state.players[1]!.startPosition = { x: -10, y: 0 };
+        for (const reversePlayerOrderMatchId of ['', 'match']) {
+            const settings = w3boosterApp.resolveSettings({ observer: { reversePlayerOrderMatchId } });
+            for (const selected of ['0', '1']) {
+                state.match.broadcasterPlayerId = selected;
+                const view = createOverlayPresentation(state, settings);
+                expect(view.streamer?.id).toBe(selected);
+                expect(view.opponent?.id).toBe(selected === '0' ? '1' : '0');
+                expect(view.requiredAvatarCovers).toBe(0);
+            }
+        }
+    });
+
+    it.each([
+        { isReplay: true, isObserver: false, broadcasterPlayerId: undefined },
+        { isReplay: true, isObserver: false, broadcasterPlayerId: '24' },
+        { isReplay: false, isObserver: true, broadcasterPlayerId: undefined },
+        { isReplay: false, isObserver: true, broadcasterPlayerId: '24' }
+    ])('shows both hero panels for a spectator without a participating broadcaster: %j', (viewer) => {
+        const state = createState();
+        Object.assign(state.match, viewer);
+        state.players[0]!.startPosition = { x: 10, y: 0 };
+        state.players[1]!.startPosition = { x: -10, y: 0 };
+        state.players[0]!.heroes = [{ id: 'Hpal', name: 'Paladin', level: 1 }];
+        state.players[1]!.heroes = [{ id: 'Obla', name: 'Blademaster', level: 1 }];
+        const original = structuredClone(state);
+
+        const view = createOverlayPresentation(state, w3boosterApp.resolveSettings());
+
+        expect(view.streamer?.heroes?.map(hero => hero.id)).toEqual(['Obla']);
+        expect(view.opponent?.heroes?.map(hero => hero.id)).toEqual(['Hpal']);
+        expect(view.requiredAvatarCovers).toBe(0);
+        expect(state).toEqual(original);
+
+        const reversed = createOverlayPresentation(state, w3boosterApp.resolveSettings({
+            observer: { reversePlayerOrderMatchId: 'match' }
+        }));
+        expect(reversed.streamer?.id).toBe('0');
+        expect(reversed.opponent?.id).toBe('1');
+    });
+
     it('selects and orders observer players without mutating SDK state', () => {
         const state = createState();
         state.match.isObserver = true;

@@ -3,7 +3,7 @@ import type { AbilityCooldownState } from '@w3booster/sdk/standard-game/cooldown
 import * as standardGame from '@w3booster/sdk/standard-game';
 import * as standardGameCooldowns from '@w3booster/sdk/standard-game/cooldowns';
 import { gameContext as selectGameContext, broadcasterPlayer, headToHeadPair, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
-import { matchVisionScore, matchVisionPlayers, matchVisionSettings, reversePlayerOrderForMatch } from '../../domain';
+import { matchVisionScore, matchVisionPlayers, matchVisionSettings, matchVisionHeadToHeadPlayers, reversePlayerOrderForMatch } from '../../domain';
 import type { MatchVisionScore, MatchVisionOverlaySettings, MatchVisionPlayerView, MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
 
@@ -42,10 +42,11 @@ export function createOverlayPresentation(
         ? players.find(player => player.id !== streamerId) ?? null
         : null;
 
-    if (showsObserverBar && streamer && opponent) {
-        [streamer, opponent] = standardGame.orderHeadToHeadPlayers(
-            [streamer, opponent] as const,
-            { reverse: reversePlayerOrderForMatch(state.match, settings) }
+    if (showsObserverBar && observerPlayers) {
+        [streamer, opponent] = matchVisionHeadToHeadPlayers(
+            observerPlayers,
+            state.match,
+            reversePlayerOrderForMatch(state.match, settings)
         );
     }
 

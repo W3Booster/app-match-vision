@@ -78,7 +78,42 @@ export function matchVisionTeams(
     state: MatchState<MatchVisionSettings>,
     reversePlayerOrder = false
 ): readonly PlayerTeam<Player>[] {
-    return standardGame.orderMatchTeams(state.players, state.match, { reverse: reversePlayerOrder });
+    return orderedMatchVisionTeams(state.players, state.match, reversePlayerOrder);
+}
+
+type PresentationMatch = Pick<Match, 'mode' | 'broadcasterPlayerId' | 'isObserver' | 'isReplay'>;
+
+/** Replay selection must align with Warcraft's native hero panel, ahead of manual reversal. */
+export function matchVisionHeadToHeadPlayers<TPlayer extends Player>(
+    players: readonly [TPlayer, TPlayer],
+    match: PresentationMatch,
+    reversePlayerOrder = false
+): readonly [TPlayer, TPlayer] {
+    const selected = match.isReplay ? broadcasterPlayer(match, players) : null;
+    if (selected) {
+        return Object.freeze(selected.id === players[0].id ? [...players] : [players[1], players[0]]);
+    }
+    return standardGame.orderHeadToHeadPlayers(players, { reverse: reversePlayerOrder });
+}
+
+/** Share replay selection priority across dashboard and overlay team layouts. */
+export function orderedMatchVisionTeams<TPlayer extends Player>(
+    players: readonly TPlayer[],
+    match: PresentationMatch,
+    reversePlayerOrder = false
+): readonly PlayerTeam<TPlayer>[] {
+    const selected = match.isReplay ? broadcasterPlayer(match, players) : null;
+    const teams = standardGame.orderMatchTeams(players, match, { reverse: selected ? false : reversePlayerOrder });
+    if (!selected) return teams;
+    const selectedTeam = teams.find(team => team.players.some(player => player.id === selected.id));
+    if (!selectedTeam) return teams;
+    return Object.freeze([
+        Object.freeze({
+            ...selectedTeam,
+            players: Object.freeze([selected, ...selectedTeam.players.filter(player => player.id !== selected.id)])
+        }),
+        ...teams.filter(team => team !== selectedTeam)
+    ]);
 }
 
 /** Derives display-only player values without changing the SDK state. */

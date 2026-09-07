@@ -131,6 +131,21 @@ describe('Match Vision view selectors', () => {
         expect(matchVisionTeams(state, reverse).map(team => team.players[0]?.id)).toEqual(['right', 'left']);
     });
 
+    it.each(['1v1', '2v2', '4ffa'])('pins the selected replay player first across dashboard layouts: %s', (mode) => {
+        const state = createState();
+        Object.assign(state.match, { mode, isReplay: true, isObserver: true, broadcasterPlayerId: 'selected' });
+        state.players = [
+            { id: 'other', team: 1, startPosition: { x: -10, y: 0 } },
+            { id: 'selected', team: 0, startPosition: { x: 10, y: 0 } }
+        ];
+        if (mode !== '1v1') state.players.push({ id: 'ally', team: 0 }, { id: 'fourth', team: 1 });
+        const original = structuredClone(state);
+        for (const reverse of [false, true]) {
+            expect(matchVisionTeams(state, reverse)[0]?.players[0]?.id).toBe('selected');
+        }
+        expect(state).toEqual(original);
+    });
+
     it('uses the broadcaster-first team order consistently for team observers', () => {
         const state = createState();
         state.match.isObserver = true;

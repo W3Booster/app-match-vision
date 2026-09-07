@@ -6,7 +6,7 @@ import type { Match, Player, Resources } from '@w3booster/sdk';
 import { playerResources } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import type { MatchVisionOverlaySettings, MatchVisionPlayerView } from '../../../domain';
-import { reversePlayerOrderForMatch } from '../../../domain';
+import { matchVisionHeadToHeadPlayers, reversePlayerOrderForMatch } from '../../../domain';
 import { WarcraftAssetsService } from '../../../shared/warcraft/warcraft-assets.service';
 import { dayNightSprite, raceShortName, raceSpriteIndex } from '../overlay-visuals';
 
@@ -27,9 +27,10 @@ export class ObserverBarComponent {
     readonly dayNight = computed(() => dayNightSprite(this.gameTimeInput()));
     private readonly orderedPlayers = computed(() => {
         const [first, second] = this.playersInput();
-        return standardGame.orderHeadToHeadPlayers([first, second], {
-            reverse: reversePlayerOrderForMatch(this.match, this.settingsInput())
-        });
+        return matchVisionHeadToHeadPlayers(
+            [first, second], this.match,
+            reversePlayerOrderForMatch(this.match, this.settingsInput())
+        );
     });
 
     readonly Boolean = Boolean;

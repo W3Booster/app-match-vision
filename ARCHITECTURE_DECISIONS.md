@@ -147,3 +147,19 @@ inventing their outcomes.
 Reverse order is scoped by match ID so a saved choice cannot leak into the next match. It applies consistently to two-team and multi-team/FFA observer layouts.
 
 Team ordering has intentional mode-specific behavior: 1v1 observer/replay surfaces use map position, while ordinary player and team-observer surfaces keep the broadcaster's team first and FFA preserves team order. Explicit 1v1 with exactly two visible players creates one side per player even if both team IDs are absent. An explicit FFA likewise has one side per visible player when team IDs are missing; reversal reverses those sides instead of a collapsed `null` group. Dashboard and overlay both delegate to the SDK's mode-aware `standardGame.orderMatchTeams()`; do not maintain separate app ordering branches that can diverge.
+
+The 1v1 observer/replay hero panels select the same complete player pair as the
+top bar, independently of broadcaster identity. Replay viewers can occupy an
+observer slot absent from the scoped players. Requiring that viewer to be a
+participant hides both hero panels even when their data is present. Keep the
+actual broadcaster identity for native avatar-cover calculations and ordinary
+player views; selecting spectator display sides does not invent a broadcaster.
+
+During replay playback, a broadcasterPlayerId matching a participating player
+is the currently selected Warcraft player. Pin that player to the left, ahead
+of map position and the saved reverse setting, so the overlay matches the native
+hero panel. Apply this app-owned priority to the top bar, hero panels, and
+dashboard/team layouts. Check the current player ID rather than isObserver,
+which may describe the slot at replay startup. An absent or observer-slot ID
+retains the canonical ordering and manual reverse choice. Preserve the saved
+setting so it applies again when the viewer returns to an observer slot.

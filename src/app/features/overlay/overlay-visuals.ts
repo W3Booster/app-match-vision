@@ -1,5 +1,6 @@
 import type { Match, Player, Race } from '@w3booster/sdk';
 import * as standardGame from '@w3booster/sdk/standard-game';
+import { orderedMatchVisionTeams } from '../../domain';
 
 const RACE_SPRITE_INDEX: Readonly<Record<Race, number>> = {
     random: 0,
@@ -38,7 +39,7 @@ export function orderedOverlayTeams<TPlayer extends Player>(
     match: Pick<Match, 'mode' | 'broadcasterPlayerId' | 'isObserver' | 'isReplay'>,
     reversePlayerOrder = false
 ): readonly (readonly TPlayer[])[] {
-    return standardGame.orderMatchTeams(players, match, { reverse: reversePlayerOrder }).map(team => team.players);
+    return orderedMatchVisionTeams(players, match, reversePlayerOrder).map(team => team.players);
 }
 
 /** Index into Match Vision's race sprite sheet. */
