@@ -45,6 +45,27 @@ describe('Match Vision automatic scoring policy', () => {
         expect(resultScoreSide(result('game', { isWon: false, gameTime: 20, realm: 'Battle.net' }).match)).toBe('losses');
     });
 
+    it.each([
+        ['W3Champions', 119, false, undefined],
+        ['W3Champions', 120, false, undefined],
+        ['w3CHAMPIONS ladder', 120, false, undefined],
+        ['W3Champions', 121, false, 'losses'],
+        ['W3Champions', 120, true, 'wins'],
+        ['Reforged', 20, false, 'losses'],
+        ['Netease', 20, false, 'losses'],
+        ['Reforged', 800, true, 'wins']
+    ] as const)('preserves legacy scoring through the SDK for %s, %is, won=%s', (realm, gameTime, isWon, side) => {
+        const state: any = { match: { id: 'game', status: 'finished', gameTime, realm,
+            isReplay: false, isObserver: false, realBroadcasterPlayerId: '0',
+            result: { playerId: '0', outcome: isWon ? 'won' : 'lost' } },
+            players: [{ id: '0', team: 0, isAI: false }, { id: '1', team: 1, isAI: false }] };
+        const recorded = recordedResultFromState(state, now);
+        expect(recorded).toBeDefined();
+        const next = updateScore({ ...context(), results: [recorded!] }, now);
+        expect(next.wins).toBe(3 + (side === 'wins' ? 1 : 0));
+        expect(next.losses).toBe(1 + (side === 'losses' ? 1 : 0));
+    });
+
     it('ignores observer slots when checking for AI participants', () => {
         expect(resultScoreSide(result('game', { players: { 0: { team: 0, isAI: false }, 1: { team: 24, isAI: true } } }).match)).toBe('wins');
     });
