@@ -1,3 +1,4 @@
+import { CopyPlayerNameComponent } from './copy-player-name.component';
 import { MatchHistoryPlayersComponent, matchHistoryStatus } from './match-history-players.component';
 import { AutomaticScoreService } from '../../core/automatic-score.service';
 import { AutomaticScoreHelpComponent } from './automatic-score-help.component';
@@ -16,7 +17,7 @@ import { MatchControls } from './match-controls';
 
 @Component({
     selector: 'mv-compact-dashboard-surface',
-    imports: [CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
+    imports: [CopyPlayerNameComponent, CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
     templateUrl: './compact-dashboard-surface.component.html',
     styleUrl: './compact-dashboard-surface.component.scss'
 })
@@ -63,9 +64,14 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
     playerStats(player: Player): PlayerStats | undefined {
         return standardGame.preferredStats(player, this.state().match.mode);
     }
-    displayName(player: Player): string {
-        const identity = playerDisplayIdentity(player, { stripBattleTagDiscriminator: true });
-        return identity.hasAlias ? `${identity.primaryName} as ${identity.inGameName}` : identity.primaryName;
+    playerIdentity(player: Player) {
+        const identity = playerDisplayIdentity(player);
+        const hasAlias = playerDisplayIdentity(player, { stripBattleTagDiscriminator: true }).hasAlias;
+        return hasAlias ? identity : {
+            ...identity,
+            primaryName: player.name?.trim() ? identity.inGameName : identity.primaryName,
+            hasAlias: false
+        };
     }
     raceInitial(race?: string): string { return (race || 'random').charAt(0).toUpperCase(); }
     raceClass(race?: string): string { return (race || 'random').replace(/[^a-z-]/gi, '').toLowerCase(); }

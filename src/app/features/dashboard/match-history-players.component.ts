@@ -1,3 +1,4 @@
+import { CopyPlayerNameComponent } from './copy-player-name.component';
 import { CommonModule } from '@angular/common';
 import { Component, computed, input } from '@angular/core';
 import { groupPlayersByTeam } from '@w3booster/sdk/selectors';
@@ -6,13 +7,13 @@ import type { MatchHistoryEntry } from './match-history.store';
 
 @Component({
     selector: 'mv-match-history-players',
-    imports: [CommonModule],
+    imports: [CopyPlayerNameComponent, CommonModule],
     template: `
         <ng-container *ngFor="let team of teams(); let first = first">
             <span class="versus" *ngIf="!first">vs</span>
             <span class="team">
                 <span class="player" *ngFor="let player of team.players">
-                    <span>{{player.name}}</span>
+                    <mv-copy-player-name [name]="player.name"></mv-copy-player-name>
                     <small [attr.data-race]="race(player.race).id">{{race(player.race).label}}</small>
                 </span>
             </span>

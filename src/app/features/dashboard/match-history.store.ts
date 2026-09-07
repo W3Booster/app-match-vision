@@ -85,11 +85,11 @@ export class MatchHistoryStore {
         // an end event. Older unfinished entries can no longer be live.
         this.closeOtherMatches(id);
         const players: MatchHistoryEntry['players'] = state.players.map(player => {
-            const identity = playerDisplayIdentity(player, { stripBattleTagDiscriminator: true });
+            const identity = playerDisplayIdentity(player);
             const hasDisplayName = Boolean(player.name?.trim() || player.mainAccount?.name?.trim());
             return {
                 id: String(player.id),
-                name: hasDisplayName ? identity.primaryName || 'Unknown player' : 'Unknown player',
+                name: hasDisplayName ? (player.name?.trim() ? identity.inGameName : identity.primaryName) : 'Unknown player',
                 race: player.race || 'random',
                 team: typeof player.team === 'number' && Number.isFinite(player.team) ? player.team : null
             };

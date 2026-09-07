@@ -44,7 +44,10 @@
                 <article class="team" *ngFor="let team of teams()">
                     <div class="player" *ngFor="let player of team.players">
                         <i class="race" [attr.data-race]="raceClass(player.race)">{{raceInitial(player.race)}}</i>
-                        <span class="player-name">{{displayName(player)}}</span>
+                        <span class="player-name" *ngIf="playerIdentity(player) as identity">
+                            <mv-copy-player-name [name]="identity.primaryName"></mv-copy-player-name>
+                            <ng-container *ngIf="identity.hasAlias"> as <mv-copy-player-name [name]="identity.inGameName"></mv-copy-player-name></ng-container>
+                        </span>
                         <ng-container *ngIf="playerStats(player) as stats; else noStats">
                             <strong class="win-rate">{{stats.winRate | number:'1.0-0'}}%</strong><strong class="wins">{{stats.wins}}W</strong><strong class="losses">{{stats.losses}}L</strong>
                         </ng-container>

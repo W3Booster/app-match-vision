@@ -1,3 +1,4 @@
+import { CopyPlayerNameComponent } from './copy-player-name.component';
 import { MatchHistoryPlayersComponent, matchHistoryStatus } from './match-history-players.component';
 import { AutomaticScoreService } from '../../core/automatic-score.service';
 import { AutomaticScoreHelpComponent } from './automatic-score-help.component';
@@ -15,7 +16,7 @@ import { MatchControls } from './match-controls';
 
 @Component({
     selector: 'mv-dashboard-surface',
-    imports: [CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
+    imports: [CopyPlayerNameComponent, CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
     templateUrl: './dashboard-surface.component.html',
     styleUrl: './dashboard-surface.component.scss'
 })
@@ -70,7 +71,8 @@ export class DashboardSurfaceComponent implements OnDestroy {
     }
     raceName(player: Player): string { return player.race || 'random'; }
     playerName(player: Player): string {
-        return playerDisplayIdentity(player, { stripBattleTagDiscriminator: true }).primaryName;
+        const identity = playerDisplayIdentity(player);
+        return player.name?.trim() ? identity.inGameName : identity.primaryName;
     }
     playerStats(player: Player): PlayerStats | undefined {
         return standardGame.preferredStats(player, this.state().match.mode);

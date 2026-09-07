@@ -31,7 +31,7 @@
                     <h3>{{team.teamId === null ? 'Unassigned team' : 'Team ' + (team.teamId + 1)}}</h3>
                     <div class="player-row" *ngFor="let player of team.players">
                         <i [attr.data-race]="player.race">{{raceName(player).charAt(0).toUpperCase()}}</i>
-                        <span><b>{{playerName(player)}}</b><small>{{raceName(player)}}</small></span>
+                        <span><b><mv-copy-player-name [name]="playerName(player)"></mv-copy-player-name></b><small>{{raceName(player)}}</small></span>
                         <ng-container *ngIf="playerStats(player) as stats"><em>{{stats.winRate | number:'1.0-0'}}%</em><strong>{{stats.wins}}W</strong><strong class="losses">{{stats.losses}}L</strong></ng-container>
                     </div>
                 </article>

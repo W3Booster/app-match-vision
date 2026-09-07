@@ -33,7 +33,7 @@ h1, h2 { margin: 0; color: #f1eadf; font-size: 1em; line-height: 1.1; }
 .race[data-race='orc'] { background: #cc6556; }
 .race[data-race='undead'] { background: #7b64b4; }
 .race[data-race='night-elf'] { background: #45a77f; }
-.player-name { min-width: 90px; flex: 1; overflow: hidden; color: #dbe2e6; text-overflow: ellipsis; white-space: nowrap; }
+.player-name { min-width: 90px; flex: 1; color: #dbe2e6; overflow-wrap: anywhere; }
 .player > strong { width: 34px; flex: 0 0 34px; text-align: right; }
 .win-rate { color: #a8b5bc; }
 .stats-unavailable { color: #71818a; font-size: .86em; }
