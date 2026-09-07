@@ -74,6 +74,6 @@ Start the local test and launch through W3Booster. Do not test by copying a user
 
 Run `npm run check` for tests and a production build. Use `npm run w3booster:sync` explicitly after changes to your registered definition. `npm run w3booster:check` checks its public revision in connected environments; normal installation and builds do not refresh definitions over the network.
 
-Deploy the generated browser bundle under `dist/` to your own HTTPS host and update your registered surface URLs with `demo=0`. Use the W3Booster compositor URL for OBS. See the [publishing guide](https://website.w3booster.com/developer/publishing/).
+Deploy the generated browser bundle under `dist/` to your own HTTPS host and update your registered surface URLs with `demo=0`. Use the W3Booster compositor URL for OBS. See the [publishing guide](https://w3booster.com/developer/publishing/).
 
-If this is more application than you need, start with the [minimal TypeScript starter](https://github.com/W3Booster/app-starter) or a [focused example](https://website.w3booster.com/developer/examples/).
+If this is more application than you need, start with the [minimal TypeScript starter](https://github.com/W3Booster/app-starter) or a [focused example](https://w3booster.com/developer/examples/).
