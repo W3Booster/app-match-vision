@@ -33,6 +33,7 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
     readonly score = inject(AutomaticScoreService);
     readonly controls = new MatchControls();
     readonly teams = computed(() => matchVisionTeams(this.state(), this.displayedReversePlayerOrder()));
+    readonly isFreeForAll = computed(() => standardGame.modeInfo(this.state().match.mode)?.kind === 'ffa');
     fontSize = 12;
 
     private readonly clientBinding = effect(() => this.history.connect(this.client()));

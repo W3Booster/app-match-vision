@@ -40,21 +40,34 @@
                 <button *ngIf="matchActive && (state().match.isReplay || state().match.isObserver)" type="button" class="quiet" [disabled]="controls.busy() || !canReversePlayers" (click)="reversePlayers()"><i aria-hidden="true">⇅</i> Reverse order</button>
             </header>
             <div class="empty" *ngIf="!matchActive">No match running</div>
-            <div class="current-match-content" *ngIf="matchActive">
-                <article class="team" *ngFor="let team of teams()">
-                    <div class="player" *ngFor="let player of team.players">
-                        <i class="race" [attr.data-race]="raceClass(player.race)">{{raceInitial(player.race)}}</i>
-                        <span class="player-name" *ngIf="playerIdentity(player) as identity">
-                            <mv-copy-player-name [name]="identity.primaryName"></mv-copy-player-name>
-                            <ng-container *ngIf="identity.hasAlias"> as <mv-copy-player-name [name]="identity.inGameName"></mv-copy-player-name></ng-container>
-                        </span>
-                        <ng-container *ngIf="playerStats(player) as stats; else noStats">
-                            <strong class="win-rate">{{stats.winRate | number:'1.0-0'}}%</strong><strong class="wins">{{stats.wins}}W</strong><strong class="losses">{{stats.losses}}L</strong>
-                        </ng-container>
-                        <ng-template #noStats><span class="stats-unavailable">No stats available</span></ng-template>
-                    </div>
-                </article>
-            </div>
+            <ng-container *ngIf="matchActive">
+                <div class="match-format" *ngIf="teams().length > 2">
+                    {{isFreeForAll() ? 'Free-for-all · ' + state().players.length + ' players' : teams().length + ' teams · ' + state().players.length + ' players'}}
+                </div>
+                <div class="current-match-content" [class.duel]="teams().length === 2" [class.multi-team]="teams().length > 2">
+                    <ng-container *ngFor="let team of teams(); let index = index">
+                        <span class="versus" *ngIf="teams().length === 2 && index === 1">vs</span>
+                        <article class="team" [class.opponent]="teams().length === 2 && index === 1">
+                            <h3 class="team-label">{{isFreeForAll() ? 'Player ' + (index + 1) : team.teamId === null ? 'Unassigned team' : 'Team ' + (team.teamId + 1)}}</h3>
+                            <div class="player" *ngFor="let player of team.players">
+                                <div class="player-heading">
+                                    <i class="race" [attr.data-race]="raceClass(player.race)">{{raceInitial(player.race)}}</i>
+                                    <span class="player-name" *ngIf="playerIdentity(player) as identity">
+                                        <mv-copy-player-name [name]="identity.primaryName"></mv-copy-player-name>
+                                        <span class="player-alias" *ngIf="identity.hasAlias">as <mv-copy-player-name [name]="identity.inGameName"></mv-copy-player-name></span>
+                                    </span>
+                                </div>
+                                <div class="player-stats">
+                                    <ng-container *ngIf="playerStats(player) as stats; else noStats">
+                                        <strong class="win-rate">{{stats.winRate | number:'1.0-0'}}%</strong><strong class="wins">{{stats.wins}}W</strong><strong class="losses">{{stats.losses}}L</strong>
+                                    </ng-container>
+                                    <ng-template #noStats><span class="stats-unavailable">No stats available</span></ng-template>
+                                </div>
+                            </div>
+                        </article>
+                    </ng-container>
+                </div>
+            </ng-container>
         </section>
 
         <section class="compact-section history-section">
@@ -63,7 +76,7 @@
             <article class="history-entry" *ngFor="let match of history.entries()">
                 <header><strong>{{match.startedAt | date:'shortTime'}} · {{match.map}}</strong><span class="history-result" [class.live]="!match.endedAt && !match.result" [attr.data-outcome]="match.result?.outcome">{{historyStatus(match)}}</span></header>
                 <div class="history-mode">{{match.mode}} · {{match.players.length}} players</div>
-                <mv-match-history-players [entry]="match"></mv-match-history-players>
+                <mv-match-history-players [entry]="match" [compact]="true"></mv-match-history-players>
             </article>
         </section>
     </div>

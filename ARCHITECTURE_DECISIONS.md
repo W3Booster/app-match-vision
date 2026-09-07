@@ -1,5 +1,17 @@
 # Match Vision architecture decisions
 
+## 2026-09-08: Compact matchups separate opposing teams
+
+Two-team compact matches and compact history use equal left/right team columns
+with a dedicated centered versus column. Mirror the opponent's alignment, keep
+teammates stacked together, and put statistics below names so full BattleTags
+remain readable. Preserve the existing domain team order, including replay
+selection taking priority over manual reversal.
+
+FFA and matches with three or more teams use independent cards in a wrapping
+grid, without versus separators that would imply pairings. FFA has one card per
+player; multi-team games keep all teammates in the same labeled card.
+
 ## ADR-009: SDK 2 is the single current prerelease contract
 
 Status: accepted, 2026-09-05; supersedes the SDK 1 compatibility statements below.
