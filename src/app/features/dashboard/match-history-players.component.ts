@@ -15,29 +15,26 @@ import type { MatchHistoryEntry } from './match-history.store';
             <span class="team" [class.opponent]="index === 1 && teams().length === 2">
                 <span class="team-label" *ngIf="teams().length > 2">{{team.teamId === null ? 'Unassigned team' : 'Team ' + (team.teamId + 1)}}</span>
                 <span class="player" *ngFor="let player of team.players">
-                    <mv-copy-player-name [name]="player.name"></mv-copy-player-name>
                     <small [attr.data-race]="race(player.race).id">{{race(player.race).label}}</small>
+                    <mv-copy-player-name [name]="player.name"></mv-copy-player-name>
                 </span>
             </span>
         </ng-container>
     `,
     styles: `
-        .team { display: flex; flex-wrap: wrap; gap: 4px 10px; min-width: 0; }
-        .player { display: inline-flex; flex-wrap: wrap; align-items: baseline; gap: 4px; min-width: 0; overflow-wrap: anywhere; }
-        .versus { color: #85949e; font-size: .85em; }
-        small { padding: 1px 4px; border-radius: 3px; background: #26343d; color: #c7d2d9; font-size: .8em; white-space: nowrap; }
-        :host { min-width: 0; color: #aeb9bf; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: stretch; gap: 6px; }
+        :host { min-width: 0; color: #aeb9bf; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 6px; }
         :host(.duel) { grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); gap: 4px; }
-        :host .team { flex-direction: column; gap: 4px; padding: 4px; border-radius: 3px; background: #111c24; }
-        :host .player { display: flex; flex-direction: column; align-items: flex-start; gap: 0; }
-        :host(.duel) .opponent { align-items: flex-end; text-align: right; }
-        :host(.duel) .opponent .player { align-items: flex-end; }
-        :host .versus { align-self: center; text-align: center; font-weight: 700; }
+        .team { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+        .player { display: flex; align-items: center; gap: 4px; min-width: 0; }
+        :host(.duel) .opponent { text-align: right; }
+        :host(.duel) .opponent .player { flex-direction: row-reverse; }
+        .versus { align-self: center; color: #85949e; font-size: .85em; text-align: center; font-weight: 700; }
         .team-label { color: #95b5c8; font-size: .8em; font-weight: 700; }
-        small[data-race='human'] { background: #203b54; color: #a4d1ff; }
-        small[data-race='orc'] { background: #482c29; color: #ffb6a7; }
-        small[data-race='undead'] { background: #342b48; color: #d2baff; }
-        small[data-race='night-elf'] { background: #203d31; color: #9fe1bd; }
+        small { flex: 0 0 auto; color: #c7d2d9; font-size: .8em; white-space: nowrap; }
+        small[data-race='human'] { color: #a4d1ff; }
+        small[data-race='orc'] { color: #ffb6a7; }
+        small[data-race='undead'] { color: #d2baff; }
+        small[data-race='night-elf'] { color: #9fe1bd; }
     `
 })
 export class MatchHistoryPlayersComponent {

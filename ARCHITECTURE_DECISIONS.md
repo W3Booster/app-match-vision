@@ -8,9 +8,14 @@ teammates stacked together, and put statistics below names so full BattleTags
 remain readable. Preserve the existing domain team order, including replay
 selection taking priority over manual reversal.
 
-FFA and matches with three or more teams use independent cards in a wrapping
-grid, without versus separators that would imply pairings. FFA has one card per
-player; multi-team games keep all teammates in the same labeled card.
+Race and name stay on the same line in history. Copy icons scale below the text
+height and do not increase row height. Keep the layout flat, without player or
+team card backgrounds/borders. The regular dashboard uses a centered content
+width capped at 1100px so matchup columns do not spread across wide monitors.
+
+FFA and matches with three or more teams use independent groups in a wrapping
+grid, without versus separators that would imply pairings. FFA has one group per
+player; multi-team games keep all teammates in the same labeled group.
 
 ## ADR-009: SDK 2 is the single current prerelease contract
 

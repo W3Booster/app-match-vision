@@ -29,11 +29,11 @@ h1, h2 { margin: 0; color: #f1eadf; font-size: 1em; line-height: 1.1; }
 .current-match-content.duel { grid-template-columns: minmax(0, 1fr) 24px minmax(0, 1fr); gap: 4px; }
 .current-match-content.multi-team { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .match-format { padding: 6px 8px 0; color: #a6b9c4; font-size: .9em; }
-.team { min-width: 0; padding: 6px; border: 1px solid #293c48; border-radius: 4px; background: #101b23; }
+.team { min-width: 0; }
 .team-label { margin: 0 0 4px; color: #95b5c8; font-size: .8em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 .versus { align-self: center; color: #839eae; font-size: .85em; font-weight: 700; text-align: center; }
-.player { min-width: 0; padding: 4px 0; }
-.player + .player { margin-top: 4px; border-top: 1px solid #253741; }
+.player { min-width: 0; padding: 2px 0; }
+.player + .player { margin-top: 4px; }
 .player-heading { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .player-stats { display: flex; flex-wrap: wrap; gap: 4px 8px; padding-top: 2px; font-size: .9em; }
 .opponent { text-align: right; }

@@ -48,7 +48,7 @@
                     <ng-container *ngFor="let team of teams(); let index = index">
                         <span class="versus" *ngIf="teams().length === 2 && index === 1">vs</span>
                         <article class="team" [class.opponent]="teams().length === 2 && index === 1">
-                            <h3 class="team-label">{{isFreeForAll() ? 'Player ' + (index + 1) : team.teamId === null ? 'Unassigned team' : 'Team ' + (team.teamId + 1)}}</h3>
+                            <h3 class="team-label" *ngIf="teams().length !== 2">{{isFreeForAll() ? 'Player ' + (index + 1) : team.teamId === null ? 'Unassigned team' : 'Team ' + (team.teamId + 1)}}</h3>
                             <div class="player" *ngFor="let player of team.players">
                                 <div class="player-heading">
                                     <i class="race" [attr.data-race]="raceClass(player.race)">{{raceInitial(player.race)}}</i>

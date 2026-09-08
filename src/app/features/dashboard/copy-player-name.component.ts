@@ -18,14 +18,14 @@ import { Component, OnDestroy, input, signal } from '@angular/core';
         <span class="status" role="status">{{message()}}</span>
     `,
     styles: `
-        :host { display: inline-flex; align-items: baseline; gap: 4px; min-width: 0; max-width: 100%; }
+        :host { display: inline-flex; align-items: center; gap: 3px; min-width: 0; max-width: 100%; }
         .name { min-width: 0; overflow-wrap: anywhere; user-select: text; }
         button { display: inline-flex; align-self: center; align-items: center; justify-content: center;
-            flex: 0 0 24px; width: 24px; height: 24px; padding: 4px; border: 0; border-radius: 3px;
+            flex: 0 0 1em; width: 1em; height: 1em; padding: 0; border: 0; font: inherit;
             background: transparent; color: #8da6b5; cursor: pointer; }
-        button:hover { background: #263b47; color: #d7edfa; }
+        button:hover { color: #d7edfa; }
         button:focus-visible { outline: 2px solid #56bce9; outline-offset: 1px; }
-        svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.4;
+        svg { width: .85em; height: .85em; fill: none; stroke: currentColor; stroke-width: 1.4;
             stroke-linecap: round; stroke-linejoin: round; }
         .status { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
     `
