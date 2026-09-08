@@ -76,7 +76,7 @@
             <article class="history-entry" *ngFor="let match of history.entries()">
                 <header><strong>{{match.startedAt | date:'shortTime'}} · {{match.map}}</strong><span class="history-result" [class.live]="!match.endedAt && !match.result" [attr.data-outcome]="match.result?.outcome">{{historyStatus(match)}}</span></header>
                 <div class="history-mode">{{match.mode}} · {{match.players.length}} players</div>
-                <mv-match-history-players [entry]="match" [compact]="true"></mv-match-history-players>
+                <mv-match-history-players [entry]="match"></mv-match-history-players>
             </article>
         </section>
     </div>

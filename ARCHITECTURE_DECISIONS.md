@@ -2,7 +2,7 @@
 
 ## 2026-09-08: Compact matchups separate opposing teams
 
-Two-team compact matches and compact history use equal left/right team columns
+Two-team compact matches and match history on both dashboards use equal left/right team columns
 with a dedicated centered versus column. Mirror the opponent's alignment, keep
 teammates stacked together, and put statistics below names so full BattleTags
 remain readable. Preserve the existing domain team order, including replay
