@@ -51,11 +51,11 @@
                             <h3 class="team-label" *ngIf="teams().length !== 2">{{isFreeForAll() ? 'Player ' + (index + 1) : team.teamId === null ? 'Unassigned team' : 'Team ' + (team.teamId + 1)}}</h3>
                             <div class="player" *ngFor="let player of team.players">
                                 <div class="player-heading">
-                                    <i class="race" [attr.data-race]="raceClass(player.race)">{{raceInitial(player.race)}}</i>
                                     <span class="player-name" *ngIf="playerIdentity(player) as identity">
                                         <mv-copy-player-name [name]="identity.primaryName"></mv-copy-player-name>
                                         <span class="player-alias" *ngIf="identity.hasAlias">as <mv-copy-player-name [name]="identity.inGameName"></mv-copy-player-name></span>
                                     </span>
+                                    <mv-race-tag [value]="player.race"></mv-race-tag>
                                 </div>
                                 <div class="player-stats">
                                     <ng-container *ngIf="playerStats(player) as stats; else noStats">

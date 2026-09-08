@@ -8,7 +8,8 @@ teammates stacked together, and put statistics below names so full BattleTags
 remain readable. Preserve the existing domain team order, including replay
 selection taking priority over manual reversal.
 
-Race and name stay on the same line in history. Copy icons scale below the text
+Race and name stay on the same line. Colored HU, Orc, UD, NE, and RDM tags sit
+on the inner side: after left-side names and before right-side names. Copy icons scale below the text
 height and do not increase row height. Keep the layout flat, without player or
 team card backgrounds/borders. The regular dashboard uses a centered content
 width capped at 1100px so matchup columns do not spread across wide monitors.

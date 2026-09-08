@@ -1,3 +1,4 @@
+import { RaceTagComponent } from './race-tag.component';
 import { CopyPlayerNameComponent } from './copy-player-name.component';
 import { MatchHistoryPlayersComponent, matchHistoryStatus } from './match-history-players.component';
 import { AutomaticScoreService } from '../../core/automatic-score.service';
@@ -16,7 +17,7 @@ import { MatchControls } from './match-controls';
 
 @Component({
     selector: 'mv-dashboard-surface',
-    imports: [CopyPlayerNameComponent, CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
+    imports: [RaceTagComponent, CopyPlayerNameComponent, CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
     templateUrl: './dashboard-surface.component.html',
     styleUrl: './dashboard-surface.component.scss'
 })
@@ -69,7 +70,6 @@ export class DashboardSurfaceComponent implements OnDestroy {
     formatTime(seconds: number): string {
         return standardGame.formatGameTime(seconds, { compactHours: true });
     }
-    raceName(player: Player): string { return player.race || 'random'; }
     playerName(player: Player): string {
         const identity = playerDisplayIdentity(player);
         return player.name?.trim() ? identity.inGameName : identity.primaryName;

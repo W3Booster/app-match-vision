@@ -1,3 +1,4 @@
+import { RaceTagComponent } from './race-tag.component';
 import { CopyPlayerNameComponent } from './copy-player-name.component';
 import { MatchHistoryPlayersComponent, matchHistoryStatus } from './match-history-players.component';
 import { AutomaticScoreService } from '../../core/automatic-score.service';
@@ -17,7 +18,7 @@ import { MatchControls } from './match-controls';
 
 @Component({
     selector: 'mv-compact-dashboard-surface',
-    imports: [CopyPlayerNameComponent, CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
+    imports: [RaceTagComponent, CopyPlayerNameComponent, CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
     templateUrl: './compact-dashboard-surface.component.html',
     styleUrl: './compact-dashboard-surface.component.scss'
 })
@@ -74,8 +75,6 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
             hasAlias: false
         };
     }
-    raceInitial(race?: string): string { return (race || 'random').charAt(0).toUpperCase(); }
-    raceClass(race?: string): string { return (race || 'random').replace(/[^a-z-]/gi, '').toLowerCase(); }
     private savedReversePlayerOrder(): boolean {
         return reversePlayerOrderForMatch(
             this.state().match,

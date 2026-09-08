@@ -41,12 +41,7 @@ h1, h2 { margin: 0; color: #f1eadf; font-size: 1em; line-height: 1.1; }
 .opponent .player-name { align-items: flex-end; }
 .opponent .player-stats { justify-content: flex-end; }
 @media (min-width: 700px) { .current-match-content.multi-team { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-.race { display: grid; width: 17px; height: 17px; flex: 0 0 17px; place-items: center; border-radius: 2px; background: #73828a; color: #fff; font-size: .9em; font-style: normal; font-weight: 900; }
-.race[data-race='human'] { background: #4683c2; }
-.race[data-race='orc'] { background: #cc6556; }
-.race[data-race='undead'] { background: #7b64b4; }
-.race[data-race='night-elf'] { background: #45a77f; }
-.player-name { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; flex: 1; color: #e1eaf0; overflow-wrap: anywhere; }
+.player-name { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; flex: 0 1 auto; color: #e1eaf0; overflow-wrap: anywhere; }
 .player-alias { color: #94a9b6; font-size: .85em; }
 
 .win-rate { color: #a8b5bc; }
