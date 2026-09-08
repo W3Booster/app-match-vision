@@ -39,9 +39,9 @@
     </section>
 
     <section class="dashboard-card match-history">
-        <header><div><span>RECENT</span><h2>Match history</h2></div></header>
-        <div class="empty small" *ngIf="!history.entries().length">No matches recorded yet.</div>
-        <article *ngFor="let match of history.entries()">
+        <header><div><span>RECENT</span><h2>Match history</h2></div><mv-match-history-filter [value]="historyFilter()" (valueChange)="historyFilter.set($event)"></mv-match-history-filter></header>
+        <div class="empty small" *ngIf="!visibleHistory().length">{{history.entries().length ? 'No matches for this filter.' : 'No matches recorded yet.'}}</div>
+        <article *ngFor="let match of visibleHistory()">
             <time>{{match.startedAt | date:'shortTime'}}</time>
             <span><b>{{match.map}}</b><small>{{match.mode}} · {{match.players.length}} players</small></span>
             <mv-match-history-players class="history-players" [entry]="match"></mv-match-history-players>

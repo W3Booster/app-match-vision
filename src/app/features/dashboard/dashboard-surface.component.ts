@@ -1,3 +1,4 @@
+import { MatchHistoryFilterComponent, filterMatchHistory, type MatchHistoryModeFilter } from './match-history-filter.component';
 import { RaceTagComponent } from './race-tag.component';
 import { CopyPlayerNameComponent } from './copy-player-name.component';
 import { MatchHistoryPlayersComponent, matchHistoryStatus } from './match-history-players.component';
@@ -5,7 +6,7 @@ import { AutomaticScoreService } from '../../core/automatic-score.service';
 import { AutomaticScoreHelpComponent } from './automatic-score-help.component';
 import { matchVisionScore } from '../../domain';
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, computed, effect, inject, input } from '@angular/core';
+import { Component, OnDestroy, computed, effect, inject, input, signal } from '@angular/core';
 import { canUseHostCapability } from '@w3booster/sdk';
 import type { DeepReadonly, HostLifecycleSnapshot, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
 import { isActiveMatch, playerDisplayIdentity } from '@w3booster/sdk/selectors';
@@ -17,7 +18,7 @@ import { MatchControls } from './match-controls';
 
 @Component({
     selector: 'mv-dashboard-surface',
-    imports: [RaceTagComponent, CopyPlayerNameComponent, CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
+    imports: [MatchHistoryFilterComponent, RaceTagComponent, CopyPlayerNameComponent, CommonModule, AutomaticScoreHelpComponent, MatchHistoryPlayersComponent],
     templateUrl: './dashboard-surface.component.html',
     styleUrl: './dashboard-surface.component.scss'
 })
@@ -28,6 +29,8 @@ export class DashboardSurfaceComponent implements OnDestroy {
     readonly settings = input.required<DeepReadonly<W3BoosterAppSettings>>();
     readonly synchronized = input.required<boolean>();
     readonly history = new MatchHistoryStore();
+    readonly historyFilter = signal<MatchHistoryModeFilter>('All');
+    readonly visibleHistory = computed(() => filterMatchHistory(this.history.entries(), this.historyFilter()));
     readonly historyStatus = matchHistoryStatus;
     readonly score = inject(AutomaticScoreService);
     readonly controls = new MatchControls();

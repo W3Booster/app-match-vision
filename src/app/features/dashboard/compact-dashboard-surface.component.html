@@ -71,9 +71,9 @@
         </section>
 
         <section class="compact-section history-section">
-            <header><div><span>RECENT</span><h2>Match history</h2></div></header>
-            <div class="empty" *ngIf="!history.entries().length">No history yet</div>
-            <article class="history-entry" *ngFor="let match of history.entries()">
+            <header><div><span>RECENT</span><h2>Match history</h2></div><mv-match-history-filter [value]="historyFilter()" (valueChange)="historyFilter.set($event)"></mv-match-history-filter></header>
+            <div class="empty" *ngIf="!visibleHistory().length">{{history.entries().length ? 'No matches for this filter.' : 'No history yet'}}</div>
+            <article class="history-entry" *ngFor="let match of visibleHistory()">
                 <header><strong>{{match.startedAt | date:'shortTime'}} · {{match.map}}</strong><span class="history-result" [class.live]="!match.endedAt && !match.result" [attr.data-outcome]="match.result?.outcome">{{historyStatus(match)}}</span></header>
                 <div class="history-mode">{{match.mode}} · {{match.players.length}} players</div>
                 <mv-match-history-players [entry]="match"></mv-match-history-players>
