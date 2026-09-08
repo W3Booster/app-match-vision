@@ -14,8 +14,8 @@ const RACE_TAGS: Record<string, { id: string; label: string; name: string }> = {
     template: `<span [attr.data-race]="race().id" [title]="race().name" [attr.aria-label]="race().name">{{race().label}}</span>`,
     styles: `
         :host { display: inline-flex; flex: 0 0 auto; vertical-align: middle; }
-        span { padding: 1px 4px; border-radius: 3px; background: #30373c; color: #c7d2d9;
-            font-size: .8em; font-weight: 600; line-height: 1.1; white-space: nowrap; }
+        span { display: inline-flex; align-items: center; justify-content: center; height: 1.5em; padding: 0 4px; border-radius: 3px; background: #30373c; color: #c7d2d9;
+            font-size: .8em; font-weight: 600; line-height: normal; white-space: nowrap; }
         span[data-race='human'] { background: #203b54; color: #a4d1ff; }
         span[data-race='orc'] { background: #482c29; color: #ffb6a7; }
         span[data-race='undead'] { background: #342b48; color: #d2baff; }
