@@ -1,4 +1,9 @@
-<button type="button" class="help" aria-haspopup="dialog" (click)="explanation.showModal()">How it works</button>
+<button type="button" class="help" [class.icon-only]="iconOnly()" aria-haspopup="dialog"
+    aria-label="How automatic score updates work" title="How automatic score updates work" (click)="explanation.showModal()">
+    @if (iconOnly()) {
+        <svg aria-hidden="true" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6.25"/><path d="M8 7v4M8 4.75v.5"/></svg>
+    } @else { How it works }
+</button>
 <dialog #explanation aria-label="Automatic wins and losses">
     <header>
         <h2>Automatic wins and losses</h2>

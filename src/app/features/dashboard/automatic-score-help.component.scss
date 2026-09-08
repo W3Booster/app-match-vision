@@ -17,3 +17,6 @@ p { margin: 10px 0; }
 ul { margin: 6px 0; padding-left: 20px; }
 li { margin: 6px 0; }
 footer { justify-content: flex-end; border-top: 1px solid #354650; }
+
+.help.icon-only { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; padding: 0; vertical-align: middle; text-decoration: none; }
+.help.icon-only svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.3; stroke-linecap: round; }

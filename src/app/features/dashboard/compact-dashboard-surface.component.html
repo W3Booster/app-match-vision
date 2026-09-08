@@ -9,14 +9,13 @@
 
     <div class="compact-content" [style.--compact-font-size.px]="fontSize">
         <div class="action-error" role="alert" *ngIf="score.error()">{{score.error()}}</div>
-    <div class="automatic-score-row"><label class="automatic-score"><input type="checkbox" [checked]="score.document()?.automatic ?? false"
-        [disabled]="!canChangeScore" (change)="score.run({ automatic: $any($event.target).checked })">
-        Update wins and losses automatically</label>
-        <mv-automatic-score-help></mv-automatic-score-help>
-    </div>
     <section class="compact-section score-section">
             <header>
                 <div><span>SESSION</span><h1>Match score</h1></div>
+                <div class="score-header-actions">
+                    <label class="automatic-score"><input type="checkbox" [checked]="score.document()?.automatic ?? false"
+                        [disabled]="!canChangeScore" (change)="score.run({ automatic: $any($event.target).checked })">Auto update</label>
+                    <mv-automatic-score-help [iconOnly]="true"></mv-automatic-score-help>
                 <button type="button" class="quiet" [disabled]="controls.busy() || !canChangeScore" (click)="resetScore()" title="Reset match score">
                     <svg class="reset-icon" aria-hidden="true" viewBox="0 0 16 16">
                         <path d="M3.25 3.75v3h3"></path>
@@ -24,6 +23,7 @@
                     </svg>
                     Reset
                 </button>
+                </div>
             </header>
             <div class="score-control">
                 <span class="score-label">Wins</span>
