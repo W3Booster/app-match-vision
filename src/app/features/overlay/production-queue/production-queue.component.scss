@@ -27,7 +27,7 @@
     left: 0;
     right: 0;
     z-index: 1;
-    background: rgba(0, 0, 0, 0.3);
+    background: var(--cooldown-backdrop-color);
     transition: height 200ms linear, opacity 160ms ease;
 }
 .right .waiting-queue { direction: rtl; }

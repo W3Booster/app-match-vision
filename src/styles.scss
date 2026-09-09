@@ -48,6 +48,7 @@ body.application-surface {
 
 // Shared hero geometry keeps production below the full third hero (including inventory).
 .App {
+    --cooldown-backdrop-color: rgba(0, 0, 0, 0.6);
     --ability-icon-size: 42px;
     --upgrade-icon-size: 30px;
     --hero-third-top: 21.55%;

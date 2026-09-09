@@ -367,7 +367,7 @@
             }
 
             .cooldown-animation {
-                background-color: rgba(0, 0, 0, 0.3);
+                background-color: var(--cooldown-backdrop-color);
                 height: 100%;
                 left: 0px;
                 right: 8px;
