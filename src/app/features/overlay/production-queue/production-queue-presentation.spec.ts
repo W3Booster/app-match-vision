@@ -3,7 +3,7 @@ import type { MatchState } from '@w3booster/sdk';
 import { createDemoState } from '@w3booster/sdk/testing';
 import { w3boosterApp } from '../../../core/w3booster-app.generated';
 import { createOverlayPresentation } from '../overlay-presentation';
-import { productionPlayers, progressLabel } from './production-queue-presentation';
+import { productionPlayers, progressLabel, remainingSecondsLabel } from './production-queue-presentation';
 
 function fixture() {
     const state = structuredClone(createDemoState()) as MatchState;
@@ -22,6 +22,13 @@ function groups(state: MatchState, reverse = false) {
 }
 
 describe('production queue presentation', () => {
+    it('rounds remaining game seconds like ability cooldowns and keeps unknown timers unknown', () => {
+        expect(remainingSecondsLabel(12.4)).toBe('13');
+        expect(remainingSecondsLabel(0.01)).toBe('1');
+        expect(remainingSecondsLabel(0)).toBe('0');
+        expect(remainingSecondsLabel(null)).toBe('?');
+        expect(remainingSecondsLabel(undefined)).toBe('?');
+    });
     it('only shows the current player during play even if another player has data', () => {
         const state = fixture();
         expect(groups(state).map(group => group.player.id)).toEqual(['0']);

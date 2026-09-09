@@ -1,41 +1,64 @@
-@if (groups().length) {
-    <section class="production" aria-label="Production queues">
+@if (enabled() && groups().length) {
+    <section class="production" aria-label="Production queues" animate.enter="panel-enter" animate.leave="panel-leave">
         @for (panel of panels(); track panel.side) {
             @if (panel.groups.length) {
-                <div class="production-side" [class.right]="panel.side === 'right'" [attr.data-side]="panel.side">
+                <div class="production-side" [class.right]="panel.side === 'right'" [attr.data-side]="panel.side"
+                    animate.enter="panel-enter" animate.leave="panel-leave">
                     @for (group of panel.groups; track group.player.id) {
                         <div class="player-production" [attr.data-player-id]="group.player.id"
                             [attr.aria-label]="group.player.displayIdentity.primaryName + ' production'">
                             <div class="buildings">
                                 @for (building of group.buildings; track building.id) {
                                     <div class="building-queue" [attr.data-building-id]="building.id"
-                                        [attr.aria-label]="building.typeId + ' production queue'">
-                                        <div class="building-icon" [title]="building.typeId">
-                                            @if (icon(building.typeId); as source) {
-                                                <img [src]="source" [alt]="building.typeId" />
-                                            } @else { <span>{{ building.typeId }}</span> }
-                                        </div>
-                                        <span class="queue-arrow" aria-hidden="true">›</span>
-                                        @for (slot of building.production!.queue; track slot.position; let first = $first) {
-                                            <div class="queue-slot" [class.active]="first" [class.waiting]="!first"
-                                                [attr.data-position]="slot.position"
-                                                [attr.aria-label]="slot.typeId + ': ' + (first ? progressLabel(slot.progress) : 'Queued')">
-                                                @if (icon(slot.typeId); as source) {
-                                                    <img [src]="source" [alt]="slot.typeId" />
-                                                } @else { <span class="rawcode">{{ slot.typeId }}</span> }
-                                                @if (first) {
-                                                    <span class="progress-label">{{ slot.progress === null ? '?' : progressLabel(slot.progress) }}</span>
-                                                    <div class="progress-track" role="progressbar" [attr.aria-label]="slot.typeId + ' training'"
-                                                        [attr.aria-valuenow]="slot.progress === null ? null : slot.progress * 100"
-                                                        aria-valuemin="0" aria-valuemax="100"
-                                                        [attr.aria-valuetext]="progressLabel(slot.progress)" [class.unknown]="slot.progress === null">
-                                                        @if (slot.progress !== null) {
-                                                            <div class="progress-fill" [style.width.%]="slot.progress * 100"></div>
+                                        [attr.aria-label]="building.typeId + ' production queue'"
+                                        animate.enter="row-enter" animate.leave="row-leave">
+                                        @for (slot of building.production!.queue.slice(0, 1); track slot.position) {
+                                            <div class="active-production">
+                                                <div class="queue-slot active" data-position="0"
+                                                    [attr.aria-label]="slot.typeId + ': ' + (slot.remainingSeconds == null ? 'Remaining time unknown' : remainingSecondsLabel(slot.remainingSeconds) + ' seconds remaining')">
+                                                    @for (typeId of [slot.typeId]; track typeId) {
+                                                        <div class="unit-image" animate.enter="icon-enter" animate.leave="icon-leave">
+                                                            @if (icon(typeId); as source) {
+                                                                <img [src]="source" [alt]="typeId" />
+                                                            } @else { <span class="rawcode">{{ typeId }}</span> }
+                                                        </div>
+                                                    }
+                                                    @for (seconds of [remainingSecondsLabel(slot.remainingSeconds)]; track seconds) {
+                                                        <span class="production-cooldown" animate.enter="number-enter" animate.leave="number-leave">{{ seconds }}</span>
+                                                    }
+                                                    <div class="building-icon" [title]="building.typeId">
+                                                        @for (typeId of [building.typeId]; track typeId) {
+                                                            <div class="unit-image" animate.enter="icon-enter" animate.leave="icon-leave">
+                                                                @if (icon(typeId); as source) {
+                                                                    <img [src]="source" [alt]="typeId" />
+                                                                } @else { <span>{{ typeId }}</span> }
+                                                            </div>
                                                         }
                                                     </div>
-                                                }
+                                                </div>
+                                                <div class="progress-track" role="progressbar" [attr.aria-label]="slot.typeId + ' training'"
+                                                    [attr.aria-valuenow]="slot.progress === null ? null : slot.progress * 100"
+                                                    aria-valuemin="0" aria-valuemax="100"
+                                                    [attr.aria-valuetext]="progressLabel(slot.progress)" [class.unknown]="slot.progress === null">
+                                                    <div class="progress-fill" [style.width.%]="(slot.progress ?? 0) * 100" [style.opacity]="slot.progress === null ? 0 : 1"></div>
+                                                </div>
                                             </div>
                                         }
+                                        <div class="waiting-queue" aria-label="Waiting units">
+                                            @for (slot of building.production!.queue.slice(1); track slot.position) {
+                                                <div class="queue-slot waiting" [attr.data-position]="slot.position"
+                                                    [attr.aria-label]="slot.typeId + ': Queued'" [title]="slot.typeId + ': Queued'"
+                                                    animate.enter="waiting-enter" animate.leave="waiting-leave">
+                                                    @for (typeId of [slot.typeId]; track typeId) {
+                                                        <div class="unit-image" animate.enter="icon-enter" animate.leave="icon-leave">
+                                                            @if (icon(typeId); as source) {
+                                                                <img [src]="source" [alt]="typeId" />
+                                                            } @else { <span class="rawcode">{{ typeId }}</span> }
+                                                        </div>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
                                     </div>
                                 }
                             </div>

@@ -51,7 +51,7 @@
                         </div>
                     </div>
 
-                    <mv-production-queue *ngIf="settings.productionQueuesEnabled !== false" [match]="state.match" [players]="players"
+                    <mv-production-queue [enabled]="settings.productionQueuesEnabled !== false" [match]="state.match" [players]="players"
                         [reversePlayerOrder]="settings.reversePlayerOrderMatchId === state.match.id" />
 
                     <ng-container *ngIf="streamer as selectedStreamer">

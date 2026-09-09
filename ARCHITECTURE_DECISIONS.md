@@ -25,14 +25,26 @@ applies to replays. Panels sit at center-left/center-right, with one building pe
 row starting at the vertical center and continuing downward. There are no repeated
 visible player names. Team/player sides are assigned before empty queues are
 filtered, so an idle player cannot move an opponent's queue to the wrong side.
-Percentages inherit the overlay font and use the hero level's 15px size/weight.
+The row has no surrounding box. Its active icon is 39px, with a small building
+badge overlapping the bottom-right corner. Waiting icons are one-third size
+(13px), filling two rows beside the active icon, inward from each screen edge.
+The progress track sits below the entire image. Active slots show SDK `remainingSeconds`,
+rounded up, with the centered bold white text and shadow used by ability
+cooldowns. Missing/unknown seconds show `?`; waiting slots have no countdown.
+Do not derive seconds from percentages, unit metadata, or wall-clock time.
 Progress width interpolates linearly over 200ms between delivered samples without
-extrapolating beyond them; reduced-motion preferences disable that transition.
+extrapolating beyond them. Row entry/removal, slot entry/removal, icon replacements
+and countdown changes use short CSS animations through Angular enter/leave;
+unchanged snapshots reuse DOM and do not restart animations. Reduced-motion
+preferences disable all queue animations and transitions. Queue positions remain
+snapshot locations, so visual transitions never claim persistent job identity.
+The SDK also exposes `totalSeconds` for apps that need elapsed time or percentages;
+Match Vision uses the observed remaining timer directly.
 
 The production panels group queues by player and building instance.
 During play show only the broadcaster's buildings; observer/replay surfaces
 show all delivered player queues using existing team/replay ordering. Preserve
-repeated rawcodes as separate slots. Only the first slot shows progress; null
+repeated rawcodes as separate slots. Only the first slot shows progress and remaining seconds; null
 shows an unknown marker, never zero or an estimated countdown. Slot position
 identifies a location within the current building queue, not a future unit.
 Empty/unavailable queues, disabled settings, and ended matches remove the panels. Components derive

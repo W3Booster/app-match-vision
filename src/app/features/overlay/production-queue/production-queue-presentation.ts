@@ -24,3 +24,8 @@ export const productionPlayers = createMemoizedSelector((
 export function progressLabel(progress: number | null): string {
     return progress === null ? 'Progress unknown' : `${Math.floor(progress * 100)}%`;
 }
+
+/** Round up like ability cooldowns; waiting or unreadable timers remain unknown. */
+export function remainingSecondsLabel(value: number | null | undefined): string {
+    return value == null ? '?' : String(Math.max(0, Math.ceil(value)));
+}

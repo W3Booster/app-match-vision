@@ -19,13 +19,13 @@ try {
         window.testSnapshot = service.connection();
         await service.stop();
     });
-    async function render(options = {}) {
+    async function render(options = {}, settleMs = 260) {
         await page.evaluate(options => {
             const base = window.testSnapshot;
             const state = structuredClone(base.state);
             const settings = structuredClone(base.settings);
             Object.assign(state.match, { mode: options.mode || '1v1', isObserver: !!options.observer,
-                isReplay: !!options.replay, isReforged: !!options.reforged, status: options.status || 'running' });
+                isReplay: !!options.replay, gameTime: 5, isReforged: !!options.reforged, status: options.status || 'running' });
             for (const profile of [settings.player, settings.observer]) {
                 profile.heroExpProgressEnabled = options.xp !== false;
                 profile.heroAbilitiesEnabled = options.abilities !== false;
@@ -35,14 +35,14 @@ try {
             if (options.bottomMatchup) settings.player.additionalCSSClasses.MATCHUP_BAR = 'MatchupBarIsBottomCenter';
             for (const player of state.players) {
                 const hero = Object.values(player.heroes)[0];
+                hero.abilities = [{ id: 'ability-' + player.id, name: 'AHwe', level: 1, lastActivation: 1000 }];
                 hero.hitpoints = options.missingHp ? undefined : { current: options.hp ?? 60, max: 100 };
                 hero.mana = options.missingMana ? undefined : { current: options.mana ?? 50, max: 100 };
                 const id = `000000000000000${Number(player.id) + 1}`;
                 player.buildings = options.unobserved ? undefined : { [id]: { id, typeId: 'hbar', production: {
                     queue: options.empty || (options.emptyLeft && player.id === '0') ? [] : [
-                        { position: 0, typeId: 'hfoo', progress: options.unknown ? null : options.progress ?? 0.375 },
-                        { position: 1, typeId: 'hfoo', progress: 0 },
-                        { position: 2, typeId: 'hrif', progress: 0 }
+                        { position: 0, typeId: options.activeType ?? 'hfoo', progress: options.unknown ? null : options.progress ?? 0.38, remainingSeconds: options.unknown ? null : options.remainingSeconds ?? 12.4, totalSeconds: options.unknown ? null : 20 },
+                        ...(options.waitingTypes ?? ['hfoo', 'hrif']).map((typeId, index) => ({ position: index + 1, typeId, progress: 0 }))
                     ]
                 } } };
             }
@@ -53,7 +53,7 @@ try {
             if (options.selected !== undefined) state.match.broadcasterPlayerId = options.selected;
             window.testConnection.connection.set({ ...base, state, settings });
         }, options);
-        await page.waitForTimeout(80);
+        await page.waitForTimeout(settleMs);
     }
     for (const reforged of [false, true]) {
         for (const mode of ['1v1', '2v2', 'FFA']) {
@@ -95,7 +95,11 @@ try {
     await render({ replay: true, selected: '1', unknown: true });
     assert.equal(await page.locator('.player-production').first().getAttribute('data-player-id'), '1');
     assert.equal(await page.locator('.progress-track').first().getAttribute('aria-valuenow'), null);
-    assert.equal(await page.locator('.progress-label').first().textContent(), '?');
+    assert.equal(await page.locator('.production-cooldown').first().textContent(), '?');
+    await render({ observer: true, remainingSeconds: 12.4 });
+    assert.equal(await page.locator('.production-cooldown').first().textContent(), '13');
+    await render({ observer: true, remainingSeconds: 0 });
+    assert.equal(await page.locator('.production-cooldown').first().textContent(), '0');
     await render({ observer: true, progress: 0 });
     assert.equal(await page.locator('.progress-track').first().getAttribute('aria-valuenow'), '0');
     await page.locator('.building-queue').first().evaluate(el => { window.previousQueue = el; });
@@ -122,14 +126,37 @@ try {
     assert.equal(rows.length, 2);
     assert.ok(rows[1].top > rows[0].bottom && rows[1].left === rows[0].left, 'Each building occupies its own row');
     assert.ok(Math.abs((rows[0].top + rows[0].bottom) / 2 - 540) <= 1, 'First row starts at vertical center');
-    const fonts = await page.evaluate(() => ['.hero-level', '.progress-label'].map(selector => {
+    const fonts = await page.evaluate(() => ['.ability-icon .cooldown', '.production-cooldown'].map(selector => {
         const s=getComputedStyle(document.querySelector(selector)); return { family:s.fontFamily, size:s.fontSize, weight:s.fontWeight };
     }));
-    assert.deepEqual(fonts[0], fonts[1], 'Percentages match the hero level font');
+    assert.deepEqual(fonts[0], fonts[1], 'Remaining seconds match the ability cooldown font');
+    await render({ observer: true, waitingTypes: ['hfoo', 'hrif', 'hkni', 'hfoo', 'hrif', 'hkni'] });
+    const geometry = await page.locator('.building-queue').first().evaluate(row => {
+        const rect = selector => row.querySelector(selector).getBoundingClientRect().toJSON();
+        return { active: rect('.active'), progress: rect('.progress-track'), badge: rect('.building-icon'),
+            waiting: [...row.querySelectorAll('.waiting')].map(e => e.getBoundingClientRect().toJSON()),
+            border: getComputedStyle(row).borderTopWidth, background: getComputedStyle(row).backgroundColor };
+    });
+    assert.equal(geometry.active.width / geometry.waiting[0].width, 3, 'Waiting icons are one-third size');
+    assert.equal(new Set(geometry.waiting.map(r => r.y)).size, 2, 'Waiting icons occupy exactly two rows');
+    assert.equal(geometry.waiting[0].x, geometry.waiting[1].x, 'Queue fills top to bottom, then the next column');
+    assert.ok(geometry.progress.top > geometry.active.bottom, 'Progress is below the whole image');
+    assert.ok(geometry.badge.left > geometry.active.left && geometry.badge.right > geometry.active.right && geometry.badge.top < geometry.active.bottom, 'Building badge overlaps the bottom-right corner');
+    assert.equal(geometry.border, '0px');
+    assert.equal(geometry.background, 'rgba(0, 0, 0, 0)', 'Building row has no surrounding box');
+    await render({ observer: true, activeType: 'hrif', remainingSeconds: 8 }, 25);
+    assert.ok(await page.locator('.building-queue').first().evaluate(row => row.getAnimations({ subtree: true }).some(a => a.playState === 'running')), 'Queue replacement and countdown animate');
+    await page.waitForTimeout(260);
+    assert.equal(await page.locator('.active .unit-image img').first().getAttribute('alt'), 'hrif');
+    assert.equal(await page.locator('.active > .unit-image').count(), 2, 'Outgoing icons are removed after transitions');
+    await render({ observer: true, empty: true }, 25);
+    assert.ok(await page.locator('.production').count(), 'Queue removal retains its exit transition');
+    await page.waitForTimeout(300);
+    assert.equal(await page.locator('.production').count(), 0, 'Queue removal completes without stale rows');
     // Observe actual interpolation without extrapolating beyond the delivered value.
     await render({ observer: true, progress: 0.2 });
     await page.waitForTimeout(250);
-    await render({ observer: true, progress: 0.8 });
+    await render({ observer: true, progress: 0.8 }, 40);
     const fraction = () => page.locator('.progress-fill').first().evaluate(e => e.getBoundingClientRect().width / e.parentElement.getBoundingClientRect().width);
     const intermediate = await fraction();
     assert.ok(intermediate > 0.2 && intermediate < 0.8, 'Progress animates between snapshots');
@@ -152,7 +179,7 @@ try {
     if (process.env.MV_SCREENSHOT) await page.screenshot({ path: process.env.MV_SCREENSHOT });
     assert.deepEqual(errors, []);
     console.log('Classic/reforged × player/observer × 1v1/team/FFA: legacy vitals policy/colors and production queues passed.');
-    console.log('Queue toggles, fixed player sides, one building per row, level font and animated progress passed.');
+    console.log('Queue toggles, fixed player sides, one building per row, compact two-row waiting icons, building badges, separate progress bars and transitions passed.');
     console.log('Replay ordering, missing/zero data, duplicate slots, unknown/changed progress, cancellation, lifecycle and viewport bounds passed.');
 } finally {
     await browser.close();
