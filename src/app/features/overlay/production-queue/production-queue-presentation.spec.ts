@@ -41,6 +41,17 @@ describe('production queue presentation', () => {
         expect(groups(state, true).map(group => group.player.id)).toEqual(['1', '0']);
     });
 
+    it('assigns sides before filtering idle buildings and keeps teams together', () => {
+        const state = fixture();
+        Object.assign(state.match, { isObserver: true });
+        Object.assign(state.players[0], { buildings: {} });
+        expect(groups(state).map(group => [group.player.id, group.side])).toEqual([['1', 'right']]);
+        const team = fixture();
+        Object.assign(team.match, { isObserver: true, mode: '2v2' });
+        Object.assign(team.players[1], { team: 0 });
+        expect(groups(team).map(group => group.side)).toEqual(['left', 'left']);
+    });
+
     it('retains duplicate slots and unknown progress without cloning SDK buildings', () => {
         const state = fixture();
         const before = structuredClone(state);

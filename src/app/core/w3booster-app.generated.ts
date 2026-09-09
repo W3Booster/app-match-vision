@@ -1,6 +1,6 @@
 /* Generated from the W3Booster application database. Do not edit directly. */
 // @w3booster-client-id app_7bd7c42015297f608f1e5436
-// @w3booster-revision 01b998754543b87e2c52ad634a5684f9e48abe236c1e2025a107870a27df786c
+// @w3booster-revision fef76895a6205e445159db7968ff605616176234281a46d1d67d223e697317a8
 
 import type { W3BoosterClient } from '@w3booster/sdk';
 import { defineApplication, type ApplicationConnectOptions, type ApplicationRuntime, type ApplicationRuntimeSnapshot } from '@w3booster/sdk/app';
@@ -31,6 +31,7 @@ export interface W3BoosterAppSettings {
     researchesOfAttackAndArmorEnabled: boolean;
     researchesInQueueEnabled: boolean;
     researchesShowAllEnabled: boolean;
+    productionQueuesEnabled: boolean;
   };
   observer: {
     mapBarEnabled: boolean;
@@ -51,6 +52,7 @@ export interface W3BoosterAppSettings {
     researchesOfAttackAndArmorEnabled: boolean;
     researchesInQueueEnabled: boolean;
     researchesShowAllEnabled: boolean;
+    productionQueuesEnabled: boolean;
   };
 }
 export type W3BoosterAppDeliveredSettings = DeepPartial<W3BoosterAppSettings>;
@@ -59,8 +61,8 @@ export type W3BoosterAppRuntime<TOverlayExtensions extends object = object> = Ap
 export type W3BoosterAppRuntimeSnapshot<TOverlayExtensions extends object = object> = ApplicationRuntimeSnapshot<W3BoosterAppSettings, TOverlayExtensions>;
 const w3boosterAppDefinition = {
   clientId: "app_7bd7c42015297f608f1e5436",
-  revision: "01b998754543b87e2c52ad634a5684f9e48abe236c1e2025a107870a27df786c",
-  scopes: ["match:read","players:read","stats:read","heroes:read","upgrades:read","resources:read","controlgroups:read"],
+  revision: "fef76895a6205e445159db7968ff605616176234281a46d1d67d223e697317a8",
+  scopes: ["match:read","players:read","stats:read","heroes:read","upgrades:read","resources:read","controlgroups:read","buildings:read","production:read"],
   settingsDefaults: {
     "player": {
       "mapBarEnabled": true,
@@ -85,7 +87,8 @@ const w3boosterAppDefinition = {
       "researchesEnabled": true,
       "researchesOfAttackAndArmorEnabled": true,
       "researchesInQueueEnabled": true,
-      "researchesShowAllEnabled": false
+      "researchesShowAllEnabled": false,
+      "productionQueuesEnabled": true
     },
     "observer": {
       "mapBarEnabled": true,
@@ -105,7 +108,8 @@ const w3boosterAppDefinition = {
       "researchesEnabled": true,
       "researchesOfAttackAndArmorEnabled": true,
       "researchesInQueueEnabled": true,
-      "researchesShowAllEnabled": false
+      "researchesShowAllEnabled": false,
+      "productionQueuesEnabled": true
     }
   }
 } as const;

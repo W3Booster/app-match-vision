@@ -15,6 +15,8 @@ export class ProductionQueueComponent {
     readonly players = input.required<readonly MatchVisionPlayerView[]>();
     readonly reversePlayerOrder = input(false);
     readonly groups = computed(() => productionPlayers(this.players(), this.match(), this.reversePlayerOrder()));
+    readonly sides = ['left', 'right'] as const;
+    readonly panels = computed(() => this.sides.map(side => ({ side, groups: this.groups().filter(group => group.side === side) })));
     readonly progressLabel = progressLabel;
     private readonly assets = inject(WarcraftAssetsService);
     icon(typeId: string): string | null { return this.assets.iconPath(this.match(), typeId); }

@@ -18,13 +18,24 @@ HP. Dead and unobserved heroes do not acquire fabricated bars. HP transitions
 from green at 100% through yellow at 60% toward red at zero; mana is `#00aafd`.
 The existing classic/reforged geometry and gradient remain unchanged.
 
-The bottom production strip groups queues by player and building instance.
+Production queues have independent `player.productionQueuesEnabled` and
+`observer.productionQueuesEnabled` settings, defaulting to true in the database
+schema. The generated binding owns those defaults; the observer setting also
+applies to replays. Panels sit at center-left/center-right, with one building per
+row starting at the vertical center and continuing downward. There are no repeated
+visible player names. Team/player sides are assigned before empty queues are
+filtered, so an idle player cannot move an opponent's queue to the wrong side.
+Percentages inherit the overlay font and use the hero level's 15px size/weight.
+Progress width interpolates linearly over 200ms between delivered samples without
+extrapolating beyond them; reduced-motion preferences disable that transition.
+
+The production panels group queues by player and building instance.
 During play show only the broadcaster's buildings; observer/replay surfaces
 show all delivered player queues using existing team/replay ordering. Preserve
 repeated rawcodes as separate slots. Only the first slot shows progress; null
 shows an unknown marker, never zero or an estimated countdown. Slot position
 identifies a location within the current building queue, not a future unit.
-Empty/unavailable queues and ended matches remove the strip. Components derive
+Empty/unavailable queues, disabled settings, and ended matches remove the panels. Components derive
 from SDK snapshots and add no polling or process reads.
 
 Release prerequisites (do not merge this staging branch before these pass):
@@ -35,13 +46,22 @@ Release prerequisites (do not merge this staging branch before these pass):
   lane is intentionally still a failing release gate, not compatibility proof.
 - Roll out the reviewed native/API SDK 3 contract. Add `buildings:read` and
   `production:read` to Match Vision's database-owned application definition and
-  update grants through the platform's scope approval flow. New launches need
+  update grants through the platform's scope approval flow. Add the production
+  boolean to both settings profiles using the official schema; preserve existing
+  saved settings. New launches need
   the new grants; existing tickets must not be mistaken for new authorization.
 - Regenerate the binding with `npm run w3booster:sync`, verify
   `npm run w3booster:check`, then pass both clean registry and packed SDK lanes.
   Do not hand-edit the generated scopes/revision or ship an app-local adapter.
 - Restore the packed CI checkout to SDK HEAD after the reviewed SDK commit is
   merged. The temporary pin makes the feature branch's integration reproducible.
+
+Local end-to-end verification used the reviewed native DLL, local MongoDB/API,
+SDK 3 and the desktop compositor during a running replay. Both players delivered
+hero HP/mana and building queues. The new settings were generated from the local
+database; changing the observer toggle through the desktop settings UI removed
+and restored the live overlay queues. The checked-in revision is this staged
+contract, not a claim that the production database has already been updated.
 
 Validation: pure queue regression tests plus Chromium rendering checks cover
 classic/reforged, player/observer, duel/team/FFA, replay selection, visibility
