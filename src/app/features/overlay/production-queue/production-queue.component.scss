@@ -1,0 +1,53 @@
+:host {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: max-content;
+    max-width: calc(100% - 32px);
+    z-index: 10;
+    font: 12px 'FrizQuadrata', serif;
+    color: #f4ecd6;
+}
+// Keep the existing optional bottom matchup bar readable above production.
+:host-context(.MatchupBarIsBottomCenter) { bottom: 76px; }
+.production {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 8px 16px;
+    max-height: 22vh;
+    overflow: auto;
+}
+.player-production { min-width: 0; max-width: 100%; }
+.player-name { margin: 0 0 4px; text-shadow: 0 1px 3px #000, 0 0 4px #000; }
+.buildings { display: flex; flex-wrap: wrap; gap: 6px; }
+.building-queue {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    padding: 4px;
+    background: rgb(9 13 18 / 90%);
+    border: 1px solid #655537;
+    border-radius: 3px;
+    max-width: 100%;
+    overflow-x: auto;
+}
+.building-icon, .queue-slot { width: 38px; height: 38px; flex: 0 0 auto; position: relative; background: #151d24; }
+.building-icon { width: 30px; height: 30px; }
+img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.queue-arrow { color: #b7a477; padding: 0 2px; }
+.queue-slot { border: 1px solid #454239; }
+.active { border-color: #d7b773; }
+.waiting img { opacity: 0.7; }
+.rawcode, .building-icon span { font: 10px monospace; overflow-wrap: anywhere; }
+.progress-label { position: absolute; bottom: 5px; right: 2px; text-shadow: 0 1px 2px #000, 0 0 3px #000; }
+.progress-track { position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: #171717; }
+.progress-fill { height: 100%; background: #d7b773; }
+.unknown { background: repeating-linear-gradient(135deg, #655537 0 3px, #171717 3px 6px); }
+@media (max-height: 600px) {
+    :host { bottom: 6px; }
+    :host-context(.MatchupBarIsBottomCenter) { bottom: 68px; }
+    .queue-slot { width: 30px; height: 30px; }
+}

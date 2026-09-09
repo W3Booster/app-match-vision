@@ -1,4 +1,5 @@
 import type { Match, Player, Race } from '@w3booster/sdk';
+import { playerHeroes } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { orderedMatchVisionTeams } from '../../domain';
 
@@ -28,7 +29,7 @@ export function upgradePanelInset(
     showInventory: boolean,
     showAbilities: boolean
 ): number {
-    const abilityCount = showAbilities ? (player.heroes?.[0]?.abilities?.length ?? 0) : 0;
+    const abilityCount = showAbilities ? (playerHeroes(player)[0]?.abilities?.length ?? 0) : 0;
     const abilityColumns = Math.ceil(abilityCount / 2);
     return (showInventory ? INVENTORY_RAIL_WIDTH : 0) + abilityColumns * ABILITY_COLUMN_WIDTH + UPGRADE_PANEL_GAP;
 }

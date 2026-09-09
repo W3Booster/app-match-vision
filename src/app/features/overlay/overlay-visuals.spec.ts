@@ -47,12 +47,12 @@ describe('Match Vision overlay presentation rules', () => {
     it('moves upgrades only when the first hero occupies another ability column', () => {
         const player = (abilityCount: number): Player => ({
             id: 'hero-player',
-            heroes: [{
-                id: 'Hpal', name: 'Paladin', level: 1,
+            heroes: { "0000000000000001": {
+                id: '0000000000000001', typeId: 'Hpal', level: 1,
                 abilities: Array.from({ length: abilityCount }, (_, index) => ({
                     id: `ability-${index}`, name: `A00${index}`, level: 1
                 }))
-            }]
+            } }
         });
         expect(upgradePanelInset(player(2), true, true)).toBe(207);
         expect(upgradePanelInset(player(1), true, true)).toBe(upgradePanelInset(player(2), true, true));

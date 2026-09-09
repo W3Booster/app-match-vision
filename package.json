@@ -12,7 +12,8 @@
     "app:fork": "node scripts/fork.mjs",
     "w3booster:sync": "w3booster-settings --output \"src/app/core/w3booster-app.generated.ts\"",
     "w3booster:check": "w3booster-settings --output \"src/app/core/w3booster-app.generated.ts\" --check",
-    "sdk:link-local": "node scripts/link-local-sdk.mjs"
+    "sdk:link-local": "node scripts/link-local-sdk.mjs",
+    "test:overlay:browser": "node scripts/overlay-sdk3.browser-test.mjs"
   },
   "private": true,
   "dependencies": {
@@ -28,6 +29,7 @@
     "@angular/build": "^22.1.2",
     "@angular/cli": "^22.1.2",
     "@angular/compiler-cli": "^22.1.0",
+    "playwright": "1.62.1",
     "typescript": "~6.0.3",
     "vitest": "^4.1.10"
   },

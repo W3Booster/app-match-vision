@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import type { DeepReadonly, Hero, HeroAbility, MatchState } from '@w3booster/sdk';
-import { heroInventory, inventorySlotIdentity, isActiveMatch, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
+import { heroInventory, inventorySlotIdentity, isActiveMatch, isObserverOrReplayMatch, playerHeroes } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import type { MatchVisionPlayerView, MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
@@ -11,11 +11,13 @@ import { MatchBarComponent } from './match-bar/match-bar.component';
 import { ObserverBarComponent } from './observer-bar/observer-bar.component';
 import { createOverlayPresentation } from './overlay-presentation';
 import { TeamObserverBarComponent } from './team-observer-bar/team-observer-bar.component';
+import { ProductionQueueComponent } from './production-queue/production-queue.component';
+import { heroHealthColor } from './hero-vitals';
 import { UpgradePanelComponent } from './upgrade-panel/upgrade-panel.component';
 
 @Component({
     selector: 'mv-overlay-surface',
-    imports: [CommonModule, MapBarComponent, MatchBarComponent, ObserverBarComponent, TeamObserverBarComponent, UpgradePanelComponent],
+    imports: [CommonModule, ProductionQueueComponent, MapBarComponent, MatchBarComponent, ObserverBarComponent, TeamObserverBarComponent, UpgradePanelComponent],
     templateUrl: './overlay-surface.component.html',
     styleUrl: './overlay-surface.component.scss'
 })
@@ -35,6 +37,9 @@ export class OverlaySurfaceComponent {
     }
     get streamer(): MatchVisionPlayerView | null { return this.presentation().streamer; }
     get opponent(): MatchVisionPlayerView | null { return this.presentation().opponent; }
+    get streamerHeroes(): readonly Hero[] { return playerHeroes(this.streamer); }
+    get opponentHeroes(): readonly Hero[] { return playerHeroes(this.opponent); }
+    readonly heroHealthColor = heroHealthColor;
     get additionalCSSClasses(): string { return this.presentation().additionalCssClasses; }
     get isReforged(): boolean { return this.state.match.isReforged === true; }
     get matchActive(): boolean { return isActiveMatch(this.state.match); }

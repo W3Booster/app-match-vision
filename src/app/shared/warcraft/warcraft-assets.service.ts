@@ -11,8 +11,8 @@ export class WarcraftAssetsService {
         return this.resolveIcon(key, this.assets.icon(match, key));
     }
 
-    heroIconPath(match: Pick<Match, 'isReforged'>, hero: Pick<Hero, 'id'>): string | null {
-        return this.resolveIcon(hero.id, this.assets.hero(match, hero));
+    heroIconPath(match: Pick<Match, 'isReforged'>, hero: Pick<Hero, 'typeId'>): string | null {
+        return this.resolveIcon(hero.typeId, this.assets.hero(match, hero));
     }
 
     abilityIconPath(match: Pick<Match, 'isReforged'>, ability: Pick<HeroAbility, 'name'>): string | null {
@@ -31,7 +31,7 @@ export class WarcraftAssetsService {
         return this.background(this.iconPath(match, key));
     }
 
-    heroIconBackground(match: Pick<Match, 'isReforged'>, hero: Pick<Hero, 'id'>): string | null {
+    heroIconBackground(match: Pick<Match, 'isReforged'>, hero: Pick<Hero, 'typeId'>): string | null {
         return this.background(this.heroIconPath(match, hero));
     }
 

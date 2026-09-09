@@ -1,5 +1,53 @@
 # Match Vision architecture decisions
 
+## 2026-09-09: SDK 3 instance maps and building production
+
+Status: implemented on `feat/sdk3-vitals-production`; release pending SDK 3
+publication and the coordinated platform contract rollout. This supersedes
+ADR-009's SDK 2 source contract on this review branch.
+
+Use `playerHeroes` and `playerBuildings` to consume SDK instance maps directly.
+`id` is the match-scoped engine instance identity used for DOM tracking;
+`typeId` is the Warcraft rawcode used for artwork. Keep the SDK maps intact in
+player presentation wrappers, with no parallel normalized entity store.
+
+Preserve the hero bar behavior from the initial public release (`835ec91`):
+both sides show bars when abilities or XP are enabled, except the team observer
+layout. HP must be positive; mana requires observed mana and positive observed
+HP. Dead and unobserved heroes do not acquire fabricated bars. HP transitions
+from green at 100% through yellow at 60% toward red at zero; mana is `#00aafd`.
+The existing classic/reforged geometry and gradient remain unchanged.
+
+The bottom production strip groups queues by player and building instance.
+During play show only the broadcaster's buildings; observer/replay surfaces
+show all delivered player queues using existing team/replay ordering. Preserve
+repeated rawcodes as separate slots. Only the first slot shows progress; null
+shows an unknown marker, never zero or an estimated countdown. Slot position
+identifies a location within the current building queue, not a future unit.
+Empty/unavailable queues and ended matches remove the strip. Components derive
+from SDK snapshots and add no polling or process reads.
+
+Release prerequisites (do not merge this staging branch before these pass):
+
+- Publish the reviewed SDK 3 artifact, then raise the registry dependency to
+  `^3.0.0` and regenerate the lockfile from the registry. Until then ADR-001
+  keeps the committed dependency at the published SDK 2 version; the registry
+  lane is intentionally still a failing release gate, not compatibility proof.
+- Roll out the reviewed native/API SDK 3 contract. Add `buildings:read` and
+  `production:read` to Match Vision's database-owned application definition and
+  update grants through the platform's scope approval flow. New launches need
+  the new grants; existing tickets must not be mistaken for new authorization.
+- Regenerate the binding with `npm run w3booster:sync`, verify
+  `npm run w3booster:check`, then pass both clean registry and packed SDK lanes.
+  Do not hand-edit the generated scopes/revision or ship an app-local adapter.
+- Restore the packed CI checkout to SDK HEAD after the reviewed SDK commit is
+  merged. The temporary pin makes the feature branch's integration reproducible.
+
+Validation: pure queue regression tests plus Chromium rendering checks cover
+classic/reforged, player/observer, duel/team/FFA, replay selection, visibility
+settings, health colors, dead/missing/zero pools, repeated slots, unknown and
+changing progress, cancellation, lifecycle cleanup, and viewport bounds.
+
 ## 2026-09-08: Compact matchups separate opposing teams
 
 Two-team compact matches and match history on both dashboards use equal left/right team columns

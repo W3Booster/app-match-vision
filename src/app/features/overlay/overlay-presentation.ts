@@ -2,7 +2,7 @@ import type { DeepReadonly, GameContext, MatchState } from '@w3booster/sdk';
 import type { AbilityCooldownState } from '@w3booster/sdk/standard-game/cooldowns';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import * as standardGameCooldowns from '@w3booster/sdk/standard-game/cooldowns';
-import { gameContext as selectGameContext, broadcasterPlayer, headToHeadPair, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
+import { gameContext as selectGameContext, broadcasterPlayer, headToHeadPair, playerHeroes, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import { matchVisionScore, matchVisionPlayers, matchVisionSettings, matchVisionHeadToHeadPlayers, reversePlayerOrderForMatch } from '../../domain';
 import type { MatchVisionScore, MatchVisionOverlaySettings, MatchVisionPlayerView, MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
@@ -52,10 +52,10 @@ export function createOverlayPresentation(
 
     const broadcaster = players.find(player => player.id === broadcasterId);
     const requiredAvatarCovers = state.match.isReplay && !state.match.isObserver && broadcaster && streamer
-        ? Math.max(0, (broadcaster.heroes?.length ?? 0) - (streamer.heroes?.length ?? 0))
+        ? Math.max(0, playerHeroes(broadcaster).length - playerHeroes(streamer).length)
         : 0;
     const teamAvatarCovers = state.match.isReplay && !state.match.isObserver
-        ? Math.min(3, broadcaster?.heroes?.length ?? 0)
+        ? Math.min(3, playerHeroes(broadcaster).length)
         : 0;
 
     return {

@@ -110,3 +110,23 @@ The W3Booster application record is the sole source for client identity, scopes,
 The repository requires published SDK 1.1.0 or newer in the 1.x line. Version 1.1.0 adds unconditional game context; Match Vision uses its shared selector directly and reads its score separately from application data. Its lockfile records the npm registry tarball integrity, so clean installs and CI use the same reviewed SDK artifact. Use the local-link command only while deliberately developing both repositories together.
 
 Match Vision source code is licensed under the [MIT License](LICENSE). Bundled media is covered separately by [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+### SDK 3 review branch
+
+This branch targets SDK 3, which is not published yet. The registry SDK 2 lane
+remains a failing release gate until the coordinated dependency and application
+scope update described in [the decision record](ARCHITECTURE_DECISIONS.md).
+For deliberate sibling-SDK development, run `npm ci`, `npm run sdk:link-local`,
+then `npm run check` and `npm start` (port 8082).
+
+Run the overlay rendering regression suite against that development server:
+
+```sh
+npx playwright install chromium
+npm run test:overlay:browser
+```
+
+`MV_TEST_URL` overrides the server address and `CHROME_PATH` optionally selects
+an installed Chromium browser. `MV_SCREENSHOT` optionally saves the final
+observer fixture. The suite uses Angular's development debug API to inject
+immutable SDK snapshots; it does not use live accounts or add production hooks.

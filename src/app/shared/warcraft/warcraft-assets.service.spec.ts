@@ -11,11 +11,11 @@ describe('WarcraftAssetsService', () => {
     it('uses typed entity identifiers for standard-game artwork', () => {
         const service = new WarcraftAssetsService();
         const match = { isReforged: true };
-        expect(service.heroIconPath(match, { id: 'Hamg' })).toContain('/btnheroarchmage.png');
+        expect(service.heroIconPath(match, { typeId: 'Hamg' })).toContain('/btnheroarchmage.png');
         expect(service.abilityIconPath(match, { name: 'AHbz' })).toContain('/btnblizzard.png');
         expect(service.upgradeIconPath(match, { name: 'Rhme' })).toContain('/btnsteelmelee.png');
-        expect(service.heroIconPath(match, { id: 'ZZZZ' })).toBeNull();
-        expect(service.heroIconBackground(match, { id: 'Hamg' })).toMatch(/^url\(".*btnheroarchmage\.png"\)$/);
-        expect(service.heroIconBackground(match, { id: 'ZZZZ' })).toBeNull();
+        expect(service.heroIconPath(match, { typeId: 'ZZZZ' })).toBeNull();
+        expect(service.heroIconBackground(match, { typeId: 'Hamg' })).toMatch(/^url\(".*btnheroarchmage\.png"\)$/);
+        expect(service.heroIconBackground(match, { typeId: 'ZZZZ' })).toBeNull();
     });
 });
