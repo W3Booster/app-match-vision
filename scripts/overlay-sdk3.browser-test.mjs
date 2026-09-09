@@ -160,8 +160,11 @@ try {
     assert.equal(new Set(geometry.waiting.map(r => r.y)).size, 2, 'Waiting icons occupy exactly two rows');
     assert.equal(geometry.waiting[0].x, geometry.waiting[1].x, 'Queue fills top to bottom, then the next column');
     assert.equal(geometry.progress.top, geometry.active.bottom, 'Progress touches the image without a gap');
-    assert.equal(geometry.active.right - geometry.badge.right, 3, 'Badge preserves the right artwork border');
-    assert.equal(geometry.active.bottom - geometry.badge.bottom, 3, 'Badge preserves the bottom artwork border');
+    assert.ok(geometry.badge.right < geometry.active.left, 'Small building icon precedes the active unit without overlap');
+    assert.equal(geometry.badge.width, 17, 'Building icon stays small');
+    assert.equal(await page.locator('.building-queue .queue-arrow').first().textContent(), '›');
+    const mirrored = await page.locator('.production-side.right .building-queue').first().evaluate(row => ({ building: row.querySelector('.building-icon').getBoundingClientRect().left, active: row.querySelector('.active').getBoundingClientRect().right }));
+    assert.ok(mirrored.building > mirrored.active, 'Right-side queue mirrors the building and arrow arrangement');
     assert.equal(geometry.border, '0px');
     assert.equal(geometry.background, 'rgba(0, 0, 0, 0)', 'Building row has no surrounding box');
     const decoration = await page.locator('.building-queue').first().evaluate(row => {

@@ -17,6 +17,8 @@
 .buildings { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .right .buildings { align-items: flex-end; }
 .right .building-queue { flex-direction: row-reverse; }
+.right .queue-arrow { transform: scaleX(-1); }
+.queue-arrow { color: #b7a477; font-size: 14px; line-height: 1; }
 // Match ability artwork cropping: remove the frame baked into the building texture.
 .building-icon img { position: absolute; width: 115%; height: 115%; left: -7.5%; top: -7.5%; }
 .production-backdrop {
@@ -45,10 +47,8 @@
 img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .queue-details { display: flex; align-items: center; }
 .building-icon {
-    position: absolute;
-    // Preserve the roughly 4px frame of the original 64px artwork at 39px display size.
-    bottom: 3px;
-    right: 3px;
+    position: relative;
+    flex: 0 0 17px;
     width: 17px;
     height: 17px;
     z-index: 3;

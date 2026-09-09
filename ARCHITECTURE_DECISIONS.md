@@ -27,8 +27,8 @@ Shared CSS geometry keeps the reservation aligned even when fewer heroes exist. 
 visible player names. Team/player sides are assigned before empty queues are
 filtered, so an idle player cannot move an opponent's queue to the wrong side.
 The row has no surrounding box. Its active icon is 39px, with a small building
-badge inside the lower-right corner, inset 3px to preserve the artwork
-frame. Countdown text remains above the badge. Queue artwork has no added CSS
+17px building image followed by a small arrow before the active unit. The
+right-side queue mirrors this arrangement. The building never overlaps unit artwork. Queue artwork has no added CSS
 borders; the building badge also crops the baked-in texture frame. Waiting icons are one-third size
 (13px), filling two rows beside the active icon, inward from each screen edge.
 The gold progress track touches the image directly and uses the health bar's
