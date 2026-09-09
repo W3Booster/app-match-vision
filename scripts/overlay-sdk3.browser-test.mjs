@@ -159,6 +159,8 @@ try {
     assert.equal(geometry.active.width / geometry.waiting[0].width, 3, 'Waiting icons are one-third size');
     assert.equal(new Set(geometry.waiting.map(r => r.y)).size, 2, 'Waiting icons occupy exactly two rows');
     assert.equal(geometry.waiting[0].x, geometry.waiting[1].x, 'Queue fills top to bottom, then the next column');
+    assert.equal(Math.min(...geometry.waiting.map(r => r.top)), geometry.active.top, 'Waiting rows start at the active image top');
+    assert.equal(Math.max(...geometry.waiting.map(r => r.bottom)), geometry.active.bottom, 'Waiting rows end at the image bottom, above the progress bar');
     assert.equal(geometry.progress.top, geometry.active.bottom, 'Progress touches the image without a gap');
     assert.ok(geometry.badge.right < geometry.active.left, 'Small building icon precedes the active unit without overlap');
     assert.equal(geometry.badge.width, await page.locator('.upgrade-icon').first().evaluate(e => e.getBoundingClientRect().width), 'Building icon matches upgrade size');

@@ -31,6 +31,8 @@ and the building image shares the upgrade size (30px), followed by a small arrow
 right-side queue mirrors this arrangement. The building never overlaps unit artwork. Queue artwork has no added CSS
 borders; the building badge also crops the baked-in texture frame. Waiting icons are one-third size
 (14px), filling two rows beside the active icon, inward from each screen edge.
+The waiting grid aligns with the top and bottom of the active image and excludes
+the progress bar from its height.
 The gold progress track touches the image directly and uses the health bar's
 black frame and shading. Active production also uses the
 ability cooldown's translucent black backdrop, shrinking with the remaining
