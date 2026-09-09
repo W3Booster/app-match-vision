@@ -1,4 +1,4 @@
-import type { Building, Match } from '@w3booster/sdk';
+import type { Building, Match, ProductionQueueItem } from '@w3booster/sdk';
 import { isObserverOrReplayMatch, playerBuildings } from '@w3booster/sdk/selectors';
 import { createMemoizedSelector } from '@w3booster/sdk/store';
 import type { MatchVisionPlayerView } from '../../../domain';
@@ -28,4 +28,9 @@ export function progressLabel(progress: number | null): string {
 /** Round up like ability cooldowns; waiting or unreadable timers remain unknown. */
 export function remainingSecondsLabel(value: number | null | undefined): string {
     return value == null ? '?' : String(Math.max(0, Math.ceil(value)));
+}
+
+/** The native reader reports zero progress and null timers before production starts. */
+export function isProductionWaiting(slot: ProductionQueueItem): boolean {
+    return slot.position === 0 && slot.progress === 0 && slot.remainingSeconds === null && slot.totalSeconds === null;
 }

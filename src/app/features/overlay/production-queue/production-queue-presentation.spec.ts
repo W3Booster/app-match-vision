@@ -3,7 +3,7 @@ import type { MatchState } from '@w3booster/sdk';
 import { createDemoState } from '@w3booster/sdk/testing';
 import { w3boosterApp } from '../../../core/w3booster-app.generated';
 import { createOverlayPresentation } from '../overlay-presentation';
-import { productionPlayers, progressLabel, remainingSecondsLabel } from './production-queue-presentation';
+import { productionPlayers, progressLabel, remainingSecondsLabel, isProductionWaiting } from './production-queue-presentation';
 
 function fixture() {
     const state = structuredClone(createDemoState()) as MatchState;
@@ -29,6 +29,15 @@ describe('production queue presentation', () => {
         expect(remainingSecondsLabel(null)).toBe('?');
         expect(remainingSecondsLabel(undefined)).toBe('?');
     });
+    it('identifies unstarted production without treating unreadable or absent timers as blocked', () => {
+        const slot = { position: 0, typeId: 'hfoo', progress: 0, remainingSeconds: null, totalSeconds: null };
+        expect(isProductionWaiting(slot)).toBe(true);
+        expect(isProductionWaiting({ ...slot, progress: null })).toBe(false);
+        expect(isProductionWaiting({ ...slot, remainingSeconds: 20, totalSeconds: 20 })).toBe(false);
+        expect(isProductionWaiting({ ...slot, remainingSeconds: undefined, totalSeconds: undefined })).toBe(false);
+        expect(isProductionWaiting({ ...slot, position: 1 })).toBe(false);
+    });
+
     it('only shows the current player during play even if another player has data', () => {
         const state = fixture();
         expect(groups(state).map(group => group.player.id)).toEqual(['0']);

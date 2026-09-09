@@ -15,7 +15,7 @@
                                         @for (slot of building.production!.queue.slice(0, 1); track slot.position) {
                                             <div class="active-production">
                                                 <div class="queue-slot active" data-position="0"
-                                                    [attr.aria-label]="slot.typeId + ': ' + (slot.remainingSeconds == null ? 'Remaining time unknown' : remainingSecondsLabel(slot.remainingSeconds) + ' seconds remaining')">
+                                                    [attr.aria-label]="slot.typeId + ': ' + (isProductionWaiting(slot) ? 'Production waiting to start' : slot.remainingSeconds == null ? 'Remaining time unknown' : remainingSecondsLabel(slot.remainingSeconds) + ' seconds remaining')">
                                                     @for (typeId of [slot.typeId]; track typeId) {
                                                         <div class="unit-image" animate.enter="icon-enter" animate.leave="icon-leave">
                                                             @if (icon(typeId); as source) {
@@ -26,9 +26,20 @@
                                                     <div class="production-backdrop" aria-hidden="true"
                                                         [style.height.%]="slot.progress === null ? 100 : (1 - slot.progress) * 100"
                                                         [style.opacity]="slot.progress === null ? 0 : 1"></div>
-                                                    @for (seconds of [remainingSecondsLabel(slot.remainingSeconds)]; track seconds) {
-                                                        <span class="production-cooldown" animate.enter="number-enter" animate.leave="number-leave">{{ seconds }}</span>
-                                                    }
+                                                    <span class="production-cooldown">
+                                                        @if (isProductionWaiting(slot)) {
+                                                            <span class="production-pause" role="img" aria-label="Production waiting to start" title="Production waiting to start"></span>
+                                                        } @else { {{ remainingSecondsLabel(slot.remainingSeconds) }} }
+                                                    </span>
+                                                    <div class="building-icon" [title]="building.typeId">
+                                                        @for (typeId of [building.typeId]; track typeId) {
+                                                            <div class="unit-image" animate.enter="icon-enter" animate.leave="icon-leave">
+                                                                @if (icon(typeId); as source) {
+                                                                    <img [src]="source" [alt]="typeId" />
+                                                                } @else { <span>{{ typeId }}</span> }
+                                                            </div>
+                                                        }
+                                                    </div>
                                                 </div>
                                                 <div class="progress-track" role="progressbar" [attr.aria-label]="slot.typeId + ' training'"
                                                     [attr.aria-valuenow]="slot.progress === null ? null : slot.progress * 100"
@@ -51,15 +62,6 @@
                                                                 } @else { <span class="rawcode">{{ typeId }}</span> }
                                                             </div>
                                                         }
-                                                    </div>
-                                                }
-                                            </div>
-                                            <div class="building-icon" [title]="building.typeId">
-                                                @for (typeId of [building.typeId]; track typeId) {
-                                                    <div class="unit-image" animate.enter="icon-enter" animate.leave="icon-leave">
-                                                        @if (icon(typeId); as source) {
-                                                            <img [src]="source" [alt]="typeId" />
-                                                        } @else { <span>{{ typeId }}</span> }
                                                     </div>
                                                 }
                                             </div>

@@ -41,7 +41,7 @@ try {
                 const id = `000000000000000${Number(player.id) + 1}`;
                 player.buildings = options.unobserved ? undefined : { [id]: { id, typeId: 'hbar', production: {
                     queue: options.empty || (options.emptyLeft && player.id === '0') || (options.emptyRight && player.id === '1') ? [] : [
-                        { position: 0, typeId: options.activeType ?? 'hfoo', progress: options.unknown ? null : options.progress ?? 0.38, remainingSeconds: options.unknown ? null : options.remainingSeconds ?? 12.4, totalSeconds: options.unknown ? null : 20 },
+                        { position: 0, typeId: options.activeType ?? 'hfoo', progress: options.unknown ? null : options.blocked ? 0 : options.progress ?? 0.38, remainingSeconds: options.unknown || options.blocked ? null : options.remainingSeconds ?? 12.4, totalSeconds: options.unknown || options.blocked ? null : 20 },
                         ...(options.waitingTypes ?? ['hfoo', 'hrif']).map((typeId, index) => ({ position: index + 1, typeId, progress: 0 }))
                     ]
                 } } };
@@ -104,11 +104,18 @@ try {
     await render({ replay: true, selected: '1', unknown: true });
     assert.equal(await page.locator('.player-production').first().getAttribute('data-player-id'), '1');
     assert.equal(await page.locator('.progress-track').first().getAttribute('aria-valuenow'), null);
-    assert.equal(await page.locator('.production-cooldown').first().textContent(), '?');
+    assert.equal((await page.locator('.production-cooldown').first().textContent()).trim(), '?');
+    await render({ observer: true, blocked: true });
+    assert.equal(await page.locator('.production-pause').count(), 2, 'Blocked production shows a pause sign');
+    assert.equal((await page.locator('.production-cooldown').first().textContent()).trim(), '', 'Blocked production has no question mark');
     await render({ observer: true, remainingSeconds: 12.4 });
-    assert.equal(await page.locator('.production-cooldown').first().textContent(), '13');
+    assert.equal((await page.locator('.production-cooldown').first().textContent()).trim(), '13');
+    await page.locator('.production-cooldown').first().evaluate(e => { window.previousCountdown = e; });
+    await render({ observer: true, remainingSeconds: 11.4 }, 25);
+    assert.equal((await page.locator('.production-cooldown').first().textContent()).trim(), '12');
+    assert.ok(await page.locator('.production-cooldown').first().evaluate(e => e === window.previousCountdown && e.getAnimations().length === 0), 'Countdown text updates immediately in the same element without animation');
     await render({ observer: true, remainingSeconds: 0 });
-    assert.equal(await page.locator('.production-cooldown').first().textContent(), '0');
+    assert.equal((await page.locator('.production-cooldown').first().textContent()).trim(), '0');
     await render({ observer: true, progress: 0 });
     assert.equal(await page.locator('.progress-track').first().getAttribute('aria-valuenow'), '0');
     await page.locator('.building-queue').first().evaluate(el => { window.previousQueue = el; });
@@ -153,8 +160,8 @@ try {
     assert.equal(new Set(geometry.waiting.map(r => r.y)).size, 2, 'Waiting icons occupy exactly two rows');
     assert.equal(geometry.waiting[0].x, geometry.waiting[1].x, 'Queue fills top to bottom, then the next column');
     assert.equal(geometry.progress.top, geometry.active.bottom, 'Progress touches the image without a gap');
-    assert.ok(geometry.badge.left > geometry.active.right, 'Building badge sits beside the image without covering the face');
-    assert.equal(geometry.badge.bottom, geometry.progress.bottom, 'Building badge aligns with the bar bottom');
+    assert.equal(geometry.active.right - geometry.badge.right, 3, 'Badge preserves the right artwork border');
+    assert.equal(geometry.active.bottom - geometry.badge.bottom, 3, 'Badge preserves the bottom artwork border');
     assert.equal(geometry.border, '0px');
     assert.equal(geometry.background, 'rgba(0, 0, 0, 0)', 'Building row has no surrounding box');
     const decoration = await page.locator('.building-queue').first().evaluate(row => {
@@ -178,7 +185,7 @@ try {
     assert.ok(Math.abs(decoration.height - 0.62) < 0.01, 'Backdrop shows remaining fraction');
     assert.ok(decoration.badgeAboveBackdrop, 'Building badge stays above the dimming layer');
     await render({ observer: true, activeType: 'hrif', remainingSeconds: 8 }, 25);
-    assert.ok(await page.locator('.building-queue').first().evaluate(row => row.getAnimations({ subtree: true }).some(a => a.playState === 'running')), 'Queue replacement and countdown animate');
+    assert.ok(await page.locator('.building-queue').first().evaluate(row => row.getAnimations({ subtree: true }).some(a => a.playState === 'running')), 'Queue replacement animates');
     await page.waitForTimeout(260);
     assert.equal(await page.locator('.active .unit-image img').first().getAttribute('alt'), 'hrif');
     assert.equal(await page.locator('.active > .unit-image').count(), 2, 'Outgoing icons are removed after transitions');

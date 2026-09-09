@@ -27,8 +27,8 @@ Shared CSS geometry keeps the reservation aligned even when fewer heroes exist. 
 visible player names. Team/player sides are assigned before empty queues are
 filtered, so an idle player cannot move an opponent's queue to the wrong side.
 The row has no surrounding box. Its active icon is 39px, with a small building
-badge beside the image, below the waiting icons and aligned with the progress
-bar bottom; it never covers the unit face. Queue artwork has no added CSS
+badge inside the lower-right corner, inset 3px to preserve the artwork
+frame. Countdown text remains above the badge. Queue artwork has no added CSS
 borders; the building badge also crops the baked-in texture frame. Waiting icons are one-third size
 (13px), filling two rows beside the active icon, inward from each screen edge.
 The gold progress track touches the image directly and uses the health bar's
@@ -37,11 +37,14 @@ ability cooldown's translucent black backdrop, shrinking with the remaining
 fraction over 200ms; the building badge renders above it. Unknown progress does
 not invent a remaining fraction. Active slots show SDK `remainingSeconds`,
 rounded up, with the centered bold white text and shadow used by ability
-cooldowns. Missing/unknown seconds show `?`; waiting slots have no countdown.
+cooldowns. Countdown text updates in place without animation. Unstarted/blocked
+production (zero progress with explicitly null total and remaining timers) shows
+a pause symbol; unreadable or absent observations retain `?`. Waiting slots have
+no countdown.
 Do not derive seconds from percentages, unit metadata, or wall-clock time.
 Progress width interpolates linearly over 200ms between delivered samples without
-extrapolating beyond them. Row entry/removal, slot entry/removal, icon replacements
-and countdown changes use short CSS animations through Angular enter/leave;
+extrapolating beyond them. Row entry/removal, slot entry/removal and icon
+replacements use short CSS animations through Angular enter/leave;
 unchanged snapshots reuse DOM and do not restart animations. Reduced-motion
 preferences disable all queue animations and transitions. Queue positions remain
 snapshot locations, so visual transitions never claim persistent job identity.
