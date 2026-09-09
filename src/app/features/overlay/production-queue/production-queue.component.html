@@ -23,6 +23,9 @@
                                                             } @else { <span class="rawcode">{{ typeId }}</span> }
                                                         </div>
                                                     }
+                                                    <div class="production-backdrop" aria-hidden="true"
+                                                        [style.height.%]="slot.progress === null ? 100 : (1 - slot.progress) * 100"
+                                                        [style.opacity]="slot.progress === null ? 0 : 1"></div>
                                                     @for (seconds of [remainingSecondsLabel(slot.remainingSeconds)]; track seconds) {
                                                         <span class="production-cooldown" animate.enter="number-enter" animate.leave="number-leave">{{ seconds }}</span>
                                                     }

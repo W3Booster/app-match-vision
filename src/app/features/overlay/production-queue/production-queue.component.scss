@@ -1,12 +1,11 @@
-// Each side starts with its first building centered vertically, then stacks downward.
+// Reserve all three hero rows, even before the second/third hero is observed.
 :host { position: absolute; inset: 0; pointer-events: none; color: #f4ecd6; }
 .production-side {
     position: absolute;
-    top: 50%;
+    top: var(--production-top);
     left: 8px;
-    transform: translateY(-24px);
     max-width: calc(50% - 16px);
-    max-height: calc(50% - 16px);
+    max-height: calc(100% - var(--production-top) - 16px);
     overflow: auto;
     pointer-events: auto;
     display: flex;
@@ -15,9 +14,20 @@
 }
 .production-side.right { left: auto; right: 8px; }
 .player-production { min-width: 0; max-width: 100%; }
-.buildings { padding-right: 4px; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.buildings { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .right .buildings { align-items: flex-end; }
 .right .building-queue { flex-direction: row-reverse; }
+// Match ability artwork cropping: remove the frame baked into the building texture.
+.building-icon img { position: absolute; width: 115%; height: 115%; left: -7.5%; top: -7.5%; }
+.production-backdrop {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    background: rgba(0, 0, 0, 0.3);
+    transition: height 200ms linear, opacity 160ms ease;
+}
 .right .waiting-queue { direction: rtl; }
 .building-queue {
     display: flex;
@@ -29,20 +39,20 @@
 }
 .right .building-queue { transform-origin: right center; }
 .active-production { width: 39px; flex: 0 0 39px; padding-top: 1px; }
-.queue-slot { position: relative; box-sizing: border-box; background: #151d24; border: 1px solid #454239; }
-.active { width: 39px; height: 39px; border-color: #d7b773; box-shadow: 0 1px 5px #0008; }
+.queue-slot { position: relative; box-sizing: border-box; background: #151d24; border: 0; }
+.active { width: 39px; height: 39px; }
 .unit-image { position: absolute; inset: 0; }
 img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .building-icon {
     position: absolute;
     width: 17px;
     height: 17px;
-    bottom: -3px;
-    right: -4px;
+    bottom: 0;
+    right: 0;
     z-index: 3;
-    border: 1px solid #b7a477;
+    border: 0;
+    overflow: hidden;
     background: #151d24;
-    box-shadow: 0 1px 3px #000c;
 }
 .waiting-queue {
     display: grid;

@@ -45,3 +45,11 @@ body.application-surface {
     font-weight: 500;
     font-style: normal;
 }
+
+// Shared hero geometry keeps production below the full third hero (including inventory).
+.App {
+    --hero-third-top: 21.55%;
+    --hero-inventory-height: 89px;
+    --hero-inventory-inset: 2px;
+    --production-top: calc(var(--hero-third-top) + var(--hero-inventory-height) + var(--hero-inventory-inset) + 8px);
+}

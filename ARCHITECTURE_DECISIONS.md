@@ -21,14 +21,19 @@ The existing classic/reforged geometry and gradient remain unchanged.
 Production queues have independent `player.productionQueuesEnabled` and
 `observer.productionQueuesEnabled` settings, defaulting to true in the database
 schema. The generated binding owns those defaults; the observer setting also
-applies to replays. Panels sit at center-left/center-right, with one building per
-row starting at the vertical center and continuing downward. There are no repeated
+applies to replays. Panels sit at the left/right edges, with one building per row starting 8px below
+the reserved third hero row (including inventory and bars) and continuing downward.
+Shared CSS geometry keeps the reservation aligned even when fewer heroes exist. There are no repeated
 visible player names. Team/player sides are assigned before empty queues are
 filtered, so an idle player cannot move an opponent's queue to the wrong side.
 The row has no surrounding box. Its active icon is 39px, with a small building
-badge overlapping the bottom-right corner. Waiting icons are one-third size
+badge flush inside the bottom-right corner. Queue artwork has no added CSS
+borders; the building badge also crops the baked-in texture frame. Waiting icons are one-third size
 (13px), filling two rows beside the active icon, inward from each screen edge.
-The progress track sits below the entire image. Active slots show SDK `remainingSeconds`,
+The progress track sits below the entire image. Active production also uses the
+ability cooldown's translucent black backdrop, shrinking with the remaining
+fraction over 200ms; the building badge renders above it. Unknown progress does
+not invent a remaining fraction. Active slots show SDK `remainingSeconds`,
 rounded up, with the centered bold white text and shadow used by ability
 cooldowns. Missing/unknown seconds show `?`; waiting slots have no countdown.
 Do not derive seconds from percentages, unit metadata, or wall-clock time.

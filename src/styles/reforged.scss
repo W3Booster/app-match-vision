@@ -249,15 +249,15 @@
     }
 
     .hero-area:nth-child(3) {
-        top: 21.55%;
+        top: var(--hero-third-top);
     }
 
     .inventory {
         margin-left: 74px;
-        margin-top: 2px;
+        margin-top: var(--hero-inventory-inset);
         width: 58px;
 
-        height: 89px;
+        height: var(--hero-inventory-height);
         background: url('/assets/img/inventory.png') no-repeat;
         background-size: 100% !important;
         opacity: 1;
