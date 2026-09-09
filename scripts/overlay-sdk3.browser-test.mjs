@@ -161,7 +161,8 @@ try {
     assert.equal(geometry.waiting[0].x, geometry.waiting[1].x, 'Queue fills top to bottom, then the next column');
     assert.equal(geometry.progress.top, geometry.active.bottom, 'Progress touches the image without a gap');
     assert.ok(geometry.badge.right < geometry.active.left, 'Small building icon precedes the active unit without overlap');
-    assert.equal(geometry.badge.width, 17, 'Building icon stays small');
+    assert.equal(geometry.badge.width, await page.locator('.upgrade-icon').first().evaluate(e => e.getBoundingClientRect().width), 'Building icon matches upgrade size');
+    assert.equal(geometry.active.width, await page.locator('.ability-icon').first().evaluate(e => e.getBoundingClientRect().width), 'Active unit matches ability size');
     assert.equal(await page.locator('.building-queue .queue-arrow').first().textContent(), '›');
     const mirrored = await page.locator('.production-side.right .building-queue').first().evaluate(row => ({ building: row.querySelector('.building-icon').getBoundingClientRect().left, active: row.querySelector('.active').getBoundingClientRect().right }));
     assert.ok(mirrored.building > mirrored.active, 'Right-side queue mirrors the building and arrow arrangement');
@@ -196,6 +197,29 @@ try {
     assert.ok(await page.locator('.production').count(), 'Queue removal retains its exit transition');
     await page.waitForTimeout(300);
     assert.equal(await page.locator('.production').count(), 0, 'Queue removal completes without stale rows');
+    // A growing/collapsing row must not leak its full-height contents into the
+    // panel's scroll area before the animation has finished.
+    await render({ observer: true });
+    for (const secondBuilding of [true, false]) {
+        await page.evaluate(() => {
+            window.rowOverflowSamples = [];
+            const until = performance.now() + 350;
+            const sample = () => {
+                for (const panel of document.querySelectorAll('.production-side')) {
+                    window.rowOverflowSamples.push({ side: panel.dataset.side,
+                        horizontal: panel.scrollWidth - panel.clientWidth,
+                        vertical: panel.scrollHeight - panel.clientHeight });
+                }
+                if (performance.now() < until) requestAnimationFrame(sample);
+            };
+            requestAnimationFrame(sample);
+        });
+        await render({ observer: true, secondBuilding }, 380);
+        const samples = await page.evaluate(() => window.rowOverflowSamples);
+        assert.ok(samples.length > 10, 'Observe multiple frames during row changes');
+        assert.ok(samples.every(s => s.horizontal <= 1 && s.vertical <= 1),
+            `Row ${secondBuilding ? 'entry' : 'removal'} must not create temporary scrollbars: ${JSON.stringify(samples.filter(s => s.horizontal > 1 || s.vertical > 1).slice(0, 3))}`);
+    }
     // Observe actual interpolation without extrapolating beyond the delivered value.
     await render({ observer: true, progress: 0.2 });
     await page.waitForTimeout(250);

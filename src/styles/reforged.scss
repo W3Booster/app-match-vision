@@ -310,8 +310,8 @@
 
     .ability-icon-wrapper {
         margin-top: 2px;
-        width: 42px;
-        height: 42px;
+        width: var(--ability-icon-size);
+        height: var(--ability-icon-size);
         position: relative;
         animation: slide-up 0.4s ease;
     }

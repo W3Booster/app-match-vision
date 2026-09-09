@@ -1,5 +1,5 @@
 // Reserve all three hero rows, even before the second/third hero is observed.
-:host { position: absolute; inset: 0; pointer-events: none; color: #f4ecd6; }
+:host { --waiting-icon-size: calc(var(--ability-icon-size) / 3); --production-row-height: calc(var(--ability-icon-size) + 9px); position: absolute; inset: 0; pointer-events: none; color: #f4ecd6; }
 .production-side {
     position: absolute;
     top: var(--production-top);
@@ -40,17 +40,17 @@
     transform-origin: left center;
 }
 .right .building-queue { transform-origin: right center; }
-.active-production { width: 39px; flex: 0 0 39px; padding-top: 1px; }
+.active-production { width: var(--ability-icon-size); flex: 0 0 var(--ability-icon-size); padding-top: 1px; }
 .queue-slot { position: relative; box-sizing: border-box; background: #151d24; border: 0; }
-.active { width: 39px; height: 39px; }
+.active { width: var(--ability-icon-size); height: var(--ability-icon-size); }
 .unit-image { position: absolute; inset: 0; }
 img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .queue-details { display: flex; align-items: center; }
 .building-icon {
     position: relative;
-    flex: 0 0 17px;
-    width: 17px;
-    height: 17px;
+    flex: 0 0 var(--upgrade-icon-size);
+    width: var(--upgrade-icon-size);
+    height: var(--upgrade-icon-size);
     z-index: 3;
     border: 0;
     overflow: hidden;
@@ -59,13 +59,13 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .waiting-queue {
     display: grid;
     grid-auto-flow: column;
-    grid-template-rows: repeat(2, 13px);
+    grid-template-rows: repeat(2, var(--waiting-icon-size));
     grid-auto-columns: max-content;
     gap: 3px;
     align-content: center;
     padding-right: 1px;
 }
-.waiting { width: 13px; height: 13px; direction: ltr; }
+.waiting { width: var(--waiting-icon-size); height: var(--waiting-icon-size); direction: ltr; }
 .waiting img { opacity: 0.8; }
 .rawcode, .building-icon span { font: 8px monospace; overflow-wrap: anywhere; }
 .waiting .rawcode { font-size: 5px; }
@@ -110,6 +110,9 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
 .unknown { background: repeating-linear-gradient(135deg, #655537 0 3px, #171717 3px 6px); }
 .panel-enter { animation: fade-in 180ms ease-out; }
 .panel-leave { animation: fade-in 160ms ease-in reverse; }
+// Clip full-size contents while the row height grows or collapses.
+// Otherwise they temporarily overflow the panel and trigger its scrollbars.
+.row-enter, .row-leave { overflow: hidden; }
 .row-enter { animation: row-in 220ms cubic-bezier(0.2, 0.7, 0.2, 1); }
 .row-leave { animation: row-in 180ms ease-in reverse; pointer-events: none; }
 .waiting-enter { animation: waiting-in 200ms ease-out; }
@@ -119,11 +122,11 @@ img { display: block; width: 100%; height: 100%; object-fit: cover; }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes row-in {
     from { opacity: 0; max-height: 0; transform: scale(0.94); }
-    to { opacity: 1; max-height: 48px; transform: scale(1); }
+    to { opacity: 1; max-height: var(--production-row-height); transform: scale(1); }
 }
 @keyframes waiting-in {
     from { opacity: 0; width: 0; transform: scale(0.65); }
-    to { opacity: 1; width: 13px; transform: scale(1); }
+    to { opacity: 1; width: var(--waiting-icon-size); transform: scale(1); }
 }
 @keyframes icon-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
 @media (prefers-reduced-motion: reduce) {
