@@ -27,10 +27,12 @@ Shared CSS geometry keeps the reservation aligned even when fewer heroes exist. 
 visible player names. Team/player sides are assigned before empty queues are
 filtered, so an idle player cannot move an opponent's queue to the wrong side.
 The row has no surrounding box. Its active icon is 39px, with a small building
-badge flush inside the bottom-right corner. Queue artwork has no added CSS
+badge beside the image, below the waiting icons and aligned with the progress
+bar bottom; it never covers the unit face. Queue artwork has no added CSS
 borders; the building badge also crops the baked-in texture frame. Waiting icons are one-third size
 (13px), filling two rows beside the active icon, inward from each screen edge.
-The progress track sits below the entire image. Active production also uses the
+The gold progress track touches the image directly and uses the health bar's
+black frame and shading. Active production also uses the
 ability cooldown's translucent black backdrop, shrinking with the remaining
 fraction over 200ms; the building badge renders above it. Unknown progress does
 not invent a remaining fraction. Active slots show SDK `remainingSeconds`,

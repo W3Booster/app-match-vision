@@ -152,9 +152,9 @@ try {
     assert.equal(geometry.active.width / geometry.waiting[0].width, 3, 'Waiting icons are one-third size');
     assert.equal(new Set(geometry.waiting.map(r => r.y)).size, 2, 'Waiting icons occupy exactly two rows');
     assert.equal(geometry.waiting[0].x, geometry.waiting[1].x, 'Queue fills top to bottom, then the next column');
-    assert.ok(geometry.progress.top > geometry.active.bottom, 'Progress is below the whole image');
-    assert.equal(geometry.badge.right, geometry.active.right, 'Badge is flush with the right image edge');
-    assert.equal(geometry.badge.bottom, geometry.active.bottom, 'Badge is flush with the bottom image edge');
+    assert.equal(geometry.progress.top, geometry.active.bottom, 'Progress touches the image without a gap');
+    assert.ok(geometry.badge.left > geometry.active.right, 'Building badge sits beside the image without covering the face');
+    assert.equal(geometry.badge.bottom, geometry.progress.bottom, 'Building badge aligns with the bar bottom');
     assert.equal(geometry.border, '0px');
     assert.equal(geometry.background, 'rgba(0, 0, 0, 0)', 'Building row has no surrounding box');
     const decoration = await page.locator('.building-queue').first().evaluate(row => {
@@ -164,9 +164,14 @@ try {
             shadow: style('.building-icon').boxShadow, clipped: style('.building-icon').overflow,
             backdrop: style('.production-backdrop').backgroundColor,
             height: backdrop.getBoundingClientRect().height / row.querySelector('.active').getBoundingClientRect().height,
+            barBorder: style('.progress-track').borderTopWidth, barColor: style('.progress-track').borderTopColor,
+            barShade: getComputedStyle(row.querySelector('.progress-track'), '::after').backgroundImage,
             badgeAboveBackdrop: Number(style('.building-icon').zIndex) > Number(style('.production-backdrop').zIndex) };
     });
     assert.ok(decoration.borders.every(width => width === '0px'), 'Artwork has no extra CSS borders');
+    assert.equal(decoration.barBorder, '2px');
+    assert.equal(decoration.barColor, 'rgb(0, 0, 0)');
+    assert.equal(decoration.barShade, await page.locator('.hero-bar-gradient').first().evaluate(e => getComputedStyle(e).backgroundImage), 'Production uses the health-bar shading');
     assert.equal(decoration.shadow, 'none');
     assert.equal(decoration.clipped, 'hidden', 'Building artwork frame is cropped');
     assert.equal(decoration.backdrop, await page.locator('.ability-icon .cooldown-animation').first().evaluate(e => getComputedStyle(e).backgroundColor), 'Production shares the ability cooldown backdrop');
@@ -185,7 +190,7 @@ try {
     await render({ observer: true, progress: 0.2 });
     await page.waitForTimeout(250);
     await render({ observer: true, progress: 0.8 }, 40);
-    const fraction = () => page.locator('.progress-fill').first().evaluate(e => e.getBoundingClientRect().width / e.parentElement.getBoundingClientRect().width);
+    const fraction = () => page.locator('.progress-fill').first().evaluate(e => e.getBoundingClientRect().width / e.parentElement.clientWidth);
     const intermediate = await fraction();
     assert.ok(intermediate > 0.2 && intermediate < 0.8, 'Progress animates between snapshots');
     await page.waitForTimeout(250);
