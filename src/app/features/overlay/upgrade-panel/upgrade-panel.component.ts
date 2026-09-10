@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, input } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import type { ActiveUpgrade, Match, Player } from '@w3booster/sdk';
 import { currentUpgrades, upgradeIdentity } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
@@ -10,7 +10,8 @@ import { upgradePanelInset } from '../overlay-visuals';
 @Component({
     selector: 'mv-upgrade-panel',
     imports: [CommonModule],
-    templateUrl: './upgrade-panel.component.html'
+    templateUrl: './upgrade-panel.component.html',
+    styleUrl: './upgrade-panel.component.scss'
 })
 export class UpgradePanelComponent {
     private readonly assets = inject(WarcraftAssetsService);
@@ -19,11 +20,15 @@ export class UpgradePanelComponent {
     readonly opponent = input<Player | null>(null);
     readonly settings = input.required<MatchVisionOverlaySettings>();
 
+    readonly isHeadToHead = computed(() => standardGame.isMode(this.match().mode, '1v1'));
+
     activeResearches(player: Player): readonly ActiveUpgrade[] {
         const active = currentUpgrades(player, {
             includeResearching: this.settings().researchesInQueueEnabled !== false
         });
-        return this.settings().researchesShowAllEnabled ? active : active.filter(upgrade => standardGame.isWeaponOrArmorUpgrade(upgrade.name));
+        const leveled = active.filter(upgrade => standardGame.isWeaponOrArmorUpgrade(upgrade.name));
+        if (!this.settings().researchesShowAllEnabled) return leveled;
+        return [...leveled, ...active.filter(upgrade => !standardGame.isWeaponOrArmorUpgrade(upgrade.name))];
     }
     isWeaponOrArmorUpgrade(name: string): boolean { return standardGame.isWeaponOrArmorUpgrade(name); }
     iconBackground(upgrade: ActiveUpgrade): string | null {

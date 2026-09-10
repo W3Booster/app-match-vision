@@ -1,0 +1,18 @@
+.upgrade-box.tight-upgrades {
+    display: flex;
+    flex-wrap: wrap;
+    box-sizing: content-box;
+    max-width: 195px;
+    gap: 3px;
+    padding: 3px;
+
+    .upgrade-icon {
+        flex: 0 0 30px;
+        float: none;
+        margin: 0;
+    }
+
+    &.opponent {
+        flex-direction: row-reverse;
+    }
+}

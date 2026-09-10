@@ -48,7 +48,7 @@ describe('Match Vision overlay presentation rules', () => {
         const player = (abilityCount: number): Player => ({
             id: 'hero-player',
             heroes: { "0000000000000001": {
-                id: '0000000000000001', typeId: 'Hpal', level: 1,
+                id: '0000000000000001', typeId: 'Hpal', isIllusion: false, level: 1,
                 abilities: Array.from({ length: abilityCount }, (_, index) => ({
                     id: `ability-${index}`, name: `A00${index}`, level: 1
                 }))

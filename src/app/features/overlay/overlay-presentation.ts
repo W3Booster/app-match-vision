@@ -1,8 +1,9 @@
+import { playerHeroes } from '../../domain/unit-selectors';
 import type { DeepReadonly, GameContext, MatchState } from '@w3booster/sdk';
 import type { AbilityCooldownState } from '@w3booster/sdk/standard-game/cooldowns';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import * as standardGameCooldowns from '@w3booster/sdk/standard-game/cooldowns';
-import { gameContext as selectGameContext, broadcasterPlayer, headToHeadPair, playerHeroes, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
+import { gameContext as selectGameContext, broadcasterPlayer, headToHeadPair, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import { matchVisionScore, matchVisionPlayers, matchVisionSettings, matchVisionHeadToHeadPlayers, reversePlayerOrderForMatch } from '../../domain';
 import type { MatchVisionScore, MatchVisionOverlaySettings, MatchVisionPlayerView, MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';

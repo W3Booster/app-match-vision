@@ -32,8 +32,8 @@ describe('overlay presentation', () => {
         Object.assign(state.match, viewer);
         state.players[0]!.startPosition = { x: 10, y: 0 };
         state.players[1]!.startPosition = { x: -10, y: 0 };
-        state.players[0]!.heroes = { '0000000000000001': { id: '0000000000000001', typeId: 'Hpal', level: 1 } };
-        state.players[1]!.heroes = { '0000000000000002': { id: '0000000000000002', typeId: 'Obla', level: 1 } };
+        state.players[0]!.heroes = { '0000000000000001': { id: '0000000000000001', typeId: 'Hpal', isIllusion: false, level: 1 } };
+        state.players[1]!.heroes = { '0000000000000002': { id: '0000000000000002', typeId: 'Obla', isIllusion: false, level: 1 } };
         const original = structuredClone(state);
 
         const view = createOverlayPresentation(state, w3boosterApp.resolveSettings());
@@ -96,7 +96,7 @@ describe('overlay presentation', () => {
         const state = createState();
         state.match.gameTime = 15;
         state.players[0]!.heroes = { "0000000000000001": {
-            id: '0000000000000001', typeId: 'Hpal', level: 1,
+            id: '0000000000000001', typeId: 'Hpal', isIllusion: false, level: 1,
             abilities: [{ id: 'AHhb', name: 'AHhb', level: 1, lastActivation: 10_000 }]
         } };
 
@@ -112,7 +112,7 @@ describe('overlay presentation', () => {
         state.match.status = 'finished';
         state.match.gameTime = 15;
         state.players[0]!.heroes = { "0000000000000001": {
-            id: '0000000000000001', typeId: 'Hpal', level: 1,
+            id: '0000000000000001', typeId: 'Hpal', isIllusion: false, level: 1,
             abilities: [{ id: 'AHhb', name: 'AHhb', level: 1, lastActivation: 10_000 }]
         } };
         expect(createOverlayPresentation(state, w3boosterApp.resolveSettings()).abilityCooldowns.size).toBe(0);

@@ -1,7 +1,8 @@
+import { playerHeroes } from '../../domain/unit-selectors';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import type { DeepReadonly, Hero, HeroAbility, MatchState } from '@w3booster/sdk';
-import { heroInventory, inventorySlotIdentity, isActiveMatch, isObserverOrReplayMatch, playerHeroes } from '@w3booster/sdk/selectors';
+import { heroInventory, inventorySlotIdentity, isActiveMatch, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import type { MatchVisionPlayerView, MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
