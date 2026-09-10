@@ -1,5 +1,6 @@
+import { playerHeroes } from '../../domain/unit-selectors';
 import type { Match, Player, Race } from '@w3booster/sdk';
-import { playerHeroes } from '@w3booster/sdk/selectors';
+
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { orderedMatchVisionTeams } from '../../domain';
 

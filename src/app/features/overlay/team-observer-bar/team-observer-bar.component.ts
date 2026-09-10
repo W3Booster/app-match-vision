@@ -1,8 +1,9 @@
+import { playerHeroes } from '../../../domain/unit-selectors';
 import type { GameContext } from '@w3booster/sdk';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import type { Hero, Match, Player, Resources } from '@w3booster/sdk';
-import { playerHeroes, playerResources } from '@w3booster/sdk/selectors';
+import { playerResources } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { reversePlayerOrderForMatch, type MatchVisionOverlaySettings, type MatchVisionPlayerView } from '../../../domain';
 import { WarcraftAssetsService } from '../../../shared/warcraft/warcraft-assets.service';

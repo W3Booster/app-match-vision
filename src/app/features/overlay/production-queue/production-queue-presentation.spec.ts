@@ -9,7 +9,7 @@ function fixture() {
     const state = structuredClone(createDemoState()) as MatchState;
     for (const player of state.players) {
         const id = `000000000000000${Number(player.id) + 1}`;
-        Object.assign(player, { buildings: { [id]: { id, typeId: 'hbar', production: { queue: [
+        Object.assign(player, { buildings: { [id]: { id, typeId: 'hbar', isIllusion: false, production: { queue: [
             { position: 0, typeId: 'hfoo', progress: null, remainingSeconds: null, totalSeconds: null },
             { position: 1, typeId: 'hfoo', progress: 0, remainingSeconds: null, totalSeconds: null }
         ] } } } });
@@ -84,8 +84,8 @@ describe('production queue presentation', () => {
         expect(groups(state)).toHaveLength(1);
         const next = structuredClone(state);
         Object.assign(next.players[0], { buildings: {
-            '0000000000000001': { id: '0000000000000001', typeId: 'hbar', production: { queue: [] } },
-            '0000000000000003': { id: '0000000000000003', typeId: 'hbar' }
+            '0000000000000001': { id: '0000000000000001', typeId: 'hbar', isIllusion: false, production: { queue: [] } },
+            '0000000000000003': { id: '0000000000000003', typeId: 'hbar', isIllusion: false }
         } });
         expect(groups(next)).toEqual([]);
         Object.assign(next.players[0], { buildings: undefined });
@@ -98,10 +98,10 @@ describe('construction presentation', () => {
     it('keeps observed in-progress buildings, including unknown progress, without inventing completion', () => {
         const state = fixture();
         Object.assign(state.players[0], { buildings: {
-            a: { id: 'a', typeId: 'hbar', construction: { progress: 0, remainingSeconds: null, totalSeconds: null } },
-            b: { id: 'b', typeId: 'hhou', construction: { progress: null, remainingSeconds: null, totalSeconds: null } },
-            c: { id: 'c', typeId: 'hhou', construction: { progress: 1, remainingSeconds: 0, totalSeconds: 20 } },
-            d: { id: 'd', typeId: 'hhou' }
+            a: { id: 'a', typeId: 'hbar', isIllusion: false, construction: { progress: 0, remainingSeconds: null, totalSeconds: null } },
+            b: { id: 'b', typeId: 'hhou', isIllusion: false, construction: { progress: null, remainingSeconds: null, totalSeconds: null } },
+            c: { id: 'c', typeId: 'hhou', isIllusion: false, construction: { progress: 1, remainingSeconds: 0, totalSeconds: 20 } },
+            d: { id: 'd', typeId: 'hhou', isIllusion: false }
         } });
         const result = groups(state);
         expect(result[0]!.constructions.map(b => b.id)).toEqual(['a', 'b']);
@@ -111,7 +111,7 @@ describe('construction presentation', () => {
     it('uses independent toggles without moving the other player when a side becomes empty', () => {
         const state = fixture();
         Object.assign(state.match, { isObserver: true });
-        Object.assign(state.players[0], { buildings: { a: { id: 'a', typeId: 'hbar', construction: { progress: 0.5, remainingSeconds: 10, totalSeconds: 20 } } } });
+        Object.assign(state.players[0], { buildings: { a: { id: 'a', typeId: 'hbar', isIllusion: false, construction: { progress: 0.5, remainingSeconds: 10, totalSeconds: 20 } } } });
         const view = createOverlayPresentation(state, w3boosterApp.resolveSettings());
         expect(productionPlayers(view.players, state.match, false, false, true).map(g => [g.player.id, g.side])).toEqual([['0', 'left']]);
         expect(productionPlayers(view.players, state.match, false, true, false).map(g => [g.player.id, g.side])).toEqual([['1', 'right']]);

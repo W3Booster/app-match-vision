@@ -1,5 +1,6 @@
+import { playerBuildings } from '../../../domain/unit-selectors';
 import type { Building, Match, TimedProgress } from '@w3booster/sdk';
-import { isObserverOrReplayMatch, playerBuildings } from '@w3booster/sdk/selectors';
+import { isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import { createMemoizedSelector } from '@w3booster/sdk/store';
 import type { MatchVisionPlayerView } from '../../../domain';
 import { orderedOverlayTeams } from '../overlay-visuals';

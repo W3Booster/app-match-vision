@@ -379,3 +379,32 @@ published and the committed dependency and lockfile are upgraded. Do not hide th
 gate, claim SDK 2 compatibility, or replace the production dependency with a local
 path. SDK CI pins a reviewed Match Vision commit to test the inverse consumer lane.
 Release screenshots use the actual UI with synthetic aliases and a demo label.
+
+## 2026-09-10: Explicit illusion exclusion in Match Vision
+
+All hero presentation, spacing and production/construction lists use the shared
+`domain/unit-selectors.ts` wrappers. They explicitly exclude `isIllusion === true`
+even when the installed SDK selector returns copies. Raw SDK collections remain
+intact. Never deduplicate by type: two real instances of one hero type remain
+independent. Keep the registry dependency pinned to published artifacts and use
+a deliberately packed local SDK for testing the new selector defaults.
+
+
+## 2026-09-10: Deterministic hero and building order
+
+Shared unit selectors enforce ascending full instance-ID order, including when
+using a published SDK whose selectors preserve insertion order. Reconstructed
+health snapshots must not swap hero panels. Preserve entity identity, filter
+illusions and avoid numeric conversion of 64-bit IDs. This is a deterministic
+fallback, not an assertion of spawn time or Warcraft hero-panel order.
+
+
+## 2026-09-11: Prefer native hero ordering in every hero panel
+
+The shared hero presentation selector now sorts by `heroOrder` ascending when
+available, then full instance ID. Missing keys follow observed keys. This
+supersedes ID-only ordering for heroes; building ordering stays by ID. Keep the
+same selector for portraits, XP, pools, inventory, abilities, levels and spacing,
+and exclude illusions first. Test both the published SDK (without the declared
+field) and the packed additive SDK. The game can reassign the key during
+lifecycle changes; do not freeze a guessed order from first attachment.
