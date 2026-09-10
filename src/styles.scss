@@ -52,6 +52,8 @@ body.application-surface {
     --ability-icon-size: 42px;
     --upgrade-icon-size: 30px;
     --hero-third-top: 21.55%;
+    --hero-inventory-offset: 74px;
+    --hero-item-inset: 3px;
     --hero-inventory-height: 89px;
     --hero-inventory-inset: 2px;
     --production-top: calc(var(--hero-third-top) + var(--hero-inventory-height) + var(--hero-inventory-inset) + 8px);

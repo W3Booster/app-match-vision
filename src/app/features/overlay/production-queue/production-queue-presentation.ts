@@ -1,4 +1,4 @@
-import type { Building, Match, ProductionQueueItem } from '@w3booster/sdk';
+import type { Building, Match, TimedProgress } from '@w3booster/sdk';
 import { isObserverOrReplayMatch, playerBuildings } from '@w3booster/sdk/selectors';
 import { createMemoizedSelector } from '@w3booster/sdk/store';
 import type { MatchVisionPlayerView } from '../../../domain';
@@ -8,17 +8,24 @@ import { orderedOverlayTeams } from '../overlay-visuals';
 export const productionPlayers = createMemoizedSelector((
     players: readonly MatchVisionPlayerView[],
     match: Match,
-    reversePlayerOrder: boolean
-): readonly { player: MatchVisionPlayerView; buildings: readonly Building[]; side: 'left' | 'right' }[] => {
+    reversePlayerOrder: boolean,
+    queuesEnabled = true,
+    constructionEnabled = true
+): readonly { player: MatchVisionPlayerView; buildings: readonly Building[]; constructions: readonly Building[]; side: 'left' | 'right' }[] => {
     const visible = isObserverOrReplayMatch(match)
         ? players
         : players.filter(player => player.id === match.broadcasterPlayerId);
     // Assign sides before filtering empty queues so an idle left player never moves the right player.
-    return orderedOverlayTeams(visible, match, reversePlayerOrder).flatMap((team, index) => team.map(player => ({
-        player,
-        side: index % 2 === 0 ? 'left' as const : 'right' as const,
-        buildings: playerBuildings(player).filter(building => (building.production?.queue.length ?? 0) > 0)
-    }))).filter(group => group.buildings.length > 0);
+    return orderedOverlayTeams(visible, match, reversePlayerOrder).flatMap((team, index) => team.map(player => {
+        const buildings = playerBuildings(player);
+        return {
+            player,
+            side: index % 2 === 0 ? 'left' as const : 'right' as const,
+            buildings: queuesEnabled ? buildings.filter(building => (building.production?.queue.length ?? 0) > 0) : [],
+            constructions: constructionEnabled ? buildings.filter(building => building.construction !== undefined &&
+                (building.construction.progress === null || building.construction.progress < 1)) : []
+        };
+    })).filter(group => group.buildings.length > 0 || group.constructions.length > 0);
 });
 
 export function progressLabel(progress: number | null): string {
@@ -31,6 +38,6 @@ export function remainingSecondsLabel(value: number | null | undefined): string 
 }
 
 /** The native reader reports zero progress and null timers before production starts. */
-export function isProductionWaiting(slot: ProductionQueueItem): boolean {
-    return slot.position === 0 && slot.progress === 0 && slot.remainingSeconds === null && slot.totalSeconds === null;
+export function isProgressWaiting(slot: TimedProgress): boolean {
+    return slot.progress === 0 && slot.remainingSeconds === null && slot.totalSeconds === null;
 }

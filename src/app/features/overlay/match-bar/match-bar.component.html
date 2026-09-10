@@ -7,16 +7,20 @@
                     <div *ngFor="let player of team; let playerIndex = index; trackBy: trackPlayer"
                         class="player player-{{playerIndex}} {{playerIdentity(player).hasAlias ? 'player-has-alias' : 'player-has-no-alias'}}"
                         [style.color]="getColorCode(player)">
-                        <ng-template #templateRef let-stats="stats">
-                            <div *ngIf="stats === undefined" class="player-no-stats">looking up stats</div>
-                            <div *ngIf="stats === null" class="player-no-stats">no records found</div>
+                        <ng-template #templateRef let-stats="stats" let-status="status">
+                            <div *ngIf="!stats" class="player-no-stats" role="status">
+                                <span *ngIf="status === 'loading'; else unavailable" class="stats-loading"><i aria-hidden="true"></i>Loading stats</span>
+                                <ng-template #unavailable>stats unavailable</ng-template>
+                            </div>
                             <div *ngIf="stats" class="player-stats">
-                                <img *ngIf="isOneVersusOne() && stats.league !== undefined && stats.rank !== undefined && stats.rank > 0" src="/assets/img/leagues/{{stats.league}}.png" style="width:22px; margin-right:4px"/>
-                                <div *ngIf="isOneVersusOne() && stats.rank !== undefined && stats.rank > 0" style="padding-right: 6px">
-                                    #{{stats.rank}} |</div>
-                                <div class="player-stats-ratio">{{formatRatio(stats.winRate)}}%</div>
-                                <div class="player-stats-wins">{{stats.wins}}W</div>
-                                <div class="player-stats-losses">{{stats.losses}}L</div>
+                                <span *ngIf="stats.mmr !== undefined" class="player-mmr">
+                                    <strong>{{Math.round(stats.mmr)}}</strong><small>MMR</small>
+                                </span>
+                                <span class="player-record">
+                                    <span class="player-stats-ratio">{{formatRatio(stats.winRate)}}%</span>
+                                    <span class="player-stats-wins">{{stats.wins}}<small>W</small></span>
+                                    <span class="player-stats-losses">{{stats.losses}}<small>L</small></span>
+                                </span>
                             </div>
                         </ng-template>
                         <div [class]="'player-color ' + (gameContext().teamColors ? 'team-colors' : '')"
@@ -34,10 +38,16 @@
                                 [style.backgroundImage]="countryFlagBackground(player.displayCountry)">
                             </div>
                             <div *ngIf="playerIdentity(player).hasAlias" class="player-alias"><span>{{playerIdentity(player).inGameName}}</span></div>
-                            <ng-template [ngTemplateOutlet]="templateRef"></ng-template>
+                            <span *ngIf="getStats(player) as stats" class="player-rating-meta">
+                                <span class="player-rank">
+                                    <ng-container *ngIf="stats.rank !== undefined && stats.rank > 0; else unranked"><small>RANK</small>{{Math.round(stats.rank)}}</ng-container>
+                                    <ng-template #unranked><small>UNRANKED</small></ng-template>
+                                </span>
+                                <img *ngIf="leagueIcon(stats) as icon" [src]="icon" alt="League" class="player-league"/>
+                            </span>
                         </div>
                         <ng-template [ngTemplateOutlet]="templateRef"
-                            [ngTemplateOutletContext]="{ stats: getStats(player) }"></ng-template>
+                            [ngTemplateOutletContext]="{ stats: getStats(player), status: player.stats?.status }"></ng-template>
                     </div>
                 </div>
             </div>

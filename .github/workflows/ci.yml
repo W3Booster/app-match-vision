@@ -9,7 +9,7 @@ permissions:
 
 jobs:
   check:
-    name: Published registry SDK
+    name: Published registry SDK release gate
     runs-on: ubuntu-latest
     env:
       W3BOOSTER_SETTINGS_URL: ${{ secrets.W3BOOSTER_SETTINGS_URL }}
@@ -20,6 +20,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: package-lock.json
+      - name: Require the coordinated SDK 3 registry upgrade
+        run: node scripts/check-release-sdk.mjs
       - run: npm ci
       - run: npm run check
       - name: Check database settings revision

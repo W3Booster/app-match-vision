@@ -36,10 +36,11 @@ h1, h2 { margin: 0; color: #f1eadf; font-size: 1em; line-height: 1.1; }
 .player + .player { margin-top: 4px; }
 .player-heading { display: flex; align-items: center; gap: 4px; min-width: 0; }
 .player-stats { display: flex; flex-wrap: wrap; gap: 4px 8px; padding-top: 2px; font-size: .9em; }
+.player-record { display: inline-flex; align-items: baseline; gap: 8px; }
 .opponent { text-align: right; }
 .opponent .player-heading { flex-direction: row-reverse; }
 .opponent .player-name { align-items: flex-end; }
-.opponent .player-stats { justify-content: flex-end; }
+.opponent .player-stats { flex-direction: row-reverse; justify-content: flex-start; }
 @media (min-width: 700px) { .current-match-content.multi-team { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .player-name { display: flex; flex-direction: column; align-items: flex-start; min-width: 0; flex: 0 1 auto; color: #e1eaf0; overflow-wrap: anywhere; }
 .player-alias { color: #94a9b6; font-size: .85em; }
@@ -69,3 +70,19 @@ h1, h2 { margin: 0; color: #f1eadf; font-size: 1em; line-height: 1.1; }
 .score-header-actions { display: flex; align-items: center; gap: 6px; }
 .automatic-score { display: inline-flex; align-items: center; gap: 4px; font-size: .9em; white-space: nowrap; cursor: pointer; }
 .automatic-score input { width: 12px; height: 12px; margin: 0; accent-color: #55c48f; }
+
+.player-row strong.mmr, .player-stats strong.mmr {
+    color: #e5d6b5;
+    font-variant-numeric: tabular-nums;
+    margin-inline-end: 8px;
+    padding-inline-end: 10px;
+    border-inline-end: 1px solid rgba(154, 172, 184, .25);
+}
+.opponent .player-stats strong.mmr {
+    margin-inline-end: 0;
+    padding-inline-end: 0;
+    border-inline-end: 0;
+    margin-inline-start: 8px;
+    padding-inline-start: 10px;
+    border-inline-start: 1px solid rgba(154, 172, 184, .25);
+}

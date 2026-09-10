@@ -1,7 +1,7 @@
 @if (matchActive) {
     <div [class]='isReforged ? "w3-reforged" : "w3-classic"'>
         <div class='App'>
-            <div class="{{additionalCSSClasses}}">
+            <div>
                 <div>
                     <div class="wc3-ui-area" [style.zoom]="gameContext.hudScale || 1">
                         <div class="wc3-ui-area-container">
@@ -51,7 +51,7 @@
                         </div>
                     </div>
 
-                    <mv-production-queue [enabled]="settings.productionQueuesEnabled !== false" [match]="state.match" [players]="players"
+                    <mv-production-queue [constructionEnabled]="settings.constructionEnabled !== false" [enabled]="settings.productionQueuesEnabled !== false" [match]="state.match" [players]="players"
                         [reversePlayerOrder]="settings.reversePlayerOrderMatchId === state.match.id" />
 
                     <ng-container *ngIf="streamer as selectedStreamer">
@@ -96,8 +96,7 @@
                         </div>
                     </div>
 
-                    <div
-                        *ngIf="!showObserverTeamBar() && (settings.heroAbilitiesEnabled || settings.heroExpProgressEnabled !== false)">
+                    <div *ngIf="!showObserverTeamBar()">
 
                         <div *ngIf="settings.heroExpProgressEnabled !== false">
                             <div *ngIf="streamerHeroes.length">
@@ -128,7 +127,7 @@
                             </div>
                         </div>
 
-                        <div>
+                        <div *ngIf="settings.heroAbilitiesEnabled || settings.heroExpProgressEnabled !== false">
                             <div *ngIf="streamerHeroes.length">
                                 <div *ngFor="let hero of streamerHeroes; trackBy: trackHero"
                                     class="hero-area hero-area-streamer hero-hp-area" id="ID_HEROHP_{{hero.id}}">
@@ -162,7 +161,7 @@
                             </div>
                         </div>
 
-                        <div>
+                        <div *ngIf="settings.heroAbilitiesEnabled || settings.heroExpProgressEnabled !== false">
                             <div *ngIf="streamerHeroes.length">
                                 <div *ngFor="let hero of streamerHeroes; trackBy: trackHero"
                                     class="hero-area hero-area-streamer hero-mana-area" id="ID_HEROMANA_{{hero.id}}">
@@ -213,7 +212,7 @@
                         <div *ngIf="settings.heroAbilitiesEnabled">
                             <div *ngIf="streamerHeroes.length">
                                 <div *ngFor="let hero of streamerHeroes; trackBy: trackHero"
-                                    class="hero-area hero-area-streamer" id="ID_HEROABILITY_{{hero.id}}">
+                                    class="hero-area hero-area-streamer hero-ability-area" [class.inventory-hidden]="settings.heroItemsEnabled === false" id="ID_HEROABILITY_{{hero.id}}">
 
                                         <div *ngFor="let ability of hero.abilities || []; trackBy: trackAbility" id="ID_ABILITY_{{ability.name}}"
                                             [class]="'ability-icon-wrapper ' + (settings.heroItemsEnabled !== false ? 'inventory-spacer' : '') ">
@@ -222,11 +221,11 @@
                                                 [style.backgroundImage]="getAbilityIconBackground(ability)">
                                                 <div *ngIf="getCooldown(ability) as cooldown"
                                                     class="cooldown-wrapper">
-                                                    <div *ngIf="cooldown.remaining > 0" class="cooldown">
-                                                        {{cooldownSeconds(cooldown.remaining)}}
+                                                    <div *ngIf="cooldown.remainingSeconds > 0" class="cooldown">
+                                                        {{cooldownSeconds(cooldown.remainingSeconds)}}
                                                     </div>
-                                                    <div *ngIf="cooldown.remaining > 0" class="cooldown-animation"
-                                                        [style.height]="(cooldown.remaining / cooldown.total) * 100 + '%'">
+                                                    <div *ngIf="cooldown.remainingSeconds > 0" class="cooldown-animation"
+                                                        [style.height]="(1 - cooldown.progress) * 100 + '%'">
                                                     </div>
                                                 </div>
                                             </div>
@@ -241,7 +240,7 @@
 
                             <div *ngIf="opponentHeroes.length">
                                 <div *ngFor="let hero of opponentHeroes; trackBy: trackHero"
-                                    class="hero-area hero-area-opponent" id="ID_OPPONENT_HEROABILITY_{{hero.id}}">
+                                    class="hero-area hero-area-opponent hero-ability-area" [class.inventory-hidden]="settings.heroItemsEnabled === false" id="ID_OPPONENT_HEROABILITY_{{hero.id}}">
                                         <div *ngFor="let ability of hero.abilities || []; trackBy: trackAbility"
                                             id="ID_OPPONENT_ABILITY_{{ability.name}}"
                                             [class]="'ability-icon-wrapper ' + (settings.heroItemsEnabled !== false ? 'inventory-spacer' : '') ">
@@ -249,11 +248,11 @@
                                                 [style.backgroundImage]="getAbilityIconBackground(ability)">
                                                 <div *ngIf="getCooldown(ability) as cooldown"
                                                     class="cooldown-wrapper">
-                                                    <div *ngIf="cooldown.remaining > 0" class="cooldown">
-                                                        {{cooldownSeconds(cooldown.remaining)}}
+                                                    <div *ngIf="cooldown.remainingSeconds > 0" class="cooldown">
+                                                        {{cooldownSeconds(cooldown.remainingSeconds)}}
                                                     </div>
-                                                    <div *ngIf="cooldown.remaining > 0" class="cooldown-animation"
-                                                        [style.height]="(cooldown.remaining / cooldown.total) * 100 + '%'">
+                                                    <div *ngIf="cooldown.remainingSeconds > 0" class="cooldown-animation"
+                                                        [style.height]="(1 - cooldown.progress) * 100 + '%'">
                                                     </div>
                                                 </div>
                                             </div>

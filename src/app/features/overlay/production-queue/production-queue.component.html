@@ -1,5 +1,5 @@
-@if (enabled() && groups().length) {
-    <section class="production" aria-label="Production queues" animate.enter="panel-enter" animate.leave="panel-leave">
+@if (groups().length) {
+    <section class="production" aria-label="Construction and production" animate.enter="panel-enter" animate.leave="panel-leave">
         @for (panel of panels(); track panel.side) {
             @if (panel.groups.length) {
                 <div class="production-side" [class.right]="panel.side === 'right'" [attr.data-side]="panel.side"
@@ -8,6 +8,47 @@
                         <div class="player-production" [attr.data-player-id]="group.player.id"
                             [attr.aria-label]="group.player.displayIdentity.primaryName + ' production'">
                             <div class="buildings">
+                                @if (group.constructions.length) {
+                                    <div class="construction-row" aria-label="Buildings under construction"
+                                        animate.enter="row-enter" animate.leave="row-leave">
+                                        <div class="building-icon construction-source" title="Build structure">
+                                            <div class="unit-image">
+                                                @if (icon('AObu'); as source) {
+                                                    <img [src]="source" alt="Build structure" />
+                                                } @else { <span>Build</span> }
+                                            </div>
+                                        </div>
+                                        <span class="queue-arrow" aria-hidden="true">›</span>
+                                        @for (building of group.constructions; track building.id) {
+                                            <div class="active-production construction-entry" [attr.data-building-id]="building.id"
+                                                animate.enter="construction-enter" animate.leave="construction-leave">
+                                                <div class="queue-slot active" [attr.aria-label]="building.typeId + ': Under construction'">
+                                                    <div class="unit-image">
+                                                        @if (icon(building.typeId); as source) {
+                                                            <img [src]="source" [alt]="building.typeId" />
+                                                        } @else { <span class="rawcode">{{ building.typeId }}</span> }
+                                                    </div>
+                                                    <div class="production-backdrop" aria-hidden="true"
+                                                        [style.height.%]="(1 - (building.construction!.progress ?? 0)) * 100"
+                                                        [style.opacity]="building.construction!.progress === null ? 0 : 1"></div>
+                                                    <span class="production-cooldown">
+                                                        @if (isProgressWaiting(building.construction!)) {
+                                                            <span class="production-pause" role="img" aria-label="Construction waiting to start" title="Construction waiting to start"></span>
+                                                        } @else { {{ remainingSecondsLabel(building.construction!.remainingSeconds) }} }
+                                                    </span>
+                                                </div>
+                                                <div class="progress-track" role="progressbar" [attr.aria-label]="building.typeId + ' construction'"
+                                                    [attr.aria-valuenow]="building.construction!.progress === null ? null : building.construction!.progress * 100"
+                                                    aria-valuemin="0" aria-valuemax="100"
+                                                    [attr.aria-valuetext]="progressLabel(building.construction!.progress)"
+                                                    [class.unknown]="building.construction!.progress === null">
+                                                    <div class="progress-fill" [style.width.%]="(building.construction!.progress ?? 0) * 100"
+                                                        [style.opacity]="building.construction!.progress === null ? 0 : 1"></div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                }
                                 @for (building of group.buildings; track building.id) {
                                     <div class="building-queue" [attr.data-building-id]="building.id"
                                         [attr.aria-label]="building.typeId + ' production queue'"
@@ -25,7 +66,7 @@
                                         @for (slot of building.production!.queue.slice(0, 1); track slot.position) {
                                             <div class="active-production">
                                                 <div class="queue-slot active" data-position="0"
-                                                    [attr.aria-label]="slot.typeId + ': ' + (isProductionWaiting(slot) ? 'Production waiting to start' : slot.remainingSeconds == null ? 'Remaining time unknown' : remainingSecondsLabel(slot.remainingSeconds) + ' seconds remaining')">
+                                                    [attr.aria-label]="slot.typeId + ': ' + (isProgressWaiting(slot) ? 'Production waiting to start' : slot.remainingSeconds == null ? 'Remaining time unknown' : remainingSecondsLabel(slot.remainingSeconds) + ' seconds remaining')">
                                                     @for (typeId of [slot.typeId]; track typeId) {
                                                         <div class="unit-image" animate.enter="icon-enter" animate.leave="icon-leave">
                                                             @if (icon(typeId); as source) {
@@ -37,7 +78,7 @@
                                                         [style.height.%]="slot.progress === null ? 100 : (1 - slot.progress) * 100"
                                                         [style.opacity]="slot.progress === null ? 0 : 1"></div>
                                                     <span class="production-cooldown">
-                                                        @if (isProductionWaiting(slot)) {
+                                                        @if (isProgressWaiting(slot)) {
                                                             <span class="production-pause" role="img" aria-label="Production waiting to start" title="Production waiting to start"></span>
                                                         } @else { {{ remainingSecondsLabel(slot.remainingSeconds) }} }
                                                     </span>

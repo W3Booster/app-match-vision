@@ -58,10 +58,10 @@
                                     <mv-race-tag [value]="player.race"></mv-race-tag>
                                 </div>
                                 <div class="player-stats">
-                                    <ng-container *ngIf="playerStats(player) as stats; else noStats">
-                                        <strong class="win-rate">{{stats.winRate | number:'1.0-0'}}%</strong><strong class="wins">{{stats.wins}}W</strong><strong class="losses">{{stats.losses}}L</strong>
+                                    <ng-container *ngIf="playerStats(player) as stats; else noStats"><strong *ngIf="stats.mmr !== undefined" class="mmr">{{Math.round(stats.mmr)}} MMR</strong>
+                                        <span class="player-record"><strong class="win-rate">{{stats.winRate | number:'1.0-0'}}%</strong><strong class="wins">{{stats.wins}}W</strong><strong class="losses">{{stats.losses}}L</strong></span>
                                     </ng-container>
-                                    <ng-template #noStats><span class="stats-unavailable">No stats available</span></ng-template>
+                                    <ng-template #noStats><span class="stats-unavailable">{{player.stats?.status === 'loading' ? 'Loading stats…' : 'No stats available'}}</span></ng-template>
                                 </div>
                             </div>
                         </article>

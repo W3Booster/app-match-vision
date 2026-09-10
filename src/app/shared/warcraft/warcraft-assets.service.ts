@@ -1,11 +1,18 @@
+import { bnetLeagueIconUrl, resolveAssetBaseUrl } from '@w3booster/sdk/assets';
 import { Injectable } from '@angular/core';
-import type { CompletedUpgrade, Hero, HeroAbility, Match } from '@w3booster/sdk';
+import type { CompletedUpgrade, Hero, HeroAbility, Match, PlayerStats } from '@w3booster/sdk';
 import * as standardGameIcons from '@w3booster/sdk/standard-game/icons';
 
 @Injectable({ providedIn: 'root' })
 export class WarcraftAssetsService {
     private readonly missingIcons = new Set<string>();
     private readonly assets = standardGameIcons.createAssetResolver();
+
+    leagueIconPath(stats: PlayerStats): string | null {
+        if (stats.provider === 'bnet') return typeof stats.league === 'number' ? bnetLeagueIconUrl(stats.league, { baseUrl: resolveAssetBaseUrl() }) ?? null : null;
+        return stats.provider === 'w3champions' && Number.isInteger(stats.league) && Number(stats.league) >= 0
+            ? `/assets/img/leagues/${stats.league}.png` : null;
+    }
 
     iconPath(match: Pick<Match, 'isReforged'>, key: string): string | null {
         return this.resolveIcon(key, this.assets.icon(match, key));

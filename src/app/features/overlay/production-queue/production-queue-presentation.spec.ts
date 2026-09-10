@@ -3,15 +3,15 @@ import type { MatchState } from '@w3booster/sdk';
 import { createDemoState } from '@w3booster/sdk/testing';
 import { w3boosterApp } from '../../../core/w3booster-app.generated';
 import { createOverlayPresentation } from '../overlay-presentation';
-import { productionPlayers, progressLabel, remainingSecondsLabel, isProductionWaiting } from './production-queue-presentation';
+import { productionPlayers, progressLabel, remainingSecondsLabel, isProgressWaiting } from './production-queue-presentation';
 
 function fixture() {
     const state = structuredClone(createDemoState()) as MatchState;
     for (const player of state.players) {
         const id = `000000000000000${Number(player.id) + 1}`;
         Object.assign(player, { buildings: { [id]: { id, typeId: 'hbar', production: { queue: [
-            { position: 0, typeId: 'hfoo', progress: null },
-            { position: 1, typeId: 'hfoo', progress: 0 }
+            { position: 0, typeId: 'hfoo', progress: null, remainingSeconds: null, totalSeconds: null },
+            { position: 1, typeId: 'hfoo', progress: 0, remainingSeconds: null, totalSeconds: null }
         ] } } } });
     }
     return state;
@@ -31,11 +31,9 @@ describe('production queue presentation', () => {
     });
     it('identifies unstarted production without treating unreadable or absent timers as blocked', () => {
         const slot = { position: 0, typeId: 'hfoo', progress: 0, remainingSeconds: null, totalSeconds: null };
-        expect(isProductionWaiting(slot)).toBe(true);
-        expect(isProductionWaiting({ ...slot, progress: null })).toBe(false);
-        expect(isProductionWaiting({ ...slot, remainingSeconds: 20, totalSeconds: 20 })).toBe(false);
-        expect(isProductionWaiting({ ...slot, remainingSeconds: undefined, totalSeconds: undefined })).toBe(false);
-        expect(isProductionWaiting({ ...slot, position: 1 })).toBe(false);
+        expect(isProgressWaiting(slot)).toBe(true);
+        expect(isProgressWaiting({ ...slot, progress: null, remainingSeconds: null, totalSeconds: null })).toBe(false);
+        expect(isProgressWaiting({ ...slot, remainingSeconds: 20, totalSeconds: 20 })).toBe(false);
     });
 
     it('only shows the current player during play even if another player has data', () => {
@@ -92,5 +90,31 @@ describe('production queue presentation', () => {
         expect(groups(next)).toEqual([]);
         Object.assign(next.players[0], { buildings: undefined });
         expect(groups(next)).toEqual([]);
+    });
+});
+
+
+describe('construction presentation', () => {
+    it('keeps observed in-progress buildings, including unknown progress, without inventing completion', () => {
+        const state = fixture();
+        Object.assign(state.players[0], { buildings: {
+            a: { id: 'a', typeId: 'hbar', construction: { progress: 0, remainingSeconds: null, totalSeconds: null } },
+            b: { id: 'b', typeId: 'hhou', construction: { progress: null, remainingSeconds: null, totalSeconds: null } },
+            c: { id: 'c', typeId: 'hhou', construction: { progress: 1, remainingSeconds: 0, totalSeconds: 20 } },
+            d: { id: 'd', typeId: 'hhou' }
+        } });
+        const result = groups(state);
+        expect(result[0]!.constructions.map(b => b.id)).toEqual(['a', 'b']);
+        expect(result[0]!.constructions[0]).toBe(state.players[0]!.buildings!['a']);
+        expect(result[0]!.buildings).toEqual([]);
+    });
+    it('uses independent toggles without moving the other player when a side becomes empty', () => {
+        const state = fixture();
+        Object.assign(state.match, { isObserver: true });
+        Object.assign(state.players[0], { buildings: { a: { id: 'a', typeId: 'hbar', construction: { progress: 0.5, remainingSeconds: 10, totalSeconds: 20 } } } });
+        const view = createOverlayPresentation(state, w3boosterApp.resolveSettings());
+        expect(productionPlayers(view.players, state.match, false, false, true).map(g => [g.player.id, g.side])).toEqual([['0', 'left']]);
+        expect(productionPlayers(view.players, state.match, false, true, false).map(g => [g.player.id, g.side])).toEqual([['1', 'right']]);
+        expect(productionPlayers(view.players, state.match, false, false, false)).toEqual([]);
     });
 });

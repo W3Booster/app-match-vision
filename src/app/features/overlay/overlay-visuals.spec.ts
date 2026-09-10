@@ -55,6 +55,8 @@ describe('Match Vision overlay presentation rules', () => {
             } }
         });
         expect(upgradePanelInset(player(2), true, true)).toBe(207);
+        expect(upgradePanelInset(player(2), false, true)).toBe(146);
+        expect(upgradePanelInset(player(4), false, true)).toBe(191);
         expect(upgradePanelInset(player(1), true, true)).toBe(upgradePanelInset(player(2), true, true));
         expect(upgradePanelInset(player(3), true, true) - upgradePanelInset(player(2), true, true)).toBe(45);
     });

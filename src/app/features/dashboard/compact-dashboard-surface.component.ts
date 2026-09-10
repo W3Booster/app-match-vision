@@ -24,6 +24,7 @@ import { MatchControls } from './match-controls';
     styleUrl: './compact-dashboard-surface.component.scss'
 })
 export class CompactDashboardSurfaceComponent implements OnDestroy {
+    readonly Math = Math;
     readonly client = input.required<W3BoosterClient<MatchVisionSettings>>();
     readonly host = input.required<HostLifecycleSnapshot>();
     readonly state = input.required<MatchState<MatchVisionSettings>>();
@@ -67,7 +68,7 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
     }
     changeFont(delta: 1 | -1): void { this.fontSize = Math.min(20, Math.max(10, this.fontSize + delta)); }
     playerStats(player: Player): PlayerStats | undefined {
-        return standardGame.preferredStats(player, this.state().match.mode);
+        return standardGame.statsForMode(player, this.state().match.mode);
     }
     playerIdentity(player: Player) {
         const identity = playerDisplayIdentity(player);

@@ -88,7 +88,7 @@
 
 
         &.inventory {
-            margin-right: 74px !important;
+            margin-right: var(--hero-inventory-offset) !important;
             direction: ltr;
         }
     }
@@ -253,7 +253,7 @@
     }
 
     .inventory {
-        margin-left: 74px;
+        margin-left: var(--hero-inventory-offset);
         margin-top: var(--hero-inventory-inset);
         width: 58px;
 
@@ -270,7 +270,7 @@
         height: 23px;
         position: relative;
         animation: slide-up 0.4s ease;
-        border: 3px solid transparent;
+        border: var(--hero-item-inset) solid transparent;
         position: absolute;
     }
 
@@ -308,7 +308,13 @@
         margin-right: 138px !important;
     }
 
+    .hero-ability-area.inventory-hidden {
+        margin-top: var(--hero-item-inset);
+    }
+
     .ability-icon-wrapper {
+        margin-left: calc(var(--hero-inventory-offset) + var(--hero-item-inset));
+        margin-right: calc(var(--hero-inventory-offset) + var(--hero-item-inset));
         margin-top: 2px;
         width: var(--ability-icon-size);
         height: var(--ability-icon-size);
@@ -556,18 +562,7 @@
         padding: 0px 16px 0px 14px;
     }
 
-    .MatchupBarIsBottomCenter .ctrlgroup-wrapper {
-        margin-bottom: 60px;
-    }
 
-    .MatchupBarIsBottomCenter .match-box {
-        animation: slide-up 0.4s ease;
-        background: url('/assets/img/statsbar-full.png') no-repeat;
-        height: 77px;
-        top: 770px;
-        left: 637px;
-        padding: 13px 16px 0px 14px;
-    }
 
 
     body::after {

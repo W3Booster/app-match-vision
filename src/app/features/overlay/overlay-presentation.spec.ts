@@ -104,7 +104,7 @@ describe('overlay presentation', () => {
         const cooldown = createOverlayPresentation(
             state, w3boosterApp.resolveSettings()
         ).abilityCooldowns.get(ability);
-        expect(cooldown).toEqual({ total: 5, elapsed: 5, remaining: 0, progress: 1, active: false });
+        expect(cooldown).toEqual({ totalSeconds: 5, remainingSeconds: 0, progress: 1, active: false });
     });
 
     it('does not carry ability cooldowns beyond the match lifecycle', () => {

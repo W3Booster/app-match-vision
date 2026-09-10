@@ -15,7 +15,6 @@ export interface OverlayPresentation {
     observerPlayers: readonly [MatchVisionPlayerView, MatchVisionPlayerView] | null;
     streamer: MatchVisionPlayerView | null;
     opponent: MatchVisionPlayerView | null;
-    additionalCssClasses: string;
     showsObserverBar: boolean;
     showsTeamObserverBar: boolean;
     requiredAvatarCovers: number;
@@ -66,7 +65,6 @@ export function createOverlayPresentation(
         observerPlayers,
         streamer,
         opponent,
-        additionalCssClasses: Object.values(settings.additionalCSSClasses ?? {}).filter(Boolean).join(' '),
         showsObserverBar,
         showsTeamObserverBar,
         requiredAvatarCovers,

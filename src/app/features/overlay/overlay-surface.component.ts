@@ -40,7 +40,6 @@ export class OverlaySurfaceComponent {
     get streamerHeroes(): readonly Hero[] { return playerHeroes(this.streamer); }
     get opponentHeroes(): readonly Hero[] { return playerHeroes(this.opponent); }
     readonly heroHealthColor = heroHealthColor;
-    get additionalCSSClasses(): string { return this.presentation().additionalCssClasses; }
     get isReforged(): boolean { return this.state.match.isReforged === true; }
     get matchActive(): boolean { return isActiveMatch(this.state.match); }
     get requiredAvatarCoverCount(): number { return this.presentation().requiredAvatarCovers; }

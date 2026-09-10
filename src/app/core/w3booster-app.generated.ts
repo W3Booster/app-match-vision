@@ -1,6 +1,6 @@
 /* Generated from the W3Booster application database. Do not edit directly. */
 // @w3booster-client-id app_7bd7c42015297f608f1e5436
-// @w3booster-revision fef76895a6205e445159db7968ff605616176234281a46d1d67d223e697317a8
+// @w3booster-revision bbcfd1c1cd1ebaadd6baa348f3c09c12cb9c87809e454c1724754ac8a798da5c
 
 import type { W3BoosterClient } from '@w3booster/sdk';
 import { defineApplication, type ApplicationConnectOptions, type ApplicationRuntime, type ApplicationRuntimeSnapshot } from '@w3booster/sdk/app';
@@ -12,9 +12,6 @@ export interface W3BoosterAppSettings {
     mapNameEnabled: boolean;
     controlgroupsEnabled: boolean;
     topBarEnabled: boolean;
-    additionalCSSClasses: {
-      MATCHUP_BAR: "MatchupBarIsTopLeft" | "MatchupBarIsBottomCenter";
-    };
     username: string;
     nationality: string;
     topBarStatisticsOfMeEnabled: boolean;
@@ -31,6 +28,7 @@ export interface W3BoosterAppSettings {
     researchesOfAttackAndArmorEnabled: boolean;
     researchesInQueueEnabled: boolean;
     researchesShowAllEnabled: boolean;
+    constructionEnabled: boolean;
     productionQueuesEnabled: boolean;
   };
   observer: {
@@ -52,6 +50,7 @@ export interface W3BoosterAppSettings {
     researchesOfAttackAndArmorEnabled: boolean;
     researchesInQueueEnabled: boolean;
     researchesShowAllEnabled: boolean;
+    constructionEnabled: boolean;
     productionQueuesEnabled: boolean;
   };
 }
@@ -61,17 +60,14 @@ export type W3BoosterAppRuntime<TOverlayExtensions extends object = object> = Ap
 export type W3BoosterAppRuntimeSnapshot<TOverlayExtensions extends object = object> = ApplicationRuntimeSnapshot<W3BoosterAppSettings, TOverlayExtensions>;
 const w3boosterAppDefinition = {
   clientId: "app_7bd7c42015297f608f1e5436",
-  revision: "fef76895a6205e445159db7968ff605616176234281a46d1d67d223e697317a8",
-  scopes: ["match:read","players:read","stats:read","heroes:read","upgrades:read","resources:read","controlgroups:read","buildings:read","production:read"],
+  revision: "bbcfd1c1cd1ebaadd6baa348f3c09c12cb9c87809e454c1724754ac8a798da5c",
+  scopes: ["match:read","players:read","stats:read","heroes:read","upgrades:read","resources:read","controlgroups:read","buildings:read","production:read","units:read"],
   settingsDefaults: {
     "player": {
       "mapBarEnabled": true,
       "mapNameEnabled": true,
       "controlgroupsEnabled": true,
       "topBarEnabled": true,
-      "additionalCSSClasses": {
-        "MATCHUP_BAR": "MatchupBarIsTopLeft"
-      },
       "username": "",
       "nationality": "",
       "topBarStatisticsOfMeEnabled": true,
@@ -87,7 +83,8 @@ const w3boosterAppDefinition = {
       "researchesEnabled": true,
       "researchesOfAttackAndArmorEnabled": true,
       "researchesInQueueEnabled": true,
-      "researchesShowAllEnabled": false,
+      "researchesShowAllEnabled": true,
+      "constructionEnabled": true,
       "productionQueuesEnabled": true
     },
     "observer": {
@@ -108,7 +105,8 @@ const w3boosterAppDefinition = {
       "researchesEnabled": true,
       "researchesOfAttackAndArmorEnabled": true,
       "researchesInQueueEnabled": true,
-      "researchesShowAllEnabled": false,
+      "researchesShowAllEnabled": true,
+      "constructionEnabled": true,
       "productionQueuesEnabled": true
     }
   }
