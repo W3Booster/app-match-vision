@@ -1,4 +1,5 @@
 import type { Match, Player, Race } from '@w3booster/sdk';
+import { playerHeroes } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { orderedMatchVisionTeams } from '../../domain';
 
@@ -19,6 +20,8 @@ const CLOCK_PHASE_SECONDS = 30;
 const CLOCK_PHASE_COUNT = 16;
 const CLOCK_SPRITE_ALIGNMENT_SECONDS = 11;
 const INVENTORY_RAIL_WIDTH = 138;
+// Inventory starts 74px after the portrait; its content is inset another 3px.
+const INVENTORY_CONTENT_INSET = 77;
 const ABILITY_COLUMN_WIDTH = 45;
 const UPGRADE_PANEL_GAP = 24;
 
@@ -28,9 +31,9 @@ export function upgradePanelInset(
     showInventory: boolean,
     showAbilities: boolean
 ): number {
-    const abilityCount = showAbilities ? (player.heroes?.[0]?.abilities?.length ?? 0) : 0;
+    const abilityCount = showAbilities ? (playerHeroes(player)[0]?.abilities?.length ?? 0) : 0;
     const abilityColumns = Math.ceil(abilityCount / 2);
-    return (showInventory ? INVENTORY_RAIL_WIDTH : 0) + abilityColumns * ABILITY_COLUMN_WIDTH + UPGRADE_PANEL_GAP;
+    return (showInventory ? INVENTORY_RAIL_WIDTH : abilityCount > 0 ? INVENTORY_CONTENT_INSET : 0) + abilityColumns * ABILITY_COLUMN_WIDTH + UPGRADE_PANEL_GAP;
 }
 
 /** Match Vision's team ordering is presentation, not protocol state. */

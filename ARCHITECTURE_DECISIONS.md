@@ -1,5 +1,160 @@
 # Match Vision architecture decisions
 
+
+## 2026-09-09: Production follows the existing PRO data entitlement
+
+Production and construction are PRO during self-play and free while observing or
+watching replays. The API withdraws production capability for free self-play;
+construction requires both buildings and production capabilities in the API and
+SDK recorder projection. Native readers enforce the same rule before paid reads
+and publication, including hero pools. Ordinary building health stays free.
+Match Vision's player construction/queue settings are PRO, while observer/replay
+hero, research and production settings remain free as in the legacy client.
+Custom observer headlines remain PRO. Schema metadata, not app-side duplicate
+plan checks, controls settings access.
+
+## 2026-09-09: Construction precedes training and shares timer presentation
+
+Add independent player/observer constructionEnabled settings, default true, under
+Production in the database-owned schema. Generate the binding with the SDK CLI.
+For each visible player, show observed buildings under construction in one first
+horizontal row above the unit production chains. Use the Peon Build action (AObu)
+icon and the same small arrow as the training chains, mirrored on the right.
+Use the same icon size, remaining-seconds text, backdrop, attached gold progress
+bar, and enter/leave transitions as active production. Completion (progress 1),
+cancellation, or loss of the construction observation removes the entry. Unknown
+progress remains visible; do not infer construction from health or an empty queue.
+
+All timed presentations consume progress, totalSeconds, and remainingSeconds.
+The SDK 3 cooldown field rename removes total/remaining/elapsed aliases. Never
+advance construction or production timers on a wall clock or estimate durations
+from the building type. Unknown timing uses ?, and zero progress with explicitly
+null timers uses the existing pause symbol. Both setting toggles remain independent;
+filter only after assigning player sides so one idle/hidden side cannot move another.
+
+
+## 2026-09-09: Hero settings control their own content
+
+Outside the team observer layout, inventory and hero level each follow their
+own setting even when both abilities and experience are disabled. The shared
+hero container must not depend on abilities or experience. Only HP/mana bars
+retain the abilities-or-experience condition documented below.
+
+## 2026-09-09: Hidden inventory yields its content space to abilities
+
+With hero inventory disabled, abilities retain the portrait offset and start at
+its inventory content inset (74px rail + 3px inner padding), mirrored on the
+opponent side. Move the entire ability group down by the same inner padding;
+keep the two-column ability ordering and hero-row positions. With inventory
+enabled, the existing 138px ability offset remains. Upgrade placement includes
+the retained portrait/inventory-content offset so it cannot overlap abilities.
+
+## 2026-09-09: Match-bar placement is fixed
+
+The player match bar always uses its top-left layout. Remove the placement
+setting, generated setting field, CSS-class projection and bottom-placement
+style overrides, including their control-group and team-bar adjustments. Legacy
+saved placement values have no effect. The database-owned schema is updated and
+the binding regenerated through the SDK CLI; the production registration update
+remains part of the coordinated rollout. Research display defaults to All research
+in both player and observer/replay profiles; existing explicit settings override
+that default.
+
+## 2026-09-09: SDK 3 instance maps and building production
+
+Status: implemented on `feat/sdk3-vitals-production`; release pending SDK 3
+publication and the coordinated platform contract rollout. This supersedes
+ADR-009's SDK 2 source contract on this review branch.
+
+Use `playerHeroes` and `playerBuildings` to consume SDK instance maps directly.
+`id` is the match-scoped engine instance identity used for DOM tracking;
+`typeId` is the Warcraft rawcode used for artwork. Keep the SDK maps intact in
+player presentation wrappers, with no parallel normalized entity store.
+
+Preserve the hero bar behavior from the initial public release (`835ec91`):
+both sides show bars when abilities or XP are enabled, except the team observer
+layout. HP must be positive; mana requires observed mana and positive observed
+HP. Dead and unobserved heroes do not acquire fabricated bars. HP transitions
+from green at 100% through yellow at 60% toward red at zero; mana is `#00aafd`.
+The existing classic/reforged geometry and gradient remain unchanged.
+
+Production queues have independent `player.productionQueuesEnabled` and
+`observer.productionQueuesEnabled` settings, defaulting to true in the database
+schema. The generated binding owns those defaults; the observer setting also
+applies to replays. Panels sit at the left/right edges, with one building per row starting 8px below
+the reserved third hero row (including inventory and bars) and continuing downward.
+Shared CSS geometry keeps the reservation aligned even when fewer heroes exist. There are no repeated
+visible player names. Team/player sides are assigned before empty queues are
+filtered, so an idle player cannot move an opponent's queue to the wrong side.
+The row has no surrounding box. Its active icon shares the ability size (42px),
+and the building image shares the upgrade size (30px), followed by a small arrow. The
+right-side queue mirrors this arrangement. The building never overlaps unit artwork. Queue artwork has no added CSS
+borders; the building badge also crops the baked-in texture frame. Waiting icons fill three columns horizontally before starting the second row,
+inward from each screen edge; the right panel mirrors the column direction.
+Their size is (active image height - 4px) / 2, currently 19px: 1px top/bottom
+margins and 2px between rows and columns. The grid excludes the progress bar.
+The gold progress track touches the image directly and uses the health bar's
+black frame and shading. Active production also uses the
+ability cooldown's translucent black backdrop, shrinking with the remaining
+fraction over 200ms; the building badge renders above it. Unknown progress does
+not invent a remaining fraction. Active slots show SDK `remainingSeconds`,
+rounded up, with the centered bold white text and shadow used by ability
+cooldowns. Countdown text updates in place without animation. Unstarted/blocked
+production (zero progress with explicitly null total and remaining timers) shows
+a pause symbol; unreadable or absent observations retain `?`. Waiting slots have
+no countdown.
+Do not derive seconds from percentages, unit metadata, or wall-clock time.
+Progress width interpolates linearly over 200ms between delivered samples without
+extrapolating beyond them. Row entry/removal, slot entry/removal and icon
+replacements use short CSS animations through Angular enter/leave. Growing and
+collapsing rows clip their contents during animation so the panel does not show
+temporary scrollbars; longer lists retain normal scrolling. Shared size variables
+keep icon dimensions and animated row height consistent;
+unchanged snapshots reuse DOM and do not restart animations. Reduced-motion
+preferences disable all queue animations and transitions. Queue positions remain
+snapshot locations, so visual transitions never claim persistent job identity.
+The SDK also exposes `totalSeconds` for apps that need elapsed time or percentages;
+Match Vision uses the observed remaining timer directly.
+
+The production panels group queues by player and building instance.
+During play show only the broadcaster's buildings; observer/replay surfaces
+show all delivered player queues using existing team/replay ordering. Preserve
+repeated rawcodes as separate slots. Only the first slot shows progress and remaining seconds; null
+shows an unknown marker, never zero or an estimated countdown. Slot position
+identifies a location within the current building queue, not a future unit.
+Empty/unavailable queues, disabled settings, and ended matches remove the panels. Components derive
+from SDK snapshots and add no polling or process reads.
+
+Release prerequisites (do not merge this staging branch before these pass):
+
+- Publish the reviewed SDK 3 artifact, then raise the registry dependency to
+  `^3.0.0` and regenerate the lockfile from the registry. Until then ADR-001
+  keeps the committed dependency at the published SDK 2 version; the registry
+  lane is intentionally still a failing release gate, not compatibility proof.
+- Roll out the reviewed native/API SDK 3 contract. Add `buildings:read` and
+  `production:read` to Match Vision's database-owned application definition and
+  update grants through the platform's scope approval flow. Add the production
+  boolean to both settings profiles using the official schema; preserve existing
+  saved settings. New launches need
+  the new grants; existing tickets must not be mistaken for new authorization.
+- Regenerate the binding with `npm run w3booster:sync`, verify
+  `npm run w3booster:check`, then pass both clean registry and packed SDK lanes.
+  Do not hand-edit the generated scopes/revision or ship an app-local adapter.
+- Restore the packed CI checkout to SDK HEAD after the reviewed SDK commit is
+  merged. The temporary pin makes the feature branch's integration reproducible.
+
+Local end-to-end verification used the reviewed native DLL, local MongoDB/API,
+SDK 3 and the desktop compositor during a running replay. Both players delivered
+hero HP/mana and building queues. The new settings were generated from the local
+database; changing the observer toggle through the desktop settings UI removed
+and restored the live overlay queues. The checked-in revision is this staged
+contract, not a claim that the production database has already been updated.
+
+Validation: pure queue regression tests plus Chromium rendering checks cover
+classic/reforged, player/observer, duel/team/FFA, replay selection, visibility
+settings, health colors, dead/missing/zero pools, repeated slots, unknown and
+changing progress, cancellation, lifecycle cleanup, and viewport bounds.
+
 ## 2026-09-08: Compact matchups separate opposing teams
 
 Two-team compact matches and match history on both dashboards use equal left/right team columns
@@ -181,3 +336,46 @@ dashboard/team layouts. Check the current player ID rather than isObserver,
 which may describe the slot at replay startup. An absent or observer-slot ID
 retains the canonical ordering and manual reverse choice. Preserve the saved
 setting so it applies again when the viewer returns to an observer slot.
+
+## 2026-09-10: Consume SDK 3 ladder records directly
+
+All dashboards and the match bar use statsForMode with exact ladder selection.
+Remove preferredStats and fallback-to-solo behavior. Show provider MMR when
+available; Battle.net badges use the SDK asset helper and launch-advertised local
+asset base. W3Champions keeps its own league artwork. Unavailable or ambiguous
+stats remain unavailable, including team matches without known AT/RT identity.
+Regenerate the database-owned app binding after definition changes; never bypass
+its revision check to hide a stale bundle. The local revision and connection were
+verified against the local backend after updating the SDK. Keep the established
+packed-HEAD review lane until SDK 3 is published; no registry version is invented.
+
+Match-bar stats use a two-row hierarchy: name plus league/rank above, prominent
+MMR and separate win/loss group below. Reserve the center clock column and mirror
+player sides. Rank uses a small RANK label, never # (which resembles a BattleTag).
+Both rank and MMR display plain rounded integers without grouping separators.
+Narrow team/FFA cards stack rating and W/L and omit the secondary win percentage;
+1v1 keeps all three. Classic/reforged 1v1–4v4 layout checks verify no stat clipping.
+
+Keep the W/L group next to its player's MMR, leaving the center clock gap empty.
+For a loaded record without positive rank show UNRANKED using the same small
+style as RANK. On the left the rank/unranked label precedes the league icon;
+mirror the pair on the right. Both labels remain hidden while stats are loading
+or unavailable. Use stats.status for the loading indicator, which disappears
+on ready or unavailable, rather than treating an empty records array as pending.
+
+The main dashboard places each player's name/race on the first row and their
+stats immediately beneath it. Align those groups to the outer player sides so
+numbers do not drift into the center between teams. Both dashboards mirror MMR
+as a group: MMR precedes the record on the left and follows it on the right.
+Keep the record's own labels in reading order; do not reverse individual W/L
+values. Compact retains its existing density and mirrors the MMR separator too.
+
+## 2026-09-10: SDK 3 review artifacts and release gate
+
+Keep registry dependencies on published packages as required by contributor guidance.
+The breaking SDK 3 review branch is tested with an immutable packed SDK commit.
+The published-registry CI lane explicitly fails the release gate until SDK 3 is
+published and the committed dependency and lockfile are upgraded. Do not hide that
+gate, claim SDK 2 compatibility, or replace the production dependency with a local
+path. SDK CI pins a reviewed Match Vision commit to test the inverse consumer lane.
+Release screenshots use the actual UI with synthetic aliases and a demo label.

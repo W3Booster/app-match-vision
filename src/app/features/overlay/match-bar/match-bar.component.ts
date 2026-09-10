@@ -29,10 +29,12 @@ export class MatchBarComponent {
     readonly normalizedGameMode = computed(() => standardGame.normalizeMode(this.match().mode));
     readonly isOneVersusOne = computed(() => standardGame.isMode(this.match().mode, '1v1'));
     readonly Number = Number;
+    readonly Math = Math;
 
     getStats(player: Player): PlayerStats | undefined {
         return standardGame.statsForMode(player, this.match().mode);
     }
+    leagueIcon(stats: PlayerStats): string | null { return this.assets.leagueIconPath(stats); }
     playerIdentity(player: MatchVisionPlayerView) { return player.displayIdentity; }
 
     getGameMode(): string {

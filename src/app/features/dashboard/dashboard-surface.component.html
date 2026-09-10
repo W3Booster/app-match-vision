@@ -30,8 +30,16 @@
                 <article *ngFor="let team of teams(); let index = index" [class.opponent]="teams().length === 2 && index === 1">
                     <h3>{{team.teamId === null ? 'Unassigned team' : 'Team ' + (team.teamId + 1)}}</h3>
                     <div class="player-row" *ngFor="let player of team.players">
-                        <span><b><mv-copy-player-name [name]="playerName(player)"></mv-copy-player-name></b><mv-race-tag [value]="player.race"></mv-race-tag></span>
-                        <ng-container *ngIf="playerStats(player) as stats"><em>{{stats.winRate | number:'1.0-0'}}%</em><strong>{{stats.wins}}W</strong><strong class="losses">{{stats.losses}}L</strong></ng-container>
+                        <div class="player-heading"><b><mv-copy-player-name [name]="playerName(player)"></mv-copy-player-name></b><mv-race-tag [value]="player.race"></mv-race-tag></div>
+                        <div class="player-statistics" *ngIf="playerStats(player) as stats; else statsPending">
+                            <span *ngIf="stats.mmr !== undefined" class="mmr"><strong>{{Math.round(stats.mmr)}}</strong><small>MMR</small></span>
+                            <div class="player-record">
+                                <span class="wins"><strong>{{stats.wins}}</strong><small>Wins</small></span>
+                                <span class="losses"><strong>{{stats.losses}}</strong><small>Losses</small></span>
+                                <span class="win-rate"><strong>{{stats.winRate | number:'1.0-0'}}%</strong><small>Win rate</small></span>
+                            </div>
+                        </div>
+                        <ng-template #statsPending><div class="stats-status" role="status"><i *ngIf="player.stats?.status === 'loading'" aria-hidden="true"></i>{{player.stats?.status === 'loading' ? 'Loading stats…' : 'No stats available'}}</div></ng-template>
                     </div>
                 </article>
             </div>

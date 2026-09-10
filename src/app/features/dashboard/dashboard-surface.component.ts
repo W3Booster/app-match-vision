@@ -23,6 +23,7 @@ import { MatchControls } from './match-controls';
     styleUrl: './dashboard-surface.component.scss'
 })
 export class DashboardSurfaceComponent implements OnDestroy {
+    readonly Math = Math;
     readonly client = input.required<W3BoosterClient<MatchVisionSettings>>();
     readonly host = input.required<HostLifecycleSnapshot>();
     readonly state = input.required<MatchState<MatchVisionSettings>>();
@@ -78,7 +79,7 @@ export class DashboardSurfaceComponent implements OnDestroy {
         return player.name?.trim() ? identity.inGameName : identity.primaryName;
     }
     playerStats(player: Player): PlayerStats | undefined {
-        return standardGame.preferredStats(player, this.state().match.mode);
+        return standardGame.statsForMode(player, this.state().match.mode);
     }
     private savedReversePlayerOrder(): boolean {
         return reversePlayerOrderForMatch(

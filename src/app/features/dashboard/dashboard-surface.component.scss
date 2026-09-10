@@ -25,7 +25,26 @@ h1, h2, h3, p { margin: 0; } h1 { margin-top: 4px; color: #f3eadb; font-size: 30
 .match-clock { color: #f0c16d; font: 700 18px monospace; }.empty { display: flex; min-height: 180px; align-items: center; justify-content: center; flex-direction: column; gap: 6px; color: #77868f; }.empty i { margin-bottom: 6px; color: #4c9dc5; font-size: 24px; }.empty b { color: #cbd5da; }.empty.small { min-height: 90px; }
 .match-meta { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid #26333b; }.match-meta span { flex: 1; color: #84949e; }.match-meta button { padding: 7px 10px; }
 .team-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; padding: 16px; }.team-grid article { min-width: 0; }.team-grid h3 { padding: 4px 12px; color: #8ba0ac; font-size: 11px; text-transform: uppercase; }
-.player-row { display: flex; align-items: center; gap: 9px; padding: 6px 12px; }.player-row:last-child { border: 0; }.player-row > span { display: flex; align-items: center; flex-wrap: wrap; gap: 3px 7px; flex: 1; min-width: 0; }.player-row b { min-width: 0; }.player-row small { white-space: nowrap; }.player-row small { color: #71828c; text-transform: capitalize; }.player-row em { color: #9aabb5; font-style: normal; }.player-row strong { color: #5cd292; }.player-row strong.losses { color: #e77970; }
+.player-row { padding: 10px 12px; min-width: 0; }
+.player-row + .player-row { margin-top: 10px; border-top: 1px solid #26343c; padding-top: 18px; }
+.player-heading { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 7px; min-width: 0; color: #e1eaf0; }
+.player-heading b { min-width: 0; }
+.player-statistics { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 18px; margin-top: 7px; font-variant-numeric: tabular-nums; }
+.mmr { display: inline-flex; align-items: baseline; gap: 5px; color: #f1e4cb; }
+.mmr strong { font-size: 18px; font-weight: 600; line-height: 1.15; }
+.mmr small { color: #94a3ae; font-size: 10px; letter-spacing: .05em; }
+.player-record { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 17px; margin-top: 0; }
+.player-record > span { display: inline-flex; align-items: baseline; gap: 5px; white-space: nowrap; }
+.player-record strong { font-size: 13px; font-weight: 600; }
+.player-record small { color: #82939e; font-size: 10px; }
+.player-record .wins strong { color: #5dd798; }
+.player-record .losses strong { color: #ef8378; }
+.player-record .win-rate strong { color: #b4c1c9; }
+.stats-status { display: flex; align-items: center; gap: 7px; min-height: 30px; margin-top: 7px; color: #82939e; font-size: 12px; }
+.stats-status i { width: 11px; height: 11px; border: 1px solid #344550; border-top-color: #94bbd1; border-radius: 50%; animation: stats-spin .8s linear infinite; }
+@keyframes stats-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .stats-status i { animation: none; } }
+
 .match-history > article { display: grid; grid-template-columns: 60px minmax(150px, 1fr) minmax(200px, 2fr) 115px; align-items: center; gap: 12px; padding: 11px 18px; border-bottom: 1px solid #233038; }.match-history time, .match-history small { color: #75858f; }.match-history article span b, .match-history article span small { display: block; }.match-history article > em { color: #7c8b94; font-style: normal; }.match-history article > em.live { color: #53cf91; }
 @media (prefers-reduced-motion: reduce) { :host { scroll-behavior: auto; } }
 @media (max-width: 650px) { .overlay-dashboard { padding: 14px; }.dashboard-hero { align-items: flex-start; }.score-panel { flex-wrap: wrap; }.score-label { flex-basis: 100%; }.score-panel .reset { margin-left: auto; }.team-grid { grid-template-columns: 1fr; }.match-history > article { grid-template-columns: 50px minmax(0, 1fr) 100px; }.history-players { grid-column: 2 / -1; grid-row: 2; } }
@@ -38,4 +57,5 @@ h1, h2, h3, p { margin: 0; } h1 { margin-top: 4px; color: #f3eadb; font-size: 30
 .match-history article > .history-result[data-outcome="lost"] { color: #ef8378; font-weight: 700; }
 
 .team-grid .opponent { text-align: right; }
-.team-grid .opponent .player-row, .team-grid .opponent .player-row > span { flex-direction: row-reverse; }
+.team-grid .opponent .player-heading, .team-grid .opponent .player-statistics { flex-direction: row-reverse; }
+.team-grid .opponent .player-record, .team-grid .opponent .stats-status { justify-content: flex-end; }

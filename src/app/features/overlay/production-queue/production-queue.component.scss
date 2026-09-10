@@ -1,0 +1,151 @@
+// Reserve all three hero rows, even before the second/third hero is observed.
+:host { --waiting-icon-size: calc((var(--ability-icon-size) - 4px) / 2); --production-row-height: calc(var(--ability-icon-size) + 9px); position: absolute; inset: 0; pointer-events: none; color: #f4ecd6; }
+.production-side {
+    position: absolute;
+    top: var(--production-top);
+    left: 8px;
+    max-width: calc(50% - 16px);
+    max-height: calc(100% - var(--production-top) - 16px);
+    overflow: auto;
+    pointer-events: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.production-side.right { left: auto; right: 8px; }
+.player-production { min-width: 0; max-width: 100%; }
+.construction-row { display: flex; align-items: center; gap: 3px; max-width: 100%; }
+.right .construction-row { flex-direction: row-reverse; }
+.construction-entry { overflow: hidden; }
+.buildings { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
+.right .buildings { align-items: flex-end; }
+.right .building-queue { flex-direction: row-reverse; }
+.right .queue-arrow { transform: scaleX(-1); }
+.queue-arrow { color: #b7a477; font-size: 14px; line-height: 1; }
+// Match ability artwork cropping: remove the frame baked into the building texture.
+.building-icon img { position: absolute; width: 115%; height: 115%; left: -7.5%; top: -7.5%; }
+.production-backdrop {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1;
+    background: var(--cooldown-backdrop-color);
+    transition: height 200ms linear, opacity 160ms ease;
+}
+.right .waiting-queue { direction: rtl; }
+.building-queue {
+    display: flex;
+    align-items: center;
+    gap: 3px;
+    max-width: 100%;
+    min-height: 0;
+    transform-origin: left center;
+}
+.right .building-queue { transform-origin: right center; }
+.active-production { width: var(--ability-icon-size); flex: 0 0 var(--ability-icon-size); padding-top: 1px; }
+.queue-slot { position: relative; box-sizing: border-box; background: #151d24; border: 0; }
+.active { width: var(--ability-icon-size); height: var(--ability-icon-size); }
+.unit-image { position: absolute; inset: 0; }
+img { display: block; width: 100%; height: 100%; object-fit: cover; }
+// Align waiting rows with the image itself, excluding its 8px progress bar.
+.queue-details {
+    display: flex;
+    align-self: flex-start;
+    height: var(--ability-icon-size);
+    margin-top: 1px;
+}
+.building-icon {
+    position: relative;
+    flex: 0 0 var(--upgrade-icon-size);
+    width: var(--upgrade-icon-size);
+    height: var(--upgrade-icon-size);
+    z-index: 3;
+    border: 0;
+    overflow: hidden;
+    background: #151d24;
+}
+.waiting-queue {
+    display: grid;
+    grid-auto-flow: row;
+    grid-template-rows: repeat(2, var(--waiting-icon-size));
+    grid-template-columns: repeat(3, var(--waiting-icon-size));
+    gap: 2px;
+    height: 100%;
+    box-sizing: border-box;
+    align-content: start;
+    padding: 1px 0;
+}
+.waiting { width: var(--waiting-icon-size); height: var(--waiting-icon-size); direction: ltr; }
+.waiting img { opacity: 0.8; }
+.rawcode, .building-icon span { font: 8px monospace; overflow-wrap: anywhere; }
+.waiting .rawcode { font-size: 5px; }
+.production-cooldown {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 4;
+    text-shadow: 1px 1px 4px #000;
+    color: #fff;
+    font-weight: bold;
+}
+.production-pause { display: flex; gap: 4px; }
+.production-pause::before, .production-pause::after {
+    content: '';
+    width: 3px;
+    height: 12px;
+    background: #fff;
+    box-shadow: 1px 1px 4px #000;
+}
+.progress-track {
+    position: relative;
+    box-sizing: border-box;
+    height: 8px;
+    border: 2px solid #000;
+    border-radius: 1px;
+    background: #000;
+    overflow: hidden;
+}
+// Same frame and shading as the hero health bar, with a gold production fill.
+.progress-track::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(0deg, #000 0%, #000 80%, transparent 80%, transparent 100%);
+    opacity: 0.5;
+}
+.progress-fill { height: 100%; background: #d7b773; transition: width 200ms linear, opacity 160ms ease; }
+.unknown { background: repeating-linear-gradient(135deg, #655537 0 3px, #171717 3px 6px); }
+.panel-enter { animation: fade-in 180ms ease-out; }
+.panel-leave { animation: fade-in 160ms ease-in reverse; }
+// Clip full-size contents while the row height grows or collapses.
+// Otherwise they temporarily overflow the panel and trigger its scrollbars.
+.row-enter, .row-leave { overflow: hidden; }
+.row-enter { animation: row-in 220ms cubic-bezier(0.2, 0.7, 0.2, 1); }
+.row-leave { animation: row-in 180ms ease-in reverse; pointer-events: none; }
+.construction-enter { animation: construction-in 200ms ease-out; }
+.construction-leave { animation: construction-in 160ms ease-in reverse; }
+.waiting-enter { animation: waiting-in 200ms ease-out; }
+.waiting-leave { animation: waiting-in 160ms ease-in reverse; }
+.icon-enter { animation: icon-in 180ms ease-out; }
+.icon-leave { animation: fade-in 160ms ease-in reverse; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes row-in {
+    from { opacity: 0; max-height: 0; transform: scale(0.94); }
+    to { opacity: 1; max-height: var(--production-row-height); transform: scale(1); }
+}
+@keyframes construction-in {
+    from { opacity: 0; flex-basis: 0; width: 0; transform: scale(0.65); }
+    to { opacity: 1; flex-basis: var(--ability-icon-size); width: var(--ability-icon-size); transform: scale(1); }
+}
+@keyframes waiting-in {
+    from { opacity: 0; width: 0; transform: scale(0.65); }
+    to { opacity: 1; width: var(--waiting-icon-size); transform: scale(1); }
+}
+@keyframes icon-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0s !important; transition: none !important; }
+}

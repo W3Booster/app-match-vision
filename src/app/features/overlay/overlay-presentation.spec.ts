@@ -32,14 +32,14 @@ describe('overlay presentation', () => {
         Object.assign(state.match, viewer);
         state.players[0]!.startPosition = { x: 10, y: 0 };
         state.players[1]!.startPosition = { x: -10, y: 0 };
-        state.players[0]!.heroes = [{ id: 'Hpal', name: 'Paladin', level: 1 }];
-        state.players[1]!.heroes = [{ id: 'Obla', name: 'Blademaster', level: 1 }];
+        state.players[0]!.heroes = { '0000000000000001': { id: '0000000000000001', typeId: 'Hpal', level: 1 } };
+        state.players[1]!.heroes = { '0000000000000002': { id: '0000000000000002', typeId: 'Obla', level: 1 } };
         const original = structuredClone(state);
 
         const view = createOverlayPresentation(state, w3boosterApp.resolveSettings());
 
-        expect(view.streamer?.heroes?.map(hero => hero.id)).toEqual(['Obla']);
-        expect(view.opponent?.heroes?.map(hero => hero.id)).toEqual(['Hpal']);
+        expect(Object.values(view.streamer?.heroes ?? {}).map(hero => hero.typeId)).toEqual(['Obla']);
+        expect(Object.values(view.opponent?.heroes ?? {}).map(hero => hero.typeId)).toEqual(['Hpal']);
         expect(view.requiredAvatarCovers).toBe(0);
         expect(state).toEqual(original);
 
@@ -95,26 +95,26 @@ describe('overlay presentation', () => {
     it('derives ability cooldowns from complete SDK state', () => {
         const state = createState();
         state.match.gameTime = 15;
-        state.players[0]!.heroes = [{
-            id: 'Hpal', name: 'Hpal', level: 1,
+        state.players[0]!.heroes = { "0000000000000001": {
+            id: '0000000000000001', typeId: 'Hpal', level: 1,
             abilities: [{ id: 'AHhb', name: 'AHhb', level: 1, lastActivation: 10_000 }]
-        }];
+        } };
 
-        const ability = state.players[0]!.heroes![0]!.abilities![0]!;
+        const ability = state.players[0]!.heroes!["0000000000000001"]!.abilities![0]!;
         const cooldown = createOverlayPresentation(
             state, w3boosterApp.resolveSettings()
         ).abilityCooldowns.get(ability);
-        expect(cooldown).toEqual({ total: 5, elapsed: 5, remaining: 0, progress: 1, active: false });
+        expect(cooldown).toEqual({ totalSeconds: 5, remainingSeconds: 0, progress: 1, active: false });
     });
 
     it('does not carry ability cooldowns beyond the match lifecycle', () => {
         const state = createState();
         state.match.status = 'finished';
         state.match.gameTime = 15;
-        state.players[0]!.heroes = [{
-            id: 'Hpal', name: 'Hpal', level: 1,
+        state.players[0]!.heroes = { "0000000000000001": {
+            id: '0000000000000001', typeId: 'Hpal', level: 1,
             abilities: [{ id: 'AHhb', name: 'AHhb', level: 1, lastActivation: 10_000 }]
-        }];
+        } };
         expect(createOverlayPresentation(state, w3boosterApp.resolveSettings()).abilityCooldowns.size).toBe(0);
     });
 

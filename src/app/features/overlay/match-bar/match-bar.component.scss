@@ -47,14 +47,6 @@
     }
 }
 
-:host-context(.MatchupBarIsBottomCenter) .match-box {
-    animation: slide-up 0.4s ease;
-    background: url('/assets/img/statsbar-full.png') no-repeat;
-    height: 77px;
-    top: 773px;
-    left: 637px;
-    padding-top: 14px !important;
-}
 
 .match-box {
     animation: slide-down 1.5s none;
@@ -79,6 +71,7 @@
     :host-context(.w3-reforged-old) & .team-0 {
 
         .player-stats,
+        .player-rating-meta,
         .player-no-stats {
             display: none !important;
         }
@@ -93,6 +86,7 @@
     :host-context(.w3-reforged-old) .team:not(.team-0) {
 
         .player-stats,
+        .player-rating-meta,
         .player-no-stats {
             display: none !important;
         }
@@ -234,24 +228,44 @@
                     }
                 }
 
+                .player-rating-meta {
+                    display: inline-flex;
+                    align-items: center;
+                    gap: 6px;
+                    margin-inline-start: auto;
+                    padding-inline-start: 8px;
+                    flex: 0 0 auto;
+                    height: 23px;
+                    font-variant-numeric: tabular-nums;
+                }
+
+                .player-league { width: 20px; height: 20px; object-fit: contain; }
+                .player-rank { display: inline-flex; align-items: baseline; gap: 4px; font-size: 11px; line-height: 1; color: #aeb8c1; }
+                .player-rank small { font-size: 8px; color: #7e8a95; letter-spacing: .04em; }
+
                 .player-stats {
                     grid-column: 2;
-                    font-weight: 500;
                     display: flex;
-                    padding-top: 3px;
+                    align-items: center;
+                    justify-content: flex-start;
+                    gap: 12px;
+                    padding-top: 0;
                     direction: ltr !important;
                     min-width: 0;
                     overflow: hidden;
                     white-space: nowrap;
+                    font-size: 13px;
+                    line-height: 20px;
+                    font-variant-numeric: tabular-nums;
 
-                    .player-stats-wins {
-                        color: #2bc332;
-                        padding: 0px 7px;
-                    }
-
-                    .player-stats-losses {
-                        color: #dc3c3c;
-                    }
+                    .player-mmr { display: inline-flex; align-items: baseline; gap: 4px; flex: 0 0 auto; }
+                    .player-mmr strong { color: #f1ede4; font-size: 16px; font-weight: 600; }
+                    .player-mmr small { color: #909ca5; font-size: 9px; letter-spacing: .04em; }
+                    .player-record { display: inline-flex; align-items: baseline; gap: 8px; flex: 0 0 auto; }
+                    .player-stats-ratio { color: #aeb8c1; padding-inline-end: 2px; }
+                    .player-stats-wins { color: #63c78b; }
+                    .player-stats-losses { color: #e1817b; }
+                    .player-record small { margin-inline-start: 2px; font-size: 9px; opacity: .8; }
                 }
 
                 .player-no-stats {
@@ -547,3 +561,42 @@
         }
     }
 }
+
+/* Reserve a clear clock column between the two players. */
+.gamemode-gm-1v1 .teams {
+    gap: 56px;
+
+    .team + .team {
+        .player-rating-meta {
+            flex-direction: row-reverse;
+            order: -1;
+            margin-inline-start: 0;
+            margin-inline-end: auto;
+            padding-inline-start: 0;
+            padding-inline-end: 8px;
+        }
+        .player-stats { flex-direction: row-reverse; justify-content: flex-start; }
+    }
+}
+
+/* Team/FFA cards have narrower columns: keep the rating and record legible. */
+.match-box:not(.gamemode-gm-1v1) .match-box-content .team .player {
+    .player-rating-meta { display: none; }
+    .player-stats {
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: center;
+        gap: 0;
+        line-height: 11px;
+        .player-mmr strong { font-size: 12px; }
+        .player-mmr small { font-size: 8px; }
+        .player-record { font-size: 10px; gap: 7px; }
+        .player-stats-ratio { display: none; }
+    }
+}
+.gamemode-gm-2v2 .match-box-content .team + .team .player .player-stats { align-items: flex-end; }
+
+.stats-loading { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: #aeb8c1; }
+.stats-loading i { width: 9px; height: 9px; border: 1px solid rgba(174,184,193,.25); border-top-color: #aeb8c1; border-radius: 50%; animation: stats-spin .8s linear infinite; }
+@keyframes stats-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .stats-loading i { animation: none; } }

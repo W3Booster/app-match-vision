@@ -1,5 +1,6 @@
+import { bnetLeagueIconUrl, resolveAssetBaseUrl } from '@w3booster/sdk/assets';
 import { Injectable } from '@angular/core';
-import type { CompletedUpgrade, Hero, HeroAbility, Match } from '@w3booster/sdk';
+import type { CompletedUpgrade, Hero, HeroAbility, Match, PlayerStats } from '@w3booster/sdk';
 import * as standardGameIcons from '@w3booster/sdk/standard-game/icons';
 
 @Injectable({ providedIn: 'root' })
@@ -7,12 +8,18 @@ export class WarcraftAssetsService {
     private readonly missingIcons = new Set<string>();
     private readonly assets = standardGameIcons.createAssetResolver();
 
+    leagueIconPath(stats: PlayerStats): string | null {
+        if (stats.provider === 'bnet') return typeof stats.league === 'number' ? bnetLeagueIconUrl(stats.league, { baseUrl: resolveAssetBaseUrl() }) ?? null : null;
+        return stats.provider === 'w3champions' && Number.isInteger(stats.league) && Number(stats.league) >= 0
+            ? `/assets/img/leagues/${stats.league}.png` : null;
+    }
+
     iconPath(match: Pick<Match, 'isReforged'>, key: string): string | null {
         return this.resolveIcon(key, this.assets.icon(match, key));
     }
 
-    heroIconPath(match: Pick<Match, 'isReforged'>, hero: Pick<Hero, 'id'>): string | null {
-        return this.resolveIcon(hero.id, this.assets.hero(match, hero));
+    heroIconPath(match: Pick<Match, 'isReforged'>, hero: Pick<Hero, 'typeId'>): string | null {
+        return this.resolveIcon(hero.typeId, this.assets.hero(match, hero));
     }
 
     abilityIconPath(match: Pick<Match, 'isReforged'>, ability: Pick<HeroAbility, 'name'>): string | null {
@@ -31,7 +38,7 @@ export class WarcraftAssetsService {
         return this.background(this.iconPath(match, key));
     }
 
-    heroIconBackground(match: Pick<Match, 'isReforged'>, hero: Pick<Hero, 'id'>): string | null {
+    heroIconBackground(match: Pick<Match, 'isReforged'>, hero: Pick<Hero, 'typeId'>): string | null {
         return this.background(this.heroIconPath(match, hero));
     }
 

@@ -87,7 +87,7 @@
         }
 
         &.inventory {
-            margin-right: 74px !important;
+            margin-right: var(--hero-inventory-offset) !important;
             direction: ltr;
         }
     }
@@ -246,15 +246,15 @@
     }
 
     .hero-area:nth-child(3) {
-        top: 21.55%;
+        top: var(--hero-third-top);
     }
 
     .inventory {
-        margin-left: 74px;
-        margin-top: 2px;
+        margin-left: var(--hero-inventory-offset);
+        margin-top: var(--hero-inventory-inset);
         width: 58px;
 
-        height: 89px;
+        height: var(--hero-inventory-height);
         background: url('/assets/img/inventory.png') no-repeat;
         background-size: 100% !important;
         opacity: 1;
@@ -267,7 +267,7 @@
         height: 23px;
         position: relative;
         animation: slide-up 0.4s ease;
-        border: 3px solid transparent;
+        border: var(--hero-item-inset) solid transparent;
         position: absolute;
     }
 
@@ -305,10 +305,16 @@
         margin-right: 138px !important;
     }
 
+    .hero-ability-area.inventory-hidden {
+        margin-top: var(--hero-item-inset);
+    }
+
     .ability-icon-wrapper {
+        margin-left: calc(var(--hero-inventory-offset) + var(--hero-item-inset));
+        margin-right: calc(var(--hero-inventory-offset) + var(--hero-item-inset));
         margin-top: 2px;
-        width: 42px;
-        height: 42px;
+        width: var(--ability-icon-size);
+        height: var(--ability-icon-size);
         position: relative;
         animation: slide-up 0.4s ease;
     }
@@ -360,7 +366,7 @@
             }
 
             .cooldown-animation {
-                background-color: rgba(0, 0, 0, 0.3);
+                background-color: var(--cooldown-backdrop-color);
                 height: 100%;
                 left: 0px;
                 right: 8px;
@@ -522,9 +528,6 @@
         display: none;
     }
 
-    .MatchupBarIsBottomCenter .ctrlgroup-wrapper {
-        margin-bottom: 44px;
-    }
 
     body::after {
         position: absolute;
