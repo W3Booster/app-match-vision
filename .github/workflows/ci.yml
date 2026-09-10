@@ -38,7 +38,7 @@ jobs:
         with:
           repository: W3Booster/sdk
           # SDK 3 review dependency; restore default HEAD after the coordinated release.
-          ref: efad13c3d3cf6ee81bfe728648eff963652c0e19
+          ref: e31895eab4c7619807d2492cbd6d14d6447f3c5a
           path: sdk
       - uses: actions/setup-node@v6
         with:

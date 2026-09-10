@@ -57,7 +57,8 @@ try {
     await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {}))); });
     const broken = await page.locator('img').evaluateAll(images => images.filter(i => i.getBoundingClientRect().width && !i.naturalWidth).map(i => i.getAttribute('src')));
     if (errors.length || broken.length) throw new Error(JSON.stringify({ errors, broken }));
-    await page.screenshot({ path: resolve(output, `match-vision-${view}.png`) });
+    if (view === 'player') await page.locator('.match-box').screenshot({ path: resolve(output, 'match-vision-player.png') });
+    else await page.screenshot({ path: resolve(output, `match-vision-${view}.png`) });
     if (view === 'overlay') await page.screenshot({ path: resolve(output, 'match-vision-production.png'), clip: { x: 0, y: 35, width: 465, height: 480 } });
     console.log(`Captured ${view}`); await page.close();
   }
