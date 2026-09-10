@@ -37,8 +37,8 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: W3Booster/sdk
-          # SDK 3 review dependency; restore default HEAD after the coordinated release.
-          ref: e31895eab4c7619807d2492cbd6d14d6447f3c5a
+          # Published SDK 3.0.0 source.
+          ref: fbda093062fba2784356ee24e8d693a0336dfa47
           path: sdk
       - uses: actions/setup-node@v6
         with:

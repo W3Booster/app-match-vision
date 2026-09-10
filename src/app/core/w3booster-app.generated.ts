@@ -1,6 +1,6 @@
 /* Generated from the W3Booster application database. Do not edit directly. */
 // @w3booster-client-id app_7bd7c42015297f608f1e5436
-// @w3booster-revision bbcfd1c1cd1ebaadd6baa348f3c09c12cb9c87809e454c1724754ac8a798da5c
+// @w3booster-revision 2759bce18900b45c7ace4ed9b1584b08b75e87b03e1266db2569251386c56e75
 
 import type { W3BoosterClient } from '@w3booster/sdk';
 import { defineApplication, type ApplicationConnectOptions, type ApplicationRuntime, type ApplicationRuntimeSnapshot } from '@w3booster/sdk/app';
@@ -24,12 +24,12 @@ export interface W3BoosterAppSettings {
     heroItemsEnabled: boolean;
     heroExpProgressEnabled: boolean;
     heroLevelEnabled: boolean;
+    constructionEnabled: boolean;
+    productionQueuesEnabled: boolean;
     researchesEnabled: boolean;
     researchesOfAttackAndArmorEnabled: boolean;
     researchesInQueueEnabled: boolean;
     researchesShowAllEnabled: boolean;
-    constructionEnabled: boolean;
-    productionQueuesEnabled: boolean;
   };
   observer: {
     mapBarEnabled: boolean;
@@ -46,12 +46,12 @@ export interface W3BoosterAppSettings {
     heroItemsEnabled: boolean;
     heroExpProgressEnabled: boolean;
     heroLevelEnabled: boolean;
+    constructionEnabled: boolean;
+    productionQueuesEnabled: boolean;
     researchesEnabled: boolean;
     researchesOfAttackAndArmorEnabled: boolean;
     researchesInQueueEnabled: boolean;
     researchesShowAllEnabled: boolean;
-    constructionEnabled: boolean;
-    productionQueuesEnabled: boolean;
   };
 }
 export type W3BoosterAppDeliveredSettings = DeepPartial<W3BoosterAppSettings>;
@@ -60,7 +60,7 @@ export type W3BoosterAppRuntime<TOverlayExtensions extends object = object> = Ap
 export type W3BoosterAppRuntimeSnapshot<TOverlayExtensions extends object = object> = ApplicationRuntimeSnapshot<W3BoosterAppSettings, TOverlayExtensions>;
 const w3boosterAppDefinition = {
   clientId: "app_7bd7c42015297f608f1e5436",
-  revision: "bbcfd1c1cd1ebaadd6baa348f3c09c12cb9c87809e454c1724754ac8a798da5c",
+  revision: "2759bce18900b45c7ace4ed9b1584b08b75e87b03e1266db2569251386c56e75",
   scopes: ["match:read","players:read","stats:read","heroes:read","upgrades:read","resources:read","controlgroups:read","buildings:read","production:read","units:read"],
   settingsDefaults: {
     "player": {
@@ -80,12 +80,12 @@ const w3boosterAppDefinition = {
       "heroItemsEnabled": true,
       "heroExpProgressEnabled": true,
       "heroLevelEnabled": true,
+      "constructionEnabled": true,
+      "productionQueuesEnabled": true,
       "researchesEnabled": true,
       "researchesOfAttackAndArmorEnabled": true,
       "researchesInQueueEnabled": true,
-      "researchesShowAllEnabled": true,
-      "constructionEnabled": true,
-      "productionQueuesEnabled": true
+      "researchesShowAllEnabled": true
     },
     "observer": {
       "mapBarEnabled": true,
@@ -102,12 +102,12 @@ const w3boosterAppDefinition = {
       "heroItemsEnabled": true,
       "heroExpProgressEnabled": true,
       "heroLevelEnabled": true,
+      "constructionEnabled": true,
+      "productionQueuesEnabled": true,
       "researchesEnabled": true,
       "researchesOfAttackAndArmorEnabled": true,
       "researchesInQueueEnabled": true,
-      "researchesShowAllEnabled": true,
-      "constructionEnabled": true,
-      "productionQueuesEnabled": true
+      "researchesShowAllEnabled": true
     }
   }
 } as const;
