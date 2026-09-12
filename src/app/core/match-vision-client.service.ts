@@ -70,7 +70,13 @@ export class MatchVisionClientService {
     private async startClient(search: string, generation: number): Promise<W3BoosterAppClient | null> {
         await this.closeCurrentClient();
         if (this.generation !== generation) return null;
-        const runtime = w3boosterApp.createRuntime(connectionOptions(search));
+        const options = connectionOptions(search);
+        if (options.demo && typeof options.demo === 'object') {
+            const { createMatchVisionDemo } = await import('./match-vision-demo');
+            options.demo = { ...options.demo, state: createMatchVisionDemo() };
+            if (this.generation !== generation) return null;
+        }
+        const runtime = w3boosterApp.createRuntime(options);
         this.runtime = runtime;
 
         try {

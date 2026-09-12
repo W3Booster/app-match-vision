@@ -432,3 +432,9 @@ orders. Resolve their kind through the generated catalog; research uses the next
 level after completed upgrades, bounded by the catalog level count during the
 brief completion/queue-removal overlap. Building and unit orders keep unit art.
 Do not reintroduce rawcode-prefix assumptions or manual research-icon tables.
+
+The synthetic Match Vision demo supplies its own reviewed catalog identity in
+`match-vision-demo.ts`, loaded only when demo mode is requested. The generic SDK
+demo has no installed-game identity. Refresh the demo's explicit revision during
+the Warcraft patch workflow and verify its artwork against public static assets.
+Live matches continue to provide their own exact revision.
