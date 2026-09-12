@@ -53,7 +53,7 @@ The SDK selects the available W3Booster transport, retries transient startup fai
 
 The working Angular integration is [`match-vision-client.service.ts`](src/app/core/match-vision-client.service.ts). It maps the SDK's atomic, immediately subscribed application-runtime snapshot into Angular signals, including reactive host capabilities, without recreating connection state transitions locally. [`match-history.store.ts`](src/app/features/dashboard/match-history.store.ts) demonstrates feature-scoped state and event subscriptions, including how to handle an already-running initial match. Neither file implements its own retry timers or connection-lifetime registry.
 
-Reusable lightweight game rules—including game-time formatting, preferred statistics, canonical observer ordering, and native/simplified presentation colors—come from `@w3booster/sdk/standard-game`; whole-state cooldown derivation and versioned icon URLs come from the independently loadable `/standard-game/cooldowns` and `/standard-game/icons` subpaths. Match Vision does not carry its own Warcraft object table or duplicate those rules. The trusted platform server applies W3Champions four-player FFA identity masking before state reaches either Match Vision or the SDK. Match Vision retains only its sprite-frame order, CSS, localized race copy, clock animation, and other product-specific layout choices.
+Reusable lightweight game rules—including game-time formatting, preferred statistics, canonical observer ordering, and native/simplified presentation colors—come from `@w3booster/sdk/standard-game`; cooldown derivation and artwork URLs come from the exact generated catalog loaded through `@w3booster/sdk/game-data`. Match Vision does not carry its own Warcraft object table or duplicate those rules. The trusted platform server applies W3Champions four-player FFA identity masking before state reaches either Match Vision or the SDK. Match Vision retains only its sprite-frame order, CSS, localized race copy, clock animation, and other product-specific layout choices.
 
 Warcraft III icons and country flags resolve through SDK URL helpers backed by versioned catalogs on `https://static.w3booster.com/assets`. Match Vision does not bundle its own copies. For local launches, W3Booster advertises the matching asset origin through `assetBaseUrl`; Match Vision neither infers ports nor parses the backend selection.
 
@@ -107,15 +107,14 @@ Match Vision's package and lockfile always use the npm registry version, never a
 
 The W3Booster application record is the sole source for client identity, scopes, surfaces, metadata, and the settings schema. Match Vision has completed the one-time `w3booster-settings init` binding: `package.json` stores its public `clientId` and generated-file location. Refresh the committed binding deliberately with `npm run w3booster:sync`; install, development, and build commands remain offline and deterministic. `npm run w3booster:check` is strict in connected CI and fails when the repository is behind the database revision. CI may select a non-default public definition endpoint with `W3BOOSTER_SETTINGS_URL`.
 
-The repository requires published SDK 1.1.0 or newer in the 1.x line. Version 1.1.0 adds unconditional game context; Match Vision uses its shared selector directly and reads its score separately from application data. Its lockfile records the npm registry tarball integrity, so clean installs and CI use the same reviewed SDK artifact. Use the local-link command only while deliberately developing both repositories together.
+The repository uses the published SDK 4 registry artifact. Its lockfile records the
+tarball integrity, so clean installs and CI use the same reviewed package. Shared
+game context remains separate from Match Vision's application-owned score.
 
 Match Vision source code is licensed under the [MIT License](LICENSE). Bundled media is covered separately by [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Contributions are welcome; see [CONTRIBUTING.md](CONTRIBUTING.md).
 
-### SDK 3 review branch
+### SDK 4 validation
 
-This branch targets SDK 3, which is not published yet. The registry SDK 2 lane
-remains a failing release gate until the coordinated dependency and application
-scope update described in [the decision record](ARCHITECTURE_DECISIONS.md).
 For deliberate sibling-SDK development, run `npm ci`, `npm run sdk:link-local`,
 then `npm run check` and `npm start` (port 8082).
 
@@ -131,11 +130,10 @@ an installed Chromium browser. `MV_SCREENSHOT` optionally saves the final
 observer fixture. The suite uses Angular's development debug API to inject
 immutable SDK snapshots; it does not use live accounts or add production hooks.
 
-The current local candidate migrates to SDK 4/protocol 4. Warcraft object artwork,
+Match Vision uses SDK 4/protocol 4. Warcraft object artwork,
 upgrade levels/categories and ability cooldowns use the generated catalog advertised
 by `match.gameDataId`; missing catalogs leave observed live values intact. See
-`ARCHITECTURE_DECISIONS.md`. Registry pins remain on the published SDK until the
-coordinated release. For prerelease work use `npm run sdk:link-local` or install a
-locally packed SDK 4 in a disposable checkout; `scripts/check-release-sdk.mjs` blocks
-release with the old registry dependency. Do not publish or deploy this migration
+`ARCHITECTURE_DECISIONS.md`. The package and lockfile pin the published SDK 4 registry artifact. For SDK development use `npm run sdk:link-local` or install a
+locally packed SDK 4 in a disposable checkout; `scripts/check-release-sdk.mjs` rejects
+release builds with an old registry dependency. Do not publish or deploy this migration
 without upgrading the recorder, API, static bundle and application together.
