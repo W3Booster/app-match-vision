@@ -1,8 +1,8 @@
 import { playerHeroes } from '../../domain/unit-selectors';
 import type { DeepReadonly, GameContext, MatchState } from '@w3booster/sdk';
-import type { AbilityCooldownState } from '@w3booster/sdk/standard-game/cooldowns';
+import type { AbilityCooldownState } from '@w3booster/sdk/game-data';
 import * as standardGame from '@w3booster/sdk/standard-game';
-import * as standardGameCooldowns from '@w3booster/sdk/standard-game/cooldowns';
+import * as standardGameCooldowns from '@w3booster/sdk/game-data';
 import { gameContext as selectGameContext, broadcasterPlayer, headToHeadPair, isObserverOrReplayMatch } from '@w3booster/sdk/selectors';
 import { matchVisionScore, matchVisionPlayers, matchVisionSettings, matchVisionHeadToHeadPlayers, reversePlayerOrderForMatch } from '../../domain';
 import type { MatchVisionScore, MatchVisionOverlaySettings, MatchVisionPlayerView, MatchVisionSettings } from '../../domain';
@@ -25,7 +25,8 @@ export interface OverlayPresentation {
 
 export function createOverlayPresentation(
     state: MatchState<MatchVisionSettings>,
-    resolvedSettings: DeepReadonly<W3BoosterAppSettings>
+    resolvedSettings: DeepReadonly<W3BoosterAppSettings>,
+    data?: import('@w3booster/sdk/game-data').GameData | null
 ): OverlayPresentation {
     const settings = matchVisionSettings(state.match, resolvedSettings);
     const gameContext = selectGameContext(state);
@@ -70,6 +71,6 @@ export function createOverlayPresentation(
         showsTeamObserverBar,
         requiredAvatarCovers,
         teamAvatarCovers,
-        abilityCooldowns: standardGameCooldowns.abilityCooldownsForState(state)
+        abilityCooldowns: data ? standardGameCooldowns.abilityCooldownsForState(state, data) : new Map()
     };
 }

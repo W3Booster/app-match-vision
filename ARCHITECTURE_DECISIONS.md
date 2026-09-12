@@ -408,3 +408,27 @@ same selector for portraits, XP, pools, inventory, abilities, levels and spacing
 and exclude illusions first. Test both the published SDK (without the declared
 field) and the packed additive SDK. The game can reassign the key during
 lifecycle changes; do not freeze a guessed order from first attachment.
+
+## 2026-09-12: Catalog-backed artwork and levels (SDK 4 candidate)
+
+The user authorizes a coordinated breaking SDK migration. Actual `typeId` and level
+join live units, abilities and upgrades to the exact generated `match.gameDataId`.
+A shared Angular service loads once per revision, clears stale data and cancels
+superseded loads. Static catalogs never fill missing live observations. The asset
+service delegates artwork to the SDK catalog; no manual rawcode mappings remain.
+Upgrade categories and maximum levels, including ordered level-specific art, come
+from generated definitions. Ability cooldowns use actual variant IDs and levels.
+
+This explicitly revisits the prior minimum-registry compatibility requirement:
+SDK 3 cannot support the new protocol. Registry package/lock pins remain published
+until SDK 4 publication, and the release gate requires SDK 4. Local linking and
+packed SDK 4 validate the candidate. The registry lane is deliberately not a claim
+of release readiness; publication and pin/lock updates are the coordinated release
+step. Generated test excerpts validate browser geometry independently of hosting;
+the platform patch browser test separately verifies actual generated image loading.
+
+Real replay validation also established that production queues contain research
+orders. Resolve their kind through the generated catalog; research uses the next
+level after completed upgrades, bounded by the catalog level count during the
+brief completion/queue-removal overlap. Building and unit orders keep unit art.
+Do not reintroduce rawcode-prefix assumptions or manual research-icon tables.

@@ -1,3 +1,4 @@
+import type { GameData } from '@w3booster/sdk/game-data';
 import type { MatchState } from '@w3booster/sdk';
 import { describe, expect, it } from 'vitest';
 import { w3boosterApp } from '../../core/w3booster-app.generated';
@@ -95,14 +96,15 @@ describe('overlay presentation', () => {
     it('derives ability cooldowns from complete SDK state', () => {
         const state = createState();
         state.match.gameTime = 15;
+        state.match.gameDataId = 'fixture';
         state.players[0]!.heroes = { "0000000000000001": {
             id: '0000000000000001', typeId: 'Hpal', isIllusion: false, level: 1,
-            abilities: [{ id: 'AHhb', name: 'AHhb', level: 1, lastActivation: 10_000 }]
+            abilities: [{ id: 'AHhb', typeId: 'AHhb', level: 1, lastActivation: 10_000 }]
         } };
 
         const ability = state.players[0]!.heroes!["0000000000000001"]!.abilities![0]!;
         const cooldown = createOverlayPresentation(
-            state, w3boosterApp.resolveSettings()
+            state, w3boosterApp.resolveSettings(), { id: 'fixture', abilities: { get: () => ({ levels: [{ cooldownSeconds: 5 }] }) } } as unknown as GameData
         ).abilityCooldowns.get(ability);
         expect(cooldown).toEqual({ totalSeconds: 5, remainingSeconds: 0, progress: 1, active: false });
     });
@@ -111,9 +113,10 @@ describe('overlay presentation', () => {
         const state = createState();
         state.match.status = 'finished';
         state.match.gameTime = 15;
+        state.match.gameDataId = 'fixture';
         state.players[0]!.heroes = { "0000000000000001": {
             id: '0000000000000001', typeId: 'Hpal', isIllusion: false, level: 1,
-            abilities: [{ id: 'AHhb', name: 'AHhb', level: 1, lastActivation: 10_000 }]
+            abilities: [{ id: 'AHhb', typeId: 'AHhb', level: 1, lastActivation: 10_000 }]
         } };
         expect(createOverlayPresentation(state, w3boosterApp.resolveSettings()).abilityCooldowns.size).toBe(0);
     });

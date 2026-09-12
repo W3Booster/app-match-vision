@@ -20,7 +20,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: package-lock.json
-      - name: Require the coordinated SDK 3 registry upgrade
+      - name: Require the coordinated SDK 4 registry upgrade
         run: node scripts/check-release-sdk.mjs
       - run: npm ci
       - run: npm run check
@@ -37,8 +37,8 @@ jobs:
       - uses: actions/checkout@v6
         with:
           repository: W3Booster/sdk
-          # SDK 3.1.0 source.
-          ref: 3f9c8320324933145084a38eb513b545926e9aeb
+          # Deliberately test the SDK development head; registry publication is a separate gate.
+          ref: main
           path: sdk
       - uses: actions/setup-node@v6
         with:

@@ -23,5 +23,9 @@ export class ProductionQueueComponent {
     readonly isProgressWaiting = isProgressWaiting;
     readonly remainingSecondsLabel = remainingSecondsLabel;
     private readonly assets = inject(WarcraftAssetsService);
-    icon(typeId: string): string | null { return this.assets.iconPath(this.match(), typeId); }
+    constructionIcon(): string | null { return this.assets.abilityIconPath(this.match(), { typeId: 'AObu', level: 1 }); }
+    icon(typeId: string): string | null { return this.assets.unitIconPath(this.match(), typeId); }
+    queueIcon(typeId: string, player: MatchVisionPlayerView): string | null {
+        return this.assets.productionIconPath(this.match(), typeId, player.upgrades?.active);
+    }
 }
