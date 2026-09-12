@@ -25,7 +25,7 @@ Features -> Shared asset URL service
 - `features/overlay/` owns the visible HUD. `overlay-presentation.ts` derives a view model; components render it.
 - `features/dashboard/` owns app controls. Match-history persistence is isolated in `MatchHistoryStore`.
 - `@w3booster/sdk/selectors` owns reusable, framework-free derivations from live state.
-- `@w3booster/sdk/standard-game` owns lightweight standard-rules helpers, canonical game-time formatting, and preferred-statistics selection; the independently loadable `/standard-game/icons` and `/standard-game/cooldowns` entry points own their respective metadata and derivations.
+- `@w3booster/sdk/standard-game` owns lightweight standard-rules helpers, canonical game-time formatting, and preferred-statistics selection; the optional `/game-data` entry loads exact-revision generated object definitions, artwork and cooldown configuration. `WarcraftGameDataService` owns loading and revision changes; the asset service delegates lookups to the catalog.
 - The platform database owns the application contract. A deliberate `npm run w3booster:sync` refreshes the committed `w3booster-app.generated.ts` binding; install, development startup, and builds remain deterministic and make no network request.
 - `@w3booster/sdk/assets` owns reusable URLs for shared media such as account country flags.
 - `shared/warcraft/` selects the hosted asset origin and maps SDK helpers into Angular; Match Vision-specific visibility and layout remain in the overlay feature.

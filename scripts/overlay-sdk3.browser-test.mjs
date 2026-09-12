@@ -1,3 +1,4 @@
+import { installGameDataFixture } from './game-data-fixture.mjs';
 import assert from 'node:assert/strict';
 import { chromium } from 'playwright';
 
@@ -9,6 +10,7 @@ const browser = await chromium.launch({
 });
 try {
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
+    const fixture = await installGameDataFixture(page);
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(`${process.env.MV_TEST_URL || 'http://localhost:8082'}/?demo=1`);
@@ -19,6 +21,7 @@ try {
         window.testSnapshot = service.connection();
         await service.stop();
     });
+    await page.evaluate(id => { window.testSnapshot.state = { ...window.testSnapshot.state, match: { ...window.testSnapshot.state.match, gameDataId: id } }; }, fixture.id);
     async function render(options = {}, settleMs = 260) {
         await page.evaluate(options => {
             const base = window.testSnapshot;
@@ -38,7 +41,7 @@ try {
             settings.observer.productionQueuesEnabled = options.observerQueues !== false;
             for (const player of state.players) {
                 const hero = Object.values(player.heroes)[0];
-                hero.abilities = (options.fourAbilities ? ['AHwe', 'AHbz', 'AHab', 'AHmt'] : ['AHwe']).map((name, index) => ({ id: 'ability-' + player.id + '-' + index, name, level: 1, lastActivation: 1000 }));
+                hero.abilities = (options.fourAbilities ? ['AHwe', 'AHbz', 'AHab', 'AHmt'] : ['AHwe']).map((typeId, index) => ({ id: 'ability-' + player.id + '-' + index, typeId, level: 1, lastActivation: 1000 }));
                 hero.hitpoints = options.missingHp ? undefined : { current: options.hp ?? 60, max: 100 };
                 hero.mana = options.missingMana ? undefined : { current: options.mana ?? 50, max: 100 };
                 const id = `000000000000000${Number(player.id) + 1}`;
@@ -158,7 +161,7 @@ try {
             await render({ reforged, ...view, construction: true });
             assert.equal(await page.locator('.construction-row').count(), sides);
             assert.equal(await page.locator('.construction-entry').count(), sides * 2);
-            assert.equal(await page.locator('.construction-source img').first().getAttribute('src').then(s => s.includes('btnbasicstruct')), true);
+            assert.equal(await page.locator('.construction-source img').first().getAttribute('src').then(s => s.includes(fixture.image('abilities', 'AObu', reforged ? 'reforged' : 'classic'))), true);
             assert.equal((await page.locator('.construction-entry .production-cooldown').first().textContent()).trim(), '13');
             for (const group of await page.locator('.player-production').all()) {
                 const layout = await group.evaluate(el => {

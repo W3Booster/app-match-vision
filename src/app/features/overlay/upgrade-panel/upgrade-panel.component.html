@@ -2,8 +2,8 @@
     <div class="upgrade-box" [class.tight-upgrades]="isHeadToHead()" [style.left.px]="panelInset(streamer())">
         <div *ngFor="let research of activeResearches(streamer()); trackBy: trackUpgrade" class="upgrade-icon"
             [style.backgroundImage]="iconBackground(research)">
-            <div *ngIf="isWeaponOrArmorUpgrade(research.name)" class="level-indicator current-level-{{research.level}}">
-                <div class="level-3"></div><div class="level-2"></div><div class="level-1"></div>
+            <div *ngIf="isWeaponOrArmorUpgrade(research.typeId)" class="level-indicator current-level-{{research.level}}">
+                <div *ngFor="let level of levels(research)" class="level-{{level}}" [class.filled]="research.level >= level"></div>
             </div>
         </div>
     </div>
@@ -12,8 +12,8 @@
     <div class="upgrade-box opponent" [class.tight-upgrades]="isHeadToHead()" [style.right.px]="panelInset(opponent()!)">
         <div *ngFor="let research of activeResearches(opponent()!); trackBy: trackUpgrade" class="upgrade-icon"
             [style.backgroundImage]="iconBackground(research)">
-            <div *ngIf="isWeaponOrArmorUpgrade(research.name)" class="level-indicator current-level-{{research.level}}">
-                <div class="level-3"></div><div class="level-2"></div><div class="level-1"></div>
+            <div *ngIf="isWeaponOrArmorUpgrade(research.typeId)" class="level-indicator current-level-{{research.level}}">
+                <div *ngFor="let level of levels(research)" class="level-{{level}}" [class.filled]="research.level >= level"></div>
             </div>
         </div>
     </div>

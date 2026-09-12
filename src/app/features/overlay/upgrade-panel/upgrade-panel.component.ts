@@ -26,11 +26,16 @@ export class UpgradePanelComponent {
         const active = currentUpgrades(player, {
             includeResearching: this.settings().researchesInQueueEnabled !== false
         });
-        const leveled = active.filter(upgrade => standardGame.isWeaponOrArmorUpgrade(upgrade.name));
+        const leveled = active.filter(upgrade => this.isWeaponOrArmorUpgrade(upgrade.typeId));
         if (!this.settings().researchesShowAllEnabled) return leveled;
-        return [...leveled, ...active.filter(upgrade => !standardGame.isWeaponOrArmorUpgrade(upgrade.name))];
+        return [...leveled, ...active.filter(upgrade => !this.isWeaponOrArmorUpgrade(upgrade.typeId))];
     }
-    isWeaponOrArmorUpgrade(name: string): boolean { return standardGame.isWeaponOrArmorUpgrade(name); }
+    isWeaponOrArmorUpgrade(typeId: string): boolean {
+        return ['armor', 'melee', 'ranged'].includes(this.assets.data()?.upgrades.get(typeId)?.category ?? '');
+    }
+    levels(upgrade: ActiveUpgrade): readonly number[] {
+        return (this.assets.data()?.upgrades.get(upgrade.typeId)?.levels ?? []).map(level => level.level).reverse();
+    }
     iconBackground(upgrade: ActiveUpgrade): string | null {
         return this.assets.upgradeIconBackground(this.match(), upgrade);
     }

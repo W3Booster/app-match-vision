@@ -214,10 +214,10 @@
                                 <div *ngFor="let hero of streamerHeroes; trackBy: trackHero"
                                     class="hero-area hero-area-streamer hero-ability-area" [class.inventory-hidden]="settings.heroItemsEnabled === false" id="ID_HEROABILITY_{{hero.id}}">
 
-                                        <div *ngFor="let ability of hero.abilities || []; trackBy: trackAbility" id="ID_ABILITY_{{ability.name}}"
+                                        <div *ngFor="let ability of hero.abilities || []; trackBy: trackAbility" id="ID_ABILITY_{{ability.typeId}}"
                                             [class]="'ability-icon-wrapper ' + (settings.heroItemsEnabled !== false ? 'inventory-spacer' : '') ">
 
-                                            <div class="ability-icon {{ability.level == 0 ? 'ulti' : '' }}"
+                                            <div class="ability-icon {{abilityLevels(ability).length === 0 ? 'ulti' : '' }}"
                                                 [style.backgroundImage]="getAbilityIconBackground(ability)">
                                                 <div *ngIf="getCooldown(ability) as cooldown"
                                                     class="cooldown-wrapper">
@@ -229,10 +229,8 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="level-indicator current-level-{{ability.level}}">
-                                                <div class=" level-3"></div>
-                                                <div class="level-2"></div>
-                                                <div class="level-1"></div>
+                                            <div *ngIf="abilityLevels(ability).length" class="level-indicator current-level-{{ability.level}}">
+                                                <div *ngFor="let level of abilityLevels(ability)" class="level-{{level}}" [class.filled]="ability.level >= level"></div>
                                             </div>
                                         </div>
                                 </div>
@@ -242,7 +240,7 @@
                                 <div *ngFor="let hero of opponentHeroes; trackBy: trackHero"
                                     class="hero-area hero-area-opponent hero-ability-area" [class.inventory-hidden]="settings.heroItemsEnabled === false" id="ID_OPPONENT_HEROABILITY_{{hero.id}}">
                                         <div *ngFor="let ability of hero.abilities || []; trackBy: trackAbility"
-                                            id="ID_OPPONENT_ABILITY_{{ability.name}}"
+                                            id="ID_OPPONENT_ABILITY_{{ability.typeId}}"
                                             [class]="'ability-icon-wrapper ' + (settings.heroItemsEnabled !== false ? 'inventory-spacer' : '') ">
                                             <div class="ability-icon"
                                                 [style.backgroundImage]="getAbilityIconBackground(ability)">
@@ -256,10 +254,8 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="level-indicator current-level-{{ability.level}}">
-                                                <div class="level-3"></div>
-                                                <div class="level-2"></div>
-                                                <div class="level-1"></div>
+                                            <div *ngIf="abilityLevels(ability).length" class="level-indicator current-level-{{ability.level}}">
+                                                <div *ngFor="let level of abilityLevels(ability)" class="level-{{level}}" [class.filled]="ability.level >= level"></div>
                                             </div>
                                         </div>
                                 </div>

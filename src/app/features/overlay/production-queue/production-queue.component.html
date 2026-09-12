@@ -13,7 +13,7 @@
                                         animate.enter="row-enter" animate.leave="row-leave">
                                         <div class="building-icon construction-source" title="Build structure">
                                             <div class="unit-image">
-                                                @if (icon('AObu'); as source) {
+                                                @if (constructionIcon(); as source) {
                                                     <img [src]="source" alt="Build structure" />
                                                 } @else { <span>Build</span> }
                                             </div>
@@ -69,7 +69,7 @@
                                                     [attr.aria-label]="slot.typeId + ': ' + (isProgressWaiting(slot) ? 'Production waiting to start' : slot.remainingSeconds == null ? 'Remaining time unknown' : remainingSecondsLabel(slot.remainingSeconds) + ' seconds remaining')">
                                                     @for (typeId of [slot.typeId]; track typeId) {
                                                         <div class="unit-image" animate.enter="icon-enter" animate.leave="icon-leave">
-                                                            @if (icon(typeId); as source) {
+                                                            @if (queueIcon(typeId, group.player); as source) {
                                                                 <img [src]="source" [alt]="typeId" />
                                                             } @else { <span class="rawcode">{{ typeId }}</span> }
                                                         </div>
@@ -99,7 +99,7 @@
                                                         animate.enter="waiting-enter" animate.leave="waiting-leave">
                                                         @for (typeId of [slot.typeId]; track typeId) {
                                                             <div class="unit-image" animate.enter="icon-enter" animate.leave="icon-leave">
-                                                                @if (icon(typeId); as source) {
+                                                                @if (queueIcon(typeId, group.player); as source) {
                                                                     <img [src]="source" [alt]="typeId" />
                                                                 } @else { <span class="rawcode">{{ typeId }}</span> }
                                                             </div>

@@ -26,7 +26,7 @@ export class OverlaySurfaceComponent {
     private readonly assets = inject(WarcraftAssetsService);
     readonly matchState = input.required<MatchState<MatchVisionSettings>>({ alias: 'state' });
     readonly resolvedSettings = input.required<DeepReadonly<W3BoosterAppSettings>>({ alias: 'settings' });
-    private readonly presentation = computed(() => createOverlayPresentation(this.matchState(), this.resolvedSettings()));
+    private readonly presentation = computed(() => createOverlayPresentation(this.matchState(), this.resolvedSettings(), this.assets.data()));
 
     get state(): MatchState<MatchVisionSettings> { return this.matchState(); }
     get settings() { return this.presentation().settings; }
@@ -58,6 +58,10 @@ export class OverlaySurfaceComponent {
     isHeroDefeated(hero: Hero): boolean { return standardGame.isValuePoolDepleted(hero.hitpoints); }
     heroHealthRatio(hero: Hero): number { return standardGame.valuePoolRatio(hero.hitpoints); }
     heroManaRatio(hero: Hero): number { return standardGame.valuePoolRatio(hero.mana); }
+    abilityLevels(ability: HeroAbility): readonly number[] {
+        const count = this.assets.data()?.abilities.get(ability.typeId)?.maxLevel ?? 0;
+        return count > 1 ? Array.from({ length: count }, (_, index) => index + 1).reverse() : [];
+    }
     getCooldown(ability: HeroAbility) { return this.presentation().abilityCooldowns.get(ability); }
     cooldownSeconds(remaining: number): number { return Math.max(0, Math.ceil(remaining)); }
     getRequiredAvatarCoverCountForObserverTeamBar(): number { return this.presentation().teamAvatarCovers; }

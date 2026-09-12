@@ -130,3 +130,12 @@ npm run test:overlay:browser
 an installed Chromium browser. `MV_SCREENSHOT` optionally saves the final
 observer fixture. The suite uses Angular's development debug API to inject
 immutable SDK snapshots; it does not use live accounts or add production hooks.
+
+The current local candidate migrates to SDK 4/protocol 4. Warcraft object artwork,
+upgrade levels/categories and ability cooldowns use the generated catalog advertised
+by `match.gameDataId`; missing catalogs leave observed live values intact. See
+`ARCHITECTURE_DECISIONS.md`. Registry pins remain on the published SDK until the
+coordinated release. For prerelease work use `npm run sdk:link-local` or install a
+locally packed SDK 4 in a disposable checkout; `scripts/check-release-sdk.mjs` blocks
+release with the old registry dependency. Do not publish or deploy this migration
+without upgrading the recorder, API, static bundle and application together.
