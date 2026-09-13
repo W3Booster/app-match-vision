@@ -512,3 +512,19 @@ does not update the production definition or authorize deployment.
 ## 2026-09-13: Match Vision owns its public release version
 
 Use 1.2.0 for the September 2026 feature release, as specified by the project owner; the initial 1.0.0 assignment was incorrect. The package version is the single source for its dashboard label inside the W3Booster client and the built release.json metadata. Keep it independent of SDK/protocol and platform versions. Every release updates the changelog, uses the matching Git tag and news version, and verifies the hosted release.json after activation. Do not place release labels on the gameplay overlay.
+
+## Self-play gameplay visibility (2026-09-13)
+
+The owner clarified that self-play must never display enemy gameplay information.
+This supersedes the earlier unconditional both-side hero-bar wording. Derive the
+overlay opponent only for observer/replay mode. This removes enemy hero vitals,
+levels, abilities, inventory, army and research together; production already selects
+only the broadcaster while playing. Public matchup identity in the match bar is
+separate from live gameplay panels. Keep native local hero portraits in self-play;
+replay/observer renders both portrait sides and its observer board.
+
+The UI must not infer observer access from a populated enemy payload. Tests supply
+both players in every mode and verify transitions back to self-play remove enemy
+panels. Screenshot tooling must preserve recorded replay flags unless the user
+explicitly requests a clearly identified alternative presentation; a replay payload
+must not be relabelled as self-play merely to change the top bar.

@@ -6,6 +6,23 @@ import type { MatchVisionSettings } from '../../domain';
 import { createOverlayPresentation } from './overlay-presentation';
 
 describe('overlay presentation', () => {
+    it('hides enemy gameplay panels in self-play even when a complete replay-like payload is supplied', () => {
+        const state = createState();
+        state.players[1]!.heroes = { '0000000000000002': { id: '0000000000000002', typeId: 'Obla', level: 3 } };
+        state.players[1]!.units = { '0000000000000003': { id: '0000000000000003', typeId: 'ogru' } };
+        const original = structuredClone(state);
+        for (const broadcasterPlayerId of ['0', '1']) {
+            state.match.broadcasterPlayerId = broadcasterPlayerId;
+            const view = createOverlayPresentation(state, w3boosterApp.resolveSettings());
+            expect(view.streamer?.id).toBe(broadcasterPlayerId);
+            expect(view.opponent).toBeNull();
+            expect(view.showsObserverBar).toBe(false);
+            expect(view.players.map(player => player.id)).toEqual(['0', '1']);
+        }
+        state.match.broadcasterPlayerId = original.match.broadcasterPlayerId;
+        expect(state).toEqual(original);
+    });
+
     it.each([false, true])('keeps the selected replay player left despite manual reversal (isObserver=%s)', (isObserver) => {
         const state = createState();
         Object.assign(state.match, { isReplay: true, isObserver });

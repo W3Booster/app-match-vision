@@ -84,9 +84,9 @@ try {
             for (const observer of [false, true]) {
                 await render({ reforged, mode, observer });
                 const teamObserver = observer && mode === '2v2';
-                assert.equal(await page.locator('.hero-hp-bar').count(), teamObserver ? 0 : 2);
-                assert.equal(await page.locator('.hero-mana-bar').count(), teamObserver ? 0 : 2);
-                assert.equal(await page.locator('.hero-exp-bar').count(), teamObserver ? 0 : 2);
+                assert.equal(await page.locator('.hero-hp-bar').count(), teamObserver ? 0 : observer ? 2 : 1);
+                assert.equal(await page.locator('.hero-mana-bar').count(), teamObserver ? 0 : observer ? 2 : 1);
+                assert.equal(await page.locator('.hero-exp-bar').count(), teamObserver ? 0 : observer ? 2 : 1);
                 if (!teamObserver) {
                     assert.equal(await page.locator('.hero-hp-bar').first().evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(255, 255, 0)');
                     assert.equal(await page.locator('.hero-mana-bar').first().evaluate(el => getComputedStyle(el).backgroundColor), 'rgb(0, 170, 253)');
@@ -104,17 +104,17 @@ try {
             assert.equal(await page.locator('.hero-hp-bar, .hero-mana-bar').count(), 0);
         }
         await render({ reforged, missingMana: true });
-        assert.equal(await page.locator('.hero-hp-bar').count(), 2);
+        assert.equal(await page.locator('.hero-hp-bar').count(), 1);
         assert.equal(await page.locator('.hero-mana-bar').count(), 0);
         await render({ reforged, mana: 0 });
         assert.equal(await page.locator('.hero-mana-bar').first().evaluate(el => el.style.width), '0%');
         await render({ reforged, xp: false });
         assert.equal(await page.locator('.hero-exp-bar').count(), 0);
-        assert.equal(await page.locator('.hero-hp-bar').count(), 2, 'Abilities alone retain the legacy bars');
+        assert.equal(await page.locator('.hero-hp-bar').count(), 1, 'Abilities alone retain the legacy bars');
         await render({ reforged, xp: false, abilities: false });
         assert.equal(await page.locator('.hero-hp-bar, .hero-mana-bar').count(), 0);
         await render({ reforged, abilities: false });
-        assert.equal(await page.locator('.hero-hp-bar').count(), 2, 'XP alone retains the bars');
+        assert.equal(await page.locator('.hero-hp-bar').count(), 1, 'XP alone retains the bars');
     }
     for (const reforged of [false, true]) {
         for (const view of [{}, { observer: true }, { replay: true }]) {
@@ -122,9 +122,9 @@ try {
                 for (const level of [true, false]) {
                     await render({ reforged, ...view, xp: false, abilities: false, inventory, level });
                     assert.equal(await page.locator('.hero-exp-bar, .hero-ability-area, .hero-hp-bar, .hero-mana-bar').count(), 0);
-                    assert.equal(await page.locator('.hero-area.inventory').count(), inventory ? 2 : 0,
+                    assert.equal(await page.locator('.hero-area.inventory').count(), inventory ? (view.observer || view.replay ? 2 : 1) : 0,
                         'Inventory follows its own setting with abilities and XP disabled');
-                    assert.equal(await page.locator('.hero-level').count(), level ? 2 : 0,
+                    assert.equal(await page.locator('.hero-level').count(), level ? (view.observer || view.replay ? 2 : 1) : 0,
                         'Hero level follows its own setting with abilities and XP disabled');
                 }
             }

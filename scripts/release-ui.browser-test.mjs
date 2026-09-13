@@ -133,6 +133,35 @@ try {
     await wait("document.querySelector('.ctrlgroup-icon')");
     assert.equal(await frame().evaluate(() => typeof AbortSignal.prototype.throwIfAborted), 'undefined', 'Run the actual oldest supported desktop browser');
     assert.equal(await frame().evaluate(() => typeof window.ng), 'undefined', 'Smoke must use the production build');
+    await update(s => {
+        const enemy = s.players[1];
+        Object.assign(Object.values(enemy.heroes)[0], { inventory: ['ratc','rde4','bspd','cnob','spre','stel'], inventoryCooldowns: [null,null,null,null,{progress:.5,remainingSeconds:15,totalSeconds:30},null] });
+        enemy.units = { '0000000000009001': { id:'0000000000009001',typeId:'hfoo',isIllusion:false } };
+        enemy.upgrades.active = [{typeId:'Rhme',level:1,gametime:1}];
+        enemy.buildings = {'0000000000009002': {id:'0000000000009002',typeId:'hbar',isIllusion:false,production:{queue:[{position:0,typeId:'hfoo',progress:.5,remainingSeconds:10,totalSeconds:20}]}}};
+    });
+    // Deliberately supply enemy data in self-play: visibility must follow the mode,
+    // not infer spectator access from which fields happen to be populated.
+    for (const reforged of [false, true]) {
+        const graphics = reforged ? 'reforged' : 'classic';
+        for (const [label,isObserver,isReplay] of [['self-play',false,false],['observer',true,false],['replay',false,true],['back to self-play',false,false]]) {
+            await update(s => Object.assign(s.match,{isReforged:reforged,isObserver,isReplay}));
+            const spectator=isObserver||isReplay;
+            await wait(`!!document.querySelector('mv-observer-bar') === ${spectator} && !!document.querySelector('mv-match-bar') === ${!spectator}`);
+            if(spectator) {
+                await images(label+' portraits '+graphics,['.hero-area-streamer .hero-avatar:not(.hero-avatar-cover)','.hero-area-opponent .hero-avatar']);
+                assert.equal(await frame().locator('.hero-area-opponent.inventory').count(),Object.keys(state.players[1].heroes).length);
+                await wait("document.querySelector('.upgrade-box[data-player-id=\"1\"]') && document.querySelector('.production-side[data-side=right]')");
+            } else {
+                await wait("!document.querySelector('.hero-area-opponent') && !document.querySelector('.hero-avatar') && !document.querySelector('.production-side[data-side=right]')");
+                assert.equal(await frame().locator('.upgrade-box[data-player-id="1"]').count(),0,'No enemy army or research panel during self-play');
+                assert.equal(await frame().locator('.production-side[data-side="right"]').count(),0,'No enemy production/construction during self-play');
+                await images(label+' local gameplay '+graphics,['.hero-area-streamer .item-icon','.hero-area-streamer .ability-icon']);
+            }
+        }
+    }
+    state=structuredClone(original);broadcast();
+    checks.push({feature:'Self-play excludes enemy portraits, abilities, vitals, inventory, army, researches and production despite populated input; observer/replay shows both sides; mode transitions clear stale panels'});
     for (const reforged of [false, true]) {
         const graphics = reforged ? 'reforged' : 'classic';
         await update(s => { s.match.isReforged = reforged; });
@@ -171,6 +200,7 @@ try {
     await wait("!document.querySelector('.item-cooldown')");
     checks.push({ feature: 'Building upgrade destinations and badges, completion/cancellation, duplicate item cooldowns, moved slot and expiry' });
     const beforeBadges = structuredClone(state);
+    await update(s => { s.match.isReplay = true; });
     const badgeItems = ['rat6', 'rat9', 'ratc', 'rde2', 'rde4', 'ratf'];
     const expectedBonuses = badgeItems.map(id => catalog.items[id].name.match(/\+\d+$/)[0]);
     await update(s => {
@@ -224,6 +254,7 @@ try {
     await images('restore after item badges', ['.inventory .item-icon']);
     checks.push({ feature: 'Catalog item bonus badges, both sides and artwork families, duplicates, slot replacement, unrelated +stat item excluded, missing catalog clears badges' });
     const beforeMixed = structuredClone(state);
+    await update(s => { s.match.isReplay = true; });
     await update(s => {
         for (const player of s.players) Object.assign(Object.values(player.heroes)[0], {
             inventory: ['ratc', 'rde4', 'bspd', 'cnob', 'spre', 'stel'],
@@ -256,12 +287,13 @@ try {
     const beforeArmy = structuredClone(state);
     assert.equal(defaults.player.armyCompositionEnabled, true);
     assert.equal(defaults.observer.armyCompositionEnabled, true);
+    await update(s => { s.match.isReplay = true; });
     const armyTypes = [['hfoo', 12], ['hkni', 2], ['hpea', 4], ['hmtm', 1]];
     const expectedArmy = [...armyTypes].sort((a, b) => catalog.units[a[0]].cost.gold - catalog.units[b[0]].cost.gold || a[0].localeCompare(b[0]));
     const leftPanel = `.upgrade-box[data-player-id="${state.players[0].id}"]`;
     const rightPanel = `.upgrade-box[data-player-id="${state.players[1].id}"]`;
     await update(s => {
-        s.application.settings.player.researchesEnabled = false;
+        s.application.settings.observer.researchesEnabled = false;
         s.players[1].upgrades.active = [];
         for (const [index, player] of s.players.entries()) {
             Object.assign(Object.values(player.heroes)[0], { inventory: [...badgeItems], inventoryCooldowns: Array(6).fill(null) });
@@ -287,7 +319,7 @@ try {
         await page.screenshot({ path: resolve(output, `army-${graphics}.png`) });
     }
     const armyBox = await frame().locator(leftPanel).boundingBox();
-    await update(s => { s.application.settings.player.researchesEnabled = true; });
+    await update(s => { s.application.settings.observer.researchesEnabled = true; });
     await wait(`document.querySelector(${JSON.stringify(leftPanel)})?.dataset.panel === 'upgrades'`);
     const rotationStarted = Date.now();
     await wait(`document.querySelector(${JSON.stringify(leftPanel)})?.dataset.panel === 'army'`);
@@ -301,17 +333,17 @@ try {
     await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
     const researchBox = await frame().locator(leftPanel).boundingBox();
     assert.equal(researchBox.x, armyBox.x); assert.equal(researchBox.y, armyBox.y, 'Army and upgrades share the exact slot');
-    await update(s => { s.application.settings.player.armyCompositionEnabled = false; });
+    await update(s => { s.application.settings.observer.armyCompositionEnabled = false; });
     await wait("!document.querySelector('.army-icon')");
     assert.equal(await frame().locator(leftPanel).getAttribute('data-panel'), 'upgrades');
     // Observe beyond one complete rotation period: disabled army must leave upgrades pinned.
     await page.waitForTimeout(10_250);
     assert.equal(await frame().locator(leftPanel).getAttribute('data-panel'), 'upgrades');
     assert.equal(await frame().locator(rightPanel).count(), 0, 'Disabled army plus empty upgrades hides the slot');
-    await update(s => { s.application.settings.player.armyCompositionEnabled = true; s.players[0].units = {}; });
+    await update(s => { s.application.settings.observer.armyCompositionEnabled = true; s.players[0].units = {}; });
     await wait(`document.querySelector(${JSON.stringify(rightPanel)})?.dataset.panel === 'army'`);
     assert.equal(await frame().locator(leftPanel).getAttribute('data-panel'), 'upgrades', 'Empty army leaves upgrades visible');
-    await update(s => { s.application.settings.player.researchesEnabled = false; });
+    await update(s => { s.application.settings.observer.researchesEnabled = false; });
     await wait(`!document.querySelector(${JSON.stringify(leftPanel)})`);
     await update(s => { s.match.isObserver = true; s.match.isReplay = true; s.application.settings.observer.armyCompositionEnabled = false; });
     await wait("!document.querySelector('.army-icon')");

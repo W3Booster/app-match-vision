@@ -39,7 +39,8 @@ export function createOverlayPresentation(
     const broadcasterId = broadcasterPlayer(state.match, players)?.id;
     let streamer = players.find(player => player.id === broadcasterId) ?? null;
     const streamerId = streamer?.id;
-    let opponent = players.length === 2 && streamerId !== undefined
+    // Enemy gameplay panels belong exclusively to observer/replay mode, even if input contains their data.
+    let opponent = observerOrReplay && players.length === 2 && streamerId !== undefined
         ? players.find(player => player.id !== streamerId) ?? null
         : null;
 
