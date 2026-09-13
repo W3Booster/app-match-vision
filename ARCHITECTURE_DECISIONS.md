@@ -438,3 +438,14 @@ The synthetic Match Vision demo supplies its own reviewed catalog identity in
 demo has no installed-game identity. Refresh the demo's explicit revision during
 the Warcraft patch workflow and verify its artwork against public static assets.
 Live matches continue to provide their own exact revision.
+
+## 2026-09-13: Gate the production UI in the oldest supported desktop browser
+
+Chromium-only geometry tests did not detect the catalog loader's unsupported
+`AbortSignal.throwIfAborted` call in Electron 15. SDK 4.0.2 fixes the common loader;
+the release gate now runs the unmodified production bundle in checksum-pinned Electron 15.0.0. Synthetic state and host responses cross the
+public SDK protocol. There are no production debug hooks or compatibility shims.
+Real generated images must decode, including level-specific research textures.
+The development geometry/order/illusion matrix also runs in Electron. All UI test entry points use Electron; test fixtures clone JSON without browser compatibility shims.
+Public registry CI and the platform's activation action must run the same command.
+An old SDK 4.0.1 production build was independently verified to fail this gate.

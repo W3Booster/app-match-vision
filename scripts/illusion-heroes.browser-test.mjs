@@ -1,14 +1,12 @@
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { chromium } from 'playwright';
+import { launchTestBrowser } from './test-browser.mjs';
 
 // Optional snapshots can come from an isolated native recorder capture. Without
 // them this remains an independent Match Vision browser regression using demo data.
 const captured = process.env.ILLUSION_STATES
     ? JSON.parse(readFileSync(process.env.ILLUSION_STATES, 'utf8')) : null;
-const browser = await chromium.launch({
-    ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {})
-});
+const browser = await launchTestBrowser();
 try {
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
     const errors = [];
@@ -26,8 +24,8 @@ try {
         for (const stage of ['before', 'during', 'after']) {
             await page.evaluate(({ input, stage, mode }) => {
                 const base = window.illusionBase;
-                const state = structuredClone(input || base.state);
-                const settings = structuredClone(base.settings);
+                const state = JSON.parse(JSON.stringify(input || base.state));
+                const settings = JSON.parse(JSON.stringify(base.settings));
                 state.match.isObserver = mode === 'observer';
                 state.match.isReplay = mode === 'replay';
                 for (const profile of [settings.player, settings.observer]) {

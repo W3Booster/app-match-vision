@@ -1,13 +1,10 @@
 import { installGameDataFixture } from './game-data-fixture.mjs';
 import assert from 'node:assert/strict';
-import { chromium } from 'playwright';
+import { launchTestBrowser } from './test-browser.mjs';
 
 // Run against an Angular development server; Angular's debug API is the test seam.
 // No production test hooks, backend requests, or live account writes are needed.
-const browser = await chromium.launch({
-    ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {}),
-    args: ['--no-sandbox']
-});
+const browser = await launchTestBrowser();
 try {
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
     const fixture = await installGameDataFixture(page);
@@ -25,8 +22,8 @@ try {
     async function render(options = {}, settleMs = 260) {
         await page.evaluate(options => {
             const base = window.testSnapshot;
-            const state = structuredClone(base.state);
-            const settings = structuredClone(base.settings);
+            const state = JSON.parse(JSON.stringify(base.state));
+            const settings = JSON.parse(JSON.stringify(base.settings));
             Object.assign(state.match, { mode: options.mode || '1v1', isObserver: !!options.observer,
                 isReplay: !!options.replay, gameTime: 5, isReforged: !!options.reforged, status: options.status || 'running' });
             for (const profile of [settings.player, settings.observer]) {
@@ -69,13 +66,13 @@ try {
                     const hero = Object.values(player.heroes)[0];
                     for (let i = 1; i < 3; i++) {
                         const id = hero.id + '-' + i;
-                        player.heroes[id] = { ...structuredClone(hero), id };
+                        player.heroes[id] = { ...JSON.parse(JSON.stringify(hero)), id };
                     }
                 }
             }
             if (options.secondBuilding) {
                 const buildings = state.players[0].buildings;
-                buildings['0000000000000003'] = { ...structuredClone(buildings['0000000000000001']), id: '0000000000000003' };
+                buildings['0000000000000003'] = { ...JSON.parse(JSON.stringify(buildings['0000000000000001'])), id: '0000000000000003' };
             }
             if (options.selected !== undefined) state.match.broadcasterPlayerId = options.selected;
             window.testConnection.connection.set({ ...base, state, settings });
@@ -340,11 +337,17 @@ try {
     for (const viewport of [{ width: 1920, height: 1080 }, { width: 1280, height: 720 }, { width: 800, height: 450 }]) {
         await page.setViewportSize(viewport);
         await render({ observer: true, threeHeroes: true });
-        const thirdInventoryBottom = await page.locator('.hero-area.inventory:nth-child(3)').evaluateAll(es => Math.max(...es.map(e => e.getBoundingClientRect().bottom)));
+        // Chromium 94 returns pre-zoom client rectangles. Convert to the actual
+        // visible viewport; do not change application CSS to accommodate the test.
+        const zoom = await page.evaluate(() => Number(getComputedStyle(document.body).zoom));
+        const thirdInventoryBottom = zoom * await page.locator('.hero-area.inventory:nth-child(3)').evaluateAll(es => Math.max(...es.map(e => e.getBoundingClientRect().bottom)));
         for (const panel of await page.locator('.production-side').all()) {
-            const bounds = await panel.boundingBox();
-            assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= viewport.width);
+            const raw = await panel.boundingBox();
+            const bounds = Object.fromEntries(Object.entries(raw).map(([key, value]) => [key, value * zoom]));
+            assert.ok(bounds.x >= 0 && bounds.x + bounds.width <= viewport.width, JSON.stringify({ bounds, viewport }));
             assert.ok(bounds.y >= thirdInventoryBottom + 1 && bounds.y + bounds.height <= viewport.height, 'Production never overlaps the third hero at any viewport scale');
+            assert.ok(await panel.evaluate((element, point) => element.contains(document.elementFromPoint(point.x, point.y)),
+                { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height / 2 }), 'The visible production panel is at the measured viewport position');
         }
     }
     await page.setViewportSize({ width: 1920, height: 1080 });
@@ -355,7 +358,7 @@ try {
         for (const status of ['loading', 'ready', 'unavailable']) {
             await page.evaluate(status => {
                 const current = window.testConnection.connection();
-                const state = structuredClone(current.state);
+                const state = JSON.parse(JSON.stringify(current.state));
                 state.players.forEach((player, i) => {
                     player.stats = { status, records: status === 'ready' ? [{
                         provider: 'bnet', gameMode: '1v1', queue: 'individual', season: 9,

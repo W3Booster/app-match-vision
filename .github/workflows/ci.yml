@@ -24,6 +24,14 @@ jobs:
         run: node scripts/check-release-sdk.mjs
       - run: npm ci
       - run: npm run check
+      - run: npx playwright install-deps chromium
+      - run: npm run test:release:ui
+      - uses: actions/upload-artifact@v4
+        if: always()
+        continue-on-error: true
+        with:
+          name: release-ui
+          path: tmp/release-ui/
       - name: Check database settings revision
         if: ${{ env.W3BOOSTER_SETTINGS_URL != '' }}
         run: npm run w3booster:check
@@ -60,18 +68,8 @@ jobs:
         working-directory: app
       - run: npm run check
         working-directory: app
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install-deps chromium
         working-directory: app
-      - name: Check overlay in Chromium
+      - name: Check the complete UI in Electron
         working-directory: app
-        run: |
-          npm start -- --host 127.0.0.1 > /tmp/match-vision-dev.log 2>&1 &
-          server_pid=$!
-          trap 'kill "$server_pid"' EXIT
-          for attempt in $(seq 1 60); do
-            if curl --silent --fail http://127.0.0.1:8082/ > /dev/null; then break; fi
-            sleep 1
-          done
-          MV_TEST_URL=http://127.0.0.1:8082 npm run test:overlay:browser
-          MV_TEST_URL=http://127.0.0.1:8082 node scripts/hero-order.browser-test.mjs
-          MV_TEST_URL=http://127.0.0.1:8082 node scripts/illusion-heroes.browser-test.mjs
+        run: npm run test:release:ui

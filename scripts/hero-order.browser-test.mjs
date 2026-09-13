@@ -1,10 +1,8 @@
 import assert from 'node:assert/strict';
-import { chromium } from 'playwright';
+import { launchTestBrowser } from './test-browser.mjs';
 
 // Exercise Angular's real hero panels using the published SDK dependency.
-const browser = await chromium.launch({
-    ...(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {})
-});
+const browser = await launchTestBrowser();
 try {
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
     const errors = [];
@@ -21,8 +19,8 @@ try {
         for (const permutation of [[0, 1, 2], [0, 2, 1], [2, 1, 0]]) {
             await page.evaluate(({ mode, permutation, nativeOrder }) => {
                 const base = window.orderBase;
-                const state = structuredClone(base.state);
-                const settings = structuredClone(base.settings);
+                const state = JSON.parse(JSON.stringify(base.state));
+                const settings = JSON.parse(JSON.stringify(base.settings));
                 state.match.isObserver = mode === 'observer';
                 state.match.isReplay = mode === 'replay';
                 for (const profile of [settings.player, settings.observer]) {

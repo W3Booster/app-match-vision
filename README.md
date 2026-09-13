@@ -8,6 +8,13 @@ W3Booster's official match visualization app and the full-featured reference for
 
 Requirements: Node.js 22.22.3 or newer.
 
+Before a release, run `npm run check` and `npm run test:release:ui`. Install the
+browser prerequisites once with `npx playwright install-deps chromium`;
+Linux also needs `xvfb-run` and `unzip`. The gate downloads checksum-pinned
+Electron 15.0.0, the oldest production launcher, into the user cache. Set
+`ELECTRON_BIN` to that version's executable to use an existing installation.
+See [UI release coverage](docs/RELEASE_UI.md) for fixtures, reports and patch testing.
+
 ```bash
 git clone https://github.com/W3Booster/app-match-vision.git
 cd app-match-vision
@@ -121,12 +128,12 @@ then `npm run check` and `npm start` (port 8082).
 Run the overlay rendering regression suite against that development server:
 
 ```sh
-npx playwright install chromium
+npx playwright install-deps chromium
 npm run test:overlay:browser
 ```
 
-`MV_TEST_URL` overrides the server address and `CHROME_PATH` optionally selects
-an installed Chromium browser. `MV_SCREENSHOT` optionally saves the final
+`MV_TEST_URL` overrides the server address. All UI tests run in Electron 15.0.0;
+`ELECTRON_BIN` optionally selects an existing installation of that version. `MV_SCREENSHOT` optionally saves the final
 observer fixture. The suite uses Angular's development debug API to inject
 immutable SDK snapshots; it does not use live accounts or add production hooks.
 
