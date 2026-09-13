@@ -2,6 +2,13 @@
 
 W3Booster's official match visualization app and the full-featured reference for building W3Booster apps.
 
+Army composition shows live unit counts, ordered from lowest to highest gold
+cost per unit type. It shares the upgrades slot: each panel gets 10 seconds when
+both are enabled and have content, and the available panel stays visible otherwise.
+The **Army composition** setting defaults to enabled in both player and observer/replay
+profiles. Claws of Attack and Rings of Protection display their catalog bonus as
+a bold corner number with the same corner gradient used for army counts.
+
 **Public source. MIT licensed. Ready to fork.** [Build your own app from Match Vision](docs/START_FROM_MATCH_VISION.md) walks through the code, your own registration, and the production-only capabilities that do not carry over. In W3Booster's Examples view this is the same app as in the library, with one shared installation—not a second example copy.
 
 ## Run it in two minutes
@@ -144,3 +151,8 @@ by `match.gameDataId`; missing catalogs leave observed live values intact. See
 locally packed SDK 4 in a disposable checkout; `scripts/check-release-sdk.mjs` rejects
 release builds with an old registry dependency. Do not publish or deploy this migration
 without upgrading the recorder, API, static bundle and application together.
+
+## Releases
+
+Match Vision uses semantic versions independently of W3Booster and the SDK.
+`package.json` owns the version displayed in the Match Vision dashboard inside W3Booster; the production build also writes it to `/release.json`. Use the same version in `CHANGELOG.md`, Git tag `vX.Y.Z`, and release news. Bump the version and root package-lock version for every release. Follow `docs/RELEASE_UI.md` before activation and verify the deployed `/release.json` afterwards.

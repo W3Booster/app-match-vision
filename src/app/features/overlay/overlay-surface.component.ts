@@ -14,11 +14,11 @@ import { createOverlayPresentation } from './overlay-presentation';
 import { TeamObserverBarComponent } from './team-observer-bar/team-observer-bar.component';
 import { ProductionQueueComponent } from './production-queue/production-queue.component';
 import { heroHealthColor } from './hero-vitals';
-import { UpgradePanelComponent } from './upgrade-panel/upgrade-panel.component';
+import { ArmyResearchPanelComponent } from './army-research-panel/army-research-panel.component';
 
 @Component({
     selector: 'mv-overlay-surface',
-    imports: [CommonModule, ProductionQueueComponent, MapBarComponent, MatchBarComponent, ObserverBarComponent, TeamObserverBarComponent, UpgradePanelComponent],
+    imports: [CommonModule, ProductionQueueComponent, MapBarComponent, MatchBarComponent, ObserverBarComponent, TeamObserverBarComponent, ArmyResearchPanelComponent],
     templateUrl: './overlay-surface.component.html',
     styleUrl: './overlay-surface.component.scss'
 })
@@ -52,6 +52,10 @@ export class OverlaySurfaceComponent {
     getHeroIconBackground(hero: Hero): string | null { return this.assets.heroIconBackground(this.state.match, hero); }
     getAbilityIconBackground(ability: HeroAbility): string | null { return this.assets.abilityIconBackground(this.state.match, ability); }
     getItemIconBackground(rawcode: string): string | null { return this.assets.itemIconBackground(this.state.match, rawcode); }
+    getItemBonus(rawcode: string): string | null {
+        const name = this.assets.data()?.items.get(rawcode)?.name;
+        return name?.match(/^(?:Claws of Attack|Ring of Protection) (\+\d+)$/)?.[1] ?? null;
+    }
     isObserverOrReplay(): boolean { return isObserverOrReplayMatch(this.state.match); }
     showObserverBar(): boolean { return this.presentation().showsObserverBar; }
     showObserverTeamBar(): boolean { return this.presentation().showsTeamObserverBar; }
@@ -63,6 +67,11 @@ export class OverlaySurfaceComponent {
         return count > 1 ? Array.from({ length: count }, (_, index) => index + 1).reverse() : [];
     }
     getCooldown(ability: HeroAbility) { return this.presentation().abilityCooldowns.get(ability); }
+    getItemCooldown(hero: Hero, slot: number) {
+        if (!this.matchActive || !hero.inventory?.[slot]) return null;
+        const cooldown = hero.inventoryCooldowns?.[slot];
+        return cooldown && cooldown.remainingSeconds != null && cooldown.remainingSeconds > 0 ? cooldown : null;
+    }
     cooldownSeconds(remaining: number): number { return Math.max(0, Math.ceil(remaining)); }
     getRequiredAvatarCoverCountForObserverTeamBar(): number { return this.presentation().teamAvatarCovers; }
     getAvatarCoverTop(index: number): string { return index === 1 ? '12.90%' : index === 2 ? '21.55%' : '4.30%'; }

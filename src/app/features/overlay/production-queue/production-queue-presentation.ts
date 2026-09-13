@@ -23,11 +23,21 @@ export const productionPlayers = createMemoizedSelector((
             player,
             side: index % 2 === 0 ? 'left' as const : 'right' as const,
             buildings: queuesEnabled ? buildings.filter(building => (building.production?.queue.length ?? 0) > 0) : [],
-            constructions: constructionEnabled ? buildings.filter(building => building.construction !== undefined &&
-                (building.construction.progress === null || building.construction.progress < 1)) : []
+            constructions: constructionEnabled ? buildings.filter(building => {
+                const activity = building.upgrade ?? building.construction;
+                return activity !== undefined && (activity.progress === null || activity.progress < 1);
+            }) : []
         };
     })).filter(group => group.buildings.length > 0 || group.constructions.length > 0);
 });
+
+export function buildingActivity(building: Building): TimedProgress {
+    return building.upgrade ?? building.construction!;
+}
+
+export function buildingActivityType(building: Building): string {
+    return building.upgrade?.typeId ?? building.typeId;
+}
 
 export function progressLabel(progress: number | null): string {
     return progress === null ? 'Progress unknown' : `${Math.floor(progress * 100)}%`;

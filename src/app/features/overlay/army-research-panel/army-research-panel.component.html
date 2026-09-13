@@ -1,0 +1,27 @@
+@if (army().length || researches().length) {
+    <div class="upgrade-box" [class.opponent]="opponent()" [class.tight-upgrades]="isHeadToHead()"
+        [style.left.px]="opponent() ? null : panelInset()" [style.right.px]="opponent() ? panelInset() : null"
+        [attr.data-player-id]="player().id" [attr.data-panel]="showArmy() ? 'army' : 'upgrades'"
+        [attr.aria-label]="showArmy() ? 'Army composition' : 'Research and upgrades'">
+        @if (showArmy()) {
+            @for (group of army(); track group.typeId) {
+                <div class="upgrade-icon army-icon" [style.backgroundImage]="armyIcon(group)"
+                    [attr.data-type-id]="group.typeId" [attr.aria-label]="armyLabel(group)" [title]="armyLabel(group)">
+                    <span class="army-count">{{group.count}}</span>
+                </div>
+            }
+        } @else {
+            @for (research of researches(); track research.typeId) {
+                <div class="upgrade-icon" [style.backgroundImage]="researchIcon(research)">
+                    @if (isWeaponOrArmorUpgrade(research.typeId)) {
+                        <div class="level-indicator current-level-{{research.level}}">
+                            @for (level of levels(research); track level) {
+                                <div class="level-{{level}}" [class.filled]="research.level >= level"></div>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+        }
+    </div>
+}

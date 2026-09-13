@@ -15,6 +15,7 @@ import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
 import { MatchHistoryStore } from './match-history.store';
 import { MatchControls } from './match-controls';
+import { version } from '../../../../package.json';
 
 @Component({
     selector: 'mv-dashboard-surface',
@@ -23,6 +24,7 @@ import { MatchControls } from './match-controls';
     styleUrl: './dashboard-surface.component.scss'
 })
 export class DashboardSurfaceComponent implements OnDestroy {
+    readonly version = version;
     readonly Math = Math;
     readonly client = input.required<W3BoosterClient<MatchVisionSettings>>();
     readonly host = input.required<HostLifecycleSnapshot>();

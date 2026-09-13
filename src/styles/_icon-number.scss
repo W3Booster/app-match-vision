@@ -1,0 +1,21 @@
+@mixin corner-shading {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at bottom right, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.45) 38%, transparent 75%);
+    pointer-events: none;
+}
+
+@mixin corner-number($size: 16px) {
+    position: absolute;
+    right: 1px;
+    bottom: 0;
+    z-index: 1;
+    color: #fff;
+    font-size: $size;
+    font-weight: bold;
+    line-height: 1.125;
+    font-variant-numeric: tabular-nums;
+    text-shadow: 1px 1px 4px #000;
+    pointer-events: none;
+}

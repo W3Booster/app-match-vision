@@ -449,3 +449,66 @@ Real generated images must decode, including level-specific research textures.
 The development geometry/order/illusion matrix also runs in Electron. All UI test entry points use Electron; test fixtures clone JSON without browser compatibility shims.
 Public registry CI and the platform's activation action must run the same command.
 An old SDK 4.0.1 production build was independently verified to fail this gate.
+
+## 2026-09-13: Render upgrading buildings and direct item cooldowns
+
+Building upgrades use the SDK's `Building.upgrade` destination and timing, appear
+in the construction/building row, and receive a small upward-arrow badge at the
+bottom of the target artwork. They are not training queue entries. Inventory
+cooldowns use the corresponding SDK slot's direct timer with the same countdown
+and shading as ability cooldowns; no item activation history is inferred. The
+Electron release smoke covers both artwork families, duplicate items, slot
+changes, expiry, building cancellation/completion and existing settings controls.
+
+## 2026-09-13: Distinguish Claws and Rings in inventory
+
+Match Vision shows the numeric suffix from the current catalog's English
+`Claws of Attack +N` and `Ring of Protection +N` names in the bottom-right corner
+of each inventory icon. Use the same C3 treatment as army counts: opaque bold white
+numbers with the cooldown text's soft shadow and no outline, over a radial dark
+gradient fading from the bottom-right corner.
+Shared Sass mixins keep both treatments consistent; inventory text scales to 12px
+for its 23px artwork, keeping +12/+15 inside the icon. Regular items have no extra
+shading and item cooldowns keep their existing centered countdown and progress fill.
+
+This is presentation of the catalog name, not a numeric-effects SDK contract or a
+melee-availability classification. Do not keep rawcode-to-bonus tables or infer
+values from rawcodes. Missing/unrecognized names omit the badge; other stat items
+and consumed tomes receive no badge. This supersedes the centered watermark trials.
+Screenshot checks wait for finite UI animations before capture and cover mixed
+inventories with bonus items, ordinary items, and active cooldowns on both sides.
+
+## 2026-09-13: Army composition shares the upgrades slot
+
+Each existing player-side upgrades slot now belongs to ArmyResearchPanelComponent.
+It groups observed ordinary unit instances by type, excluding illusions and
+observed deaths; workers and summons remain included. Heroes and buildings retain
+their separate panels. Sort by the current catalog's gold cost per individual unit,
+ascending, not by the total group value. Unknown costs sort last and ties use the
+type ID. Live counts never come from catalog defaults or production queues.
+
+Independent player/observer `armyCompositionEnabled` settings default true and
+use the existing units capability. They do not depend on research toggles or
+introduce a paid entitlement. Preserve the existing contexts and placement of the
+upgrades slot, including mirrored opponent placement and its team-observer exclusion.
+When both enabled panels contain data, start with upgrades and alternate every
+10 seconds of UI time. Per-player timers depend only on match/player identity and
+whether both panels are available; snapshots and count changes cannot restart them.
+If only one panel is available it stays visible; if neither is available the slot
+is hidden. Destroying the component clears its timer. Game pause does not pause
+this presentation rotation. No live Warcraft timer is derived from this UI clock.
+
+Unit counts retain the 30px icons and existing spacing. The chosen C3 treatment
+uses larger corner counts with the cooldown text's bold weight and soft shadow,
+without an outline, and a radial dark gradient fading outward
+from the bottom-right corner inside the artwork, without a separate badge box.
+
+The reviewed API migration 007 owns the new schema. Generate the local binding
+offline with `node deployment/match-vision/build-binding.mjs
+apps/api/src/app/apis/parse/migrations/007-match-vision-army.contract.json` from the
+platform root. This requires a coordinated API/Match Vision release; preparation
+does not update the production definition or authorize deployment.
+
+## 2026-09-13: Match Vision owns its public release version
+
+Start communicated Match Vision versions at 1.0.0. The package version is the single source for its dashboard label inside the W3Booster client and the built release.json metadata. Keep it independent of SDK/protocol and platform versions. Every release updates the changelog, uses the matching Git tag and news version, and verifies the hosted release.json after activation. Do not place release labels on the gameplay overlay.

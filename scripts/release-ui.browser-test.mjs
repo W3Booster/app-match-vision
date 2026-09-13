@@ -27,6 +27,7 @@ let state = createDemoState({ clientId, settings: defaults });
 Object.assign(state.match, { gameDataId, gameVersion: gameDataId.split('-')[0], gameTime: 5, isReforged: false });
 const hero = Object.values(state.players[0].heroes)[0];
 Object.assign(hero, { typeId: 'Npal', level: 10, abilities: ['AHcr', 'ANcp', 'AHpa', 'AHcl'].map((typeId, i) => ({ id: 'skill-' + i, typeId, level: 1, lastActivation: 1000 })) });
+Object.assign(hero, { inventory: ['spre', 'stel', 'stel', '', '', ''], inventoryCooldowns: [{ progress: 0.5, remainingSeconds: 15, totalSeconds: 30 }, null, { progress: 0.25, remainingSeconds: 45, totalSeconds: 60 }, null, null, null] });
 state.players[0].controlgroups = { 0: { frontunit: 'Npal', size: 24 }, 1: { frontunit: 'hfoo', size: 13 } };
 state.players[0].buildings = {
     '0000000000000001': { id: '0000000000000001', typeId: 'hbar', isIllusion: false, production: { queue: [
@@ -35,6 +36,10 @@ state.players[0].buildings = {
     ] } },
     '0000000000000002': { id: '0000000000000002', typeId: 'hhou', isIllusion: false, construction: { progress: 0.5, remainingSeconds: 10, totalSeconds: 20 } }
 };
+for (const [index, typeId, target, seconds] of [[3, 'htow', 'hkee', 140], [4, 'uzig', 'uzg1', 35], [5, 'hwtw', 'hgtw', 50]]) {
+    const id = index.toString(16).padStart(16, '0');
+    state.players[0].buildings[id] = { id, typeId, isIllusion: false, upgrade: { typeId: target, progress: 0.5, remainingSeconds: seconds / 2, totalSeconds: seconds } };
+}
 state.players[0].upgrades.active = [{ typeId: 'Rhme', level: 1, gametime: 1 }];
 const original = structuredClone(state);
 let storage = { revision: 0, data: { matchScore: { wins: 0, losses: 0, lastUpdate: 0 }, automaticScore: { enabled: false, processedResults: [] } } };
@@ -137,6 +142,10 @@ try {
         assert.equal(await frame().locator('.hero-area-streamer.hero-ability-area .ability-icon').count(), 4);
         assert.ok(await frame().locator('.ability-icon .cooldown').count(), 'Observed spell activation displays cooldown');
         for (const selector of ['.hero-hp-bar', '.hero-mana-bar', '.hero-exp-bar', '.building-queue', '.construction-row']) assert.ok(await frame().locator(selector).count(), selector);
+        await wait("document.querySelectorAll('.upgrade-badge').length === 3 && document.querySelectorAll('.item-cooldown').length === 2");
+        assert.deepEqual(await frame().locator('.item-cooldown').evaluateAll(elements => elements.map(e => e.getAttribute('data-slot'))), ['0', '2']);
+        assert.equal(await frame().locator('.building-queue').count(), 1, 'Upgrading buildings do not create production queues');
+        for (const target of ['hkee', 'uzg1', 'hgtw']) await wait(`[...document.querySelectorAll('.building-upgrade img')].some(e=>e.src.includes(${JSON.stringify(iconHash('units', target, graphics))}))`);
         for (const level of [1, 2, 3]) {
             await update(s => { s.players[0].upgrades.active[0].level = level; });
             await wait(`[...document.querySelectorAll('.upgrade-icon .filled')].length === ${level}`);
@@ -150,6 +159,169 @@ try {
     }
     checks.push({ feature: '13/24 control groups, four new hero skills, pools, XP, inventory, production, construction, upgrade levels' });
     await page.screenshot({ path: resolve(output, 'overlay.png') });
+    await update(s => {
+        const h = Object.values(s.players[0].heroes)[0];
+        h.inventoryCooldowns = [null, h.inventoryCooldowns[2], null, null, null, null];
+        delete s.players[0].buildings['0000000000000003'].upgrade; // Cancel.
+        s.players[0].buildings['0000000000000004'].typeId = 'uzg1';
+        delete s.players[0].buildings['0000000000000004'].upgrade; // Complete.
+    });
+    await wait("document.querySelectorAll('.upgrade-badge').length === 1 && document.querySelectorAll('.item-cooldown').length === 1 && document.querySelector('.item-cooldown').dataset.slot === '1'");
+    await update(s => { Object.values(s.players[0].heroes)[0].inventoryCooldowns = Array(6).fill(null); });
+    await wait("!document.querySelector('.item-cooldown')");
+    checks.push({ feature: 'Building upgrade destinations and badges, completion/cancellation, duplicate item cooldowns, moved slot and expiry' });
+    const beforeBadges = structuredClone(state);
+    const badgeItems = ['rat6', 'rat9', 'ratc', 'rde2', 'rde4', 'ratf'];
+    const expectedBonuses = badgeItems.map(id => catalog.items[id].name.match(/\+\d+$/)[0]);
+    await update(s => {
+        for (const player of s.players) {
+            for (const h of Object.values(player.heroes)) {
+                h.inventory = Array(6).fill('');
+                h.inventoryCooldowns = Array(6).fill(null);
+            }
+            Object.values(player.heroes)[0].inventory = [...badgeItems];
+        }
+    });
+    for (const reforged of [false, true]) {
+        const graphics = reforged ? 'reforged' : 'classic';
+        await update(s => { s.match.isReforged = reforged; });
+        await wait(`document.querySelector('.inventory .item-icon')?.style.backgroundImage.includes(${JSON.stringify(iconHash('items', 'rat6', graphics))})`);
+        await wait("document.querySelectorAll('.item-bonus').length === 12");
+        // Wait for actual entry/slide animations, including parents, before measuring or capturing.
+        await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
+        for (const side of ['streamer', 'opponent']) {
+            assert.deepEqual(await frame().locator(`.hero-area-${side}.inventory .item-bonus`).allTextContents(), expectedBonuses);
+        }
+        assert.ok(await frame().locator('.item-bonus').evaluateAll(elements => elements.every(e => {
+            const badge = e.getBoundingClientRect(), icon = e.parentElement.getBoundingClientRect();
+            return badge.width > 0 && badge.left >= icon.left && badge.right <= icon.right + 0.5 && badge.top >= icon.top && badge.bottom <= icon.bottom + 0.5;
+        })), 'Bonus badges stay inside their icons on both sides');
+        assert.ok(await frame().locator('.item-bonus').evaluateAll(elements => elements.every(e => {
+            const style = getComputedStyle(e);
+            return style.backgroundColor === 'rgba(0, 0, 0, 0)' && style.color === 'rgb(255, 255, 255)' && style.fontFamily === getComputedStyle(e.parentElement).fontFamily
+                && style.opacity === '1' && style.fontWeight === '700' && style.right === '1px' && style.bottom === '0px'
+                && style.textShadow === 'rgb(0, 0, 0) 1px 1px 4px'
+                && getComputedStyle(e.parentElement, '::before').backgroundImage.includes('radial-gradient');
+        })), 'Item bonuses use the C3 corner count and gradient');
+        await images('item bonus badges ' + graphics, ['.inventory .item-icon']);
+        await page.screenshot({ path: resolve(output, `item-bonuses-${graphics}.png`) });
+        const inventoryBox = await frame().locator('.hero-area-streamer.inventory').first().locator('.item-icon').evaluateAll(elements => {
+            const boxes = elements.map(e => e.getBoundingClientRect());
+            const x = Math.floor(Math.min(...boxes.map(b => b.left))) - 6;
+            const y = Math.floor(Math.min(...boxes.map(b => b.top))) - 6;
+            return { x, y, width: Math.ceil(Math.max(...boxes.map(b => b.right))) - x + 6, height: Math.ceil(Math.max(...boxes.map(b => b.bottom))) - y + 6 };
+        });
+        await page.screenshot({ path: resolve(output, `item-bonuses-${graphics}-detail.png`), clip: inventoryBox });
+    }
+    await update(s => {
+        for (const player of s.players) Object.values(player.heroes)[0].inventory = ['rde4', 'rat6', 'rat6', 'belv', 'spre', ''];
+    });
+    await wait("document.querySelectorAll('.item-bonus').length === 6");
+    for (const side of ['streamer', 'opponent']) assert.deepEqual(await frame().locator(`.hero-area-${side}.inventory .item-bonus`).allTextContents(), [expectedBonuses[4], expectedBonuses[0], expectedBonuses[0]]);
+    await update(s => { delete s.match.gameDataId; });
+    await wait("!document.querySelector('.item-bonus')");
+    state = beforeBadges; broadcast();
+    await images('restore after item badges', ['.inventory .item-icon']);
+    checks.push({ feature: 'Catalog item bonus badges, both sides and artwork families, duplicates, slot replacement, unrelated +stat item excluded, missing catalog clears badges' });
+    const beforeMixed = structuredClone(state);
+    await update(s => {
+        for (const player of s.players) Object.assign(Object.values(player.heroes)[0], {
+            inventory: ['ratc', 'rde4', 'bspd', 'cnob', 'spre', 'stel'],
+            inventoryCooldowns: [null, null, null, null,
+                { progress: 0.5, remainingSeconds: 15, totalSeconds: 30 },
+                { progress: 0.25, remainingSeconds: 45, totalSeconds: 60 }]
+        });
+    });
+    for (const reforged of [false, true]) {
+        const graphics = reforged ? 'reforged' : 'classic';
+        await update(s => { s.match.isReforged = reforged; });
+        await wait(`document.querySelector('.inventory .item-icon')?.style.backgroundImage.includes(${JSON.stringify(iconHash('items', 'ratc', graphics))})`);
+        await wait("document.querySelectorAll('.item-bonus').length === 4 && document.querySelectorAll('.item-cooldown').length === 4");
+        for (const side of ['streamer', 'opponent']) {
+            const inventory = frame().locator(`.hero-area-${side}.inventory`).first();
+            assert.deepEqual(await inventory.locator('.item-bonus').allTextContents(), ['+12', '+5']);
+            assert.deepEqual(await inventory.locator('.item-cooldown .cooldown').allTextContents(), ['15', '45']);
+            assert.ok(await inventory.locator('.item-icon').evaluateAll(elements => elements.every((e, slot) => {
+                const hasGradient = getComputedStyle(e, '::before').backgroundImage.includes('radial-gradient');
+                return hasGradient === (slot < 2) && !!e.querySelector('.item-cooldown') === (slot >= 4);
+            })), 'Only bonus items get corner shading; regular items and cooldowns retain their own presentation');
+        }
+        await images('mixed inventory ' + graphics, ['.item-icon']);
+        await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
+        await page.screenshot({ path: resolve(output, `mixed-inventory-${graphics}.png`) });
+    }
+    state = beforeMixed; broadcast();
+    await wait("document.querySelectorAll('.item-cooldown').length === 0");
+    checks.push({ feature: 'C3 bonus items mixed with ordinary items and two cooldowns on both sides and artwork families' });
+    const beforeArmy = structuredClone(state);
+    assert.equal(defaults.player.armyCompositionEnabled, true);
+    assert.equal(defaults.observer.armyCompositionEnabled, true);
+    const armyTypes = [['hfoo', 12], ['hkni', 2], ['hpea', 4], ['hmtm', 1]];
+    const expectedArmy = [...armyTypes].sort((a, b) => catalog.units[a[0]].cost.gold - catalog.units[b[0]].cost.gold || a[0].localeCompare(b[0]));
+    const leftPanel = `.upgrade-box[data-player-id="${state.players[0].id}"]`;
+    const rightPanel = `.upgrade-box[data-player-id="${state.players[1].id}"]`;
+    await update(s => {
+        s.application.settings.player.researchesEnabled = false;
+        s.players[1].upgrades.active = [];
+        for (const [index, player] of s.players.entries()) {
+            Object.assign(Object.values(player.heroes)[0], { inventory: [...badgeItems], inventoryCooldowns: Array(6).fill(null) });
+            let next = 1000 + index * 100;
+            const units = armyTypes.flatMap(([typeId, count]) => Array.from({ length: count }, () => {
+                const id = String(next++).padStart(16, '0'); return { id, typeId, isIllusion: false };
+            }));
+            units.push({ id: String(next++).padStart(16, '0'), typeId: 'hfoo', isIllusion: true });
+            units.push({ id: String(next++).padStart(16, '0'), typeId: 'hfoo', isIllusion: false, hitpoints: { current: 0, max: 420 } });
+            player.units = Object.fromEntries(units.map(u => [u.id, u]));
+        }
+    });
+    for (const reforged of [false, true]) {
+        const graphics = reforged ? 'reforged' : 'classic';
+        await update(s => { s.match.isReforged = reforged; });
+        await wait("document.querySelectorAll('.army-icon').length === 8");
+        await wait(`document.querySelector('.army-icon')?.style.backgroundImage.includes(${JSON.stringify(iconHash('units', expectedArmy[0][0], graphics))})`);
+        for (const selector of [leftPanel, rightPanel]) {
+            assert.deepEqual(await frame().locator(selector + ' .army-icon').evaluateAll(elements => elements.map(e => [e.dataset.typeId, Number(e.textContent.trim())])), expectedArmy);
+        }
+        await images('army composition ' + graphics, ['.army-icon']);
+        await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
+        await page.screenshot({ path: resolve(output, `army-${graphics}.png`) });
+    }
+    const armyBox = await frame().locator(leftPanel).boundingBox();
+    await update(s => { s.application.settings.player.researchesEnabled = true; });
+    await wait(`document.querySelector(${JSON.stringify(leftPanel)})?.dataset.panel === 'upgrades'`);
+    const rotationStarted = Date.now();
+    await wait(`document.querySelector(${JSON.stringify(leftPanel)})?.dataset.panel === 'army'`);
+    assert.ok(Date.now() - rotationStarted >= 9500 && Date.now() - rotationStarted < 12500, 'Upgrades dwell for 10 seconds despite snapshots every 250 ms');
+    assert.equal(await frame().locator(rightPanel).getAttribute('data-panel'), 'army', 'Empty opponent upgrades never create a blank rotation');
+    const secondRotationStarted = Date.now();
+    await update(s => { const id = '0000000000009999'; s.players[0].units[id] = { id, typeId: 'hfoo', isIllusion: false }; });
+    await wait(`document.querySelector(${JSON.stringify(leftPanel + ' [data-type-id="hfoo"]')})?.textContent.trim() === '13'`);
+    await wait(`document.querySelector(${JSON.stringify(leftPanel)})?.dataset.panel === 'upgrades'`);
+    assert.ok(Date.now() - secondRotationStarted >= 9500 && Date.now() - secondRotationStarted < 12500, 'Army dwell is 10 seconds and count changes do not reset it');
+    await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
+    const researchBox = await frame().locator(leftPanel).boundingBox();
+    assert.equal(researchBox.x, armyBox.x); assert.equal(researchBox.y, armyBox.y, 'Army and upgrades share the exact slot');
+    await update(s => { s.application.settings.player.armyCompositionEnabled = false; });
+    await wait("!document.querySelector('.army-icon')");
+    assert.equal(await frame().locator(leftPanel).getAttribute('data-panel'), 'upgrades');
+    // Observe beyond one complete rotation period: disabled army must leave upgrades pinned.
+    await page.waitForTimeout(10_250);
+    assert.equal(await frame().locator(leftPanel).getAttribute('data-panel'), 'upgrades');
+    assert.equal(await frame().locator(rightPanel).count(), 0, 'Disabled army plus empty upgrades hides the slot');
+    await update(s => { s.application.settings.player.armyCompositionEnabled = true; s.players[0].units = {}; });
+    await wait(`document.querySelector(${JSON.stringify(rightPanel)})?.dataset.panel === 'army'`);
+    assert.equal(await frame().locator(leftPanel).getAttribute('data-panel'), 'upgrades', 'Empty army leaves upgrades visible');
+    await update(s => { s.application.settings.player.researchesEnabled = false; });
+    await wait(`!document.querySelector(${JSON.stringify(leftPanel)})`);
+    await update(s => { s.match.isObserver = true; s.match.isReplay = true; s.application.settings.observer.armyCompositionEnabled = false; });
+    await wait("!document.querySelector('.army-icon')");
+    await update(s => { s.application.settings.observer.armyCompositionEnabled = true; s.application.settings.observer.researchesEnabled = false; });
+    await wait("document.querySelectorAll('.army-icon').length === 4");
+    await update(s => { s.match.status = 'finished'; });
+    await wait("!document.querySelector('mv-army-research-panel')");
+    state = beforeArmy; broadcast();
+    await images('restore after army rotation', ['.upgrade-icon']);
+    checks.push({ feature: 'Army counts, gold-per-unit ascending sort, illusions/deaths, both graphics and sides, two real 10-second rotations, live counts, exact shared slot, disabled/empty fallbacks, player/observer settings, match cleanup' });
     await update(s => { s.gameContext.chatbarOpen = true; });
     await wait("!document.querySelector('.ctrlgroup-wrapper')");
     await update(s => { s.gameContext.chatbarOpen = false; s.application.settings.player.heroAbilitiesEnabled = false; s.application.settings.player.heroItemsEnabled = false; s.application.settings.player.productionQueuesEnabled = false; });
@@ -173,6 +345,8 @@ try {
     await images('next match', ['.ctrlgroup-icon']);
     checks.push({ feature: 'delivered settings, chat, observer/replay modes, catalog replacement, match end/start' });
     await open('dashboard');
+    const { version } = JSON.parse(await readFile(resolve(root, 'package.json'), 'utf8'));
+    assert.equal(await frame().locator('.app-version').innerText(), 'v' + version);
     await frame().getByRole('heading', { name: 'Match dashboard' }).waitFor();
     await wait("document.querySelector('.current-match').textContent.includes('Northwind') && document.querySelector('.current-match').textContent.includes('Ironclaw')");
     await frame().locator('.score-side.win button').last().click();

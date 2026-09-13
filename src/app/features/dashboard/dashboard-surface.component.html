@@ -1,6 +1,6 @@
 <main class="overlay-dashboard">
     <header class="dashboard-hero">
-        <div><span>MATCH VISION</span><h1>Match dashboard</h1><p>Follow your match and manage your overlay score.</p></div>
+        <div><span>MATCH VISION <small class="app-version">v{{version}}</small></span><h1>Match dashboard</h1><p>Follow your match and manage your overlay score.</p></div>
         <button type="button" class="primary" [disabled]="controls.busy() || !canOpenCompact" (click)="openCompact()"><i class="fa fa-external-link-alt"></i> Open compact window</button>
     </header>
 

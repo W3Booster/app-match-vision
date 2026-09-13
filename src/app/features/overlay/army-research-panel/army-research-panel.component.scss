@@ -1,3 +1,5 @@
+@use '../../../../styles/icon-number' as icon-number;
+
 .upgrade-box.tight-upgrades {
     display: flex;
     flex-wrap: wrap;
@@ -15,4 +17,12 @@
     &.opponent {
         flex-direction: row-reverse;
     }
+}
+
+.army-icon::before {
+    @include icon-number.corner-shading;
+}
+
+.army-count {
+    @include icon-number.corner-number;
 }

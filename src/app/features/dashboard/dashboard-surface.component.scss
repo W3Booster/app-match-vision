@@ -59,3 +59,4 @@ h1, h2, h3, p { margin: 0; } h1 { margin-top: 4px; color: #f3eadb; font-size: 30
 .team-grid .opponent { text-align: right; }
 .team-grid .opponent .player-heading, .team-grid .opponent .player-statistics { flex-direction: row-reverse; }
 .team-grid .opponent .player-record, .team-grid .opponent .stats-status { justify-content: flex-end; }
+.app-version { margin-left: 8px; color: #82939e; font-size: 12px; font-weight: 400; letter-spacing: normal; white-space: nowrap; }

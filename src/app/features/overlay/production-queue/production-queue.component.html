@@ -1,5 +1,5 @@
 @if (groups().length) {
-    <section class="production" aria-label="Construction and production" animate.enter="panel-enter" animate.leave="panel-leave">
+    <section class="production" aria-label="Construction, building upgrades and production" animate.enter="panel-enter" animate.leave="panel-leave">
         @for (panel of panels(); track panel.side) {
             @if (panel.groups.length) {
                 <div class="production-side" [class.right]="panel.side === 'right'" [attr.data-side]="panel.side"
@@ -9,7 +9,7 @@
                             [attr.aria-label]="group.player.displayIdentity.primaryName + ' production'">
                             <div class="buildings">
                                 @if (group.constructions.length) {
-                                    <div class="construction-row" aria-label="Buildings under construction"
+                                    <div class="construction-row" aria-label="Buildings under construction or upgrading"
                                         animate.enter="row-enter" animate.leave="row-leave">
                                         <div class="building-icon construction-source" title="Build structure">
                                             <div class="unit-image">
@@ -20,30 +20,37 @@
                                         </div>
                                         <span class="queue-arrow" aria-hidden="true">›</span>
                                         @for (building of group.constructions; track building.id) {
-                                            <div class="active-production construction-entry" [attr.data-building-id]="building.id"
+                                            @let activity = buildingActivity(building);
+                                            @let targetType = buildingActivityType(building);
+                                            <div class="active-production construction-entry" [class.building-upgrade]="!!building.upgrade" [attr.data-building-id]="building.id"
                                                 animate.enter="construction-enter" animate.leave="construction-leave">
-                                                <div class="queue-slot active" [attr.aria-label]="building.typeId + ': Under construction'">
+                                                <div class="queue-slot active" [attr.aria-label]="targetType + (building.upgrade ? ': Upgrading' : ': Under construction')">
                                                     <div class="unit-image">
-                                                        @if (icon(building.typeId); as source) {
-                                                            <img [src]="source" [alt]="building.typeId" />
-                                                        } @else { <span class="rawcode">{{ building.typeId }}</span> }
+                                                        @if (icon(targetType); as source) {
+                                                            <img [src]="source" [alt]="targetType" />
+                                                        } @else { <span class="rawcode">{{ targetType }}</span> }
                                                     </div>
+                                                    @if (building.upgrade) {
+                                                        <span class="upgrade-badge" role="img" aria-label="Building upgrade" title="Building upgrade">
+                                                            <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14V3M3 8l5-5 5 5" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" /></svg>
+                                                        </span>
+                                                    }
                                                     <div class="production-backdrop" aria-hidden="true"
-                                                        [style.height.%]="(1 - (building.construction!.progress ?? 0)) * 100"
-                                                        [style.opacity]="building.construction!.progress === null ? 0 : 1"></div>
+                                                        [style.height.%]="(1 - (activity.progress ?? 0)) * 100"
+                                                        [style.opacity]="activity.progress === null ? 0 : 1"></div>
                                                     <span class="production-cooldown">
-                                                        @if (isProgressWaiting(building.construction!)) {
+                                                        @if (isProgressWaiting(activity)) {
                                                             <span class="production-pause" role="img" aria-label="Construction waiting to start" title="Construction waiting to start"></span>
-                                                        } @else { {{ remainingSecondsLabel(building.construction!.remainingSeconds) }} }
+                                                        } @else { {{ remainingSecondsLabel(activity.remainingSeconds) }} }
                                                     </span>
                                                 </div>
-                                                <div class="progress-track" role="progressbar" [attr.aria-label]="building.typeId + ' construction'"
-                                                    [attr.aria-valuenow]="building.construction!.progress === null ? null : building.construction!.progress * 100"
+                                                <div class="progress-track" role="progressbar" [attr.aria-label]="targetType + (building.upgrade ? ' upgrade' : ' construction')"
+                                                    [attr.aria-valuenow]="activity.progress === null ? null : activity.progress * 100"
                                                     aria-valuemin="0" aria-valuemax="100"
-                                                    [attr.aria-valuetext]="progressLabel(building.construction!.progress)"
-                                                    [class.unknown]="building.construction!.progress === null">
-                                                    <div class="progress-fill" [style.width.%]="(building.construction!.progress ?? 0) * 100"
-                                                        [style.opacity]="building.construction!.progress === null ? 0 : 1"></div>
+                                                    [attr.aria-valuetext]="progressLabel(activity.progress)"
+                                                    [class.unknown]="activity.progress === null">
+                                                    <div class="progress-fill" [style.width.%]="(activity.progress ?? 0) * 100"
+                                                        [style.opacity]="activity.progress === null ? 0 : 1"></div>
                                                 </div>
                                             </div>
                                         }

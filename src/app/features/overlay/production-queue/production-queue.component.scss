@@ -17,6 +17,20 @@
 .construction-row { display: flex; align-items: center; gap: 3px; max-width: 100%; }
 .right .construction-row { flex-direction: row-reverse; }
 .construction-entry { overflow: hidden; }
+.upgrade-badge {
+    position: absolute;
+    bottom: 1px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14px;
+    height: 13px;
+    z-index: 5;
+    color: #ffe7a0;
+    background: rgba(0, 0, 0, .8);
+    border-radius: 2px;
+    svg { display: block; width: 100%; height: 100%; }
+}
+.building-upgrade .production-cooldown { padding-bottom: 7px; }
 .buildings { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
 .right .buildings { align-items: flex-end; }
 .right .building-queue { flex-direction: row-reverse; }

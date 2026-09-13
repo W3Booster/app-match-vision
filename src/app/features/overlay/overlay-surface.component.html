@@ -54,11 +54,11 @@
                     <mv-production-queue [constructionEnabled]="settings.constructionEnabled !== false" [enabled]="settings.productionQueuesEnabled !== false" [match]="state.match" [players]="players"
                         [reversePlayerOrder]="settings.reversePlayerOrderMatchId === state.match.id" />
 
-                    <ng-container *ngIf="streamer as selectedStreamer">
-                        <mv-upgrade-panel
-                            *ngIf="!showObserverTeamBar() && settings.researchesEnabled && settings.researchesOfAttackAndArmorEnabled"
-                            [match]="state.match" [streamer]="selectedStreamer" [opponent]="opponent" [settings]="settings">
-                        </mv-upgrade-panel>
+                    <ng-container *ngIf="!showObserverTeamBar()">
+                        <mv-army-research-panel *ngIf="streamer as selectedStreamer"
+                            [match]="state.match" [player]="selectedStreamer" [settings]="settings" />
+                        <mv-army-research-panel *ngIf="opponent as selectedOpponent"
+                            [match]="state.match" [player]="selectedOpponent" [opponent]="true" [settings]="settings" />
                     </ng-container>
 
                     <div *ngIf="isObserverOrReplay() && !showObserverTeamBar()">
@@ -266,10 +266,15 @@
                             <div *ngIf="streamerHeroes.length">
                                 <div *ngFor="let hero of streamerHeroes; trackBy: trackHero"
                                     class="hero-area hero-area-streamer inventory" id="ID_HEROINVENTORY_{{hero.id}}">
-                                        <div *ngFor="let item of heroItems(hero); trackBy: trackInventorySlot" id="ID_ITEM_{{item}}"
+                                        <div *ngFor="let item of heroItems(hero); let slot = index; trackBy: trackInventorySlot" id="ID_ITEM_{{item}}"
                                             class="item-icon-wrapper">
                                             <div class="item-icon" *ngIf="item !== ''"
-                                                [style.backgroundImage]="getItemIconBackground(item)">
+                                                [style.backgroundImage]="getItemIconBackground(item)" [class.has-item-bonus]="getItemBonus(item) !== null">
+                                                <span *ngIf="getItemBonus(item) as bonus" class="item-bonus">{{bonus}}</span>
+                                                <div *ngIf="getItemCooldown(hero, slot) as cooldown" class="cooldown-wrapper item-cooldown" [attr.data-slot]="slot">
+                                                    <div class="cooldown">{{cooldownSeconds(cooldown.remainingSeconds!)}}</div>
+                                                    <div class="cooldown-animation" [style.height.%]="(1 - (cooldown.progress ?? 0)) * 100"></div>
+                                                </div>
                                             </div>
                                         </div>
                                 </div>
@@ -279,10 +284,15 @@
                                 <div *ngFor="let hero of opponentHeroes; trackBy: trackHero"
                                     class="hero-area hero-area-opponent inventory"
                                     id="ID_OPPONENT_HEROINVENTORY_{{hero.id}}">
-                                        <div *ngFor="let item of heroItems(hero); trackBy: trackInventorySlot" id="ID_ITEM_{{item}}"
+                                        <div *ngFor="let item of heroItems(hero); let slot = index; trackBy: trackInventorySlot" id="ID_ITEM_{{item}}"
                                             class="item-icon-wrapper">
                                             <div class="item-icon" *ngIf="item !== ''"
-                                                [style.backgroundImage]="getItemIconBackground(item)">
+                                                [style.backgroundImage]="getItemIconBackground(item)" [class.has-item-bonus]="getItemBonus(item) !== null">
+                                                <span *ngIf="getItemBonus(item) as bonus" class="item-bonus">{{bonus}}</span>
+                                                <div *ngIf="getItemCooldown(hero, slot) as cooldown" class="cooldown-wrapper item-cooldown" [attr.data-slot]="slot">
+                                                    <div class="cooldown">{{cooldownSeconds(cooldown.remainingSeconds!)}}</div>
+                                                    <div class="cooldown-animation" [style.height.%]="(1 - (cooldown.progress ?? 0)) * 100"></div>
+                                                </div>
                                             </div>
                                         </div>
                                 </div>

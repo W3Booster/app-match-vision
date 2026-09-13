@@ -1,4 +1,44 @@
+@use '../../../styles/icon-number' as icon-number;
+
 .hero-area-cover {
     z-index: -99999;
     pointer-events: none;
+}
+
+.item-icon {
+    position: relative;
+}
+
+.item-icon.has-item-bonus::before {
+    @include icon-number.corner-shading;
+}
+
+.item-bonus {
+    // Inventory artwork is 23px wide; keep +12/+15 entirely inside it.
+    @include icon-number.corner-number(12px);
+}
+
+.item-icon .cooldown-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    .cooldown {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: bold;
+        text-shadow: 1px 1px 4px #000;
+        z-index: 2;
+    }
+    .cooldown-animation {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--cooldown-backdrop-color);
+        transition: height 200ms linear;
+    }
 }
