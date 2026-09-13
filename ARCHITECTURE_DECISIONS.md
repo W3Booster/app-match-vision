@@ -511,4 +511,4 @@ does not update the production definition or authorize deployment.
 
 ## 2026-09-13: Match Vision owns its public release version
 
-Start communicated Match Vision versions at 1.0.0. The package version is the single source for its dashboard label inside the W3Booster client and the built release.json metadata. Keep it independent of SDK/protocol and platform versions. Every release updates the changelog, uses the matching Git tag and news version, and verifies the hosted release.json after activation. Do not place release labels on the gameplay overlay.
+Use 1.2.0 for the September 2026 feature release, as specified by the project owner; the initial 1.0.0 assignment was incorrect. The package version is the single source for its dashboard label inside the W3Booster client and the built release.json metadata. Keep it independent of SDK/protocol and platform versions. Every release updates the changelog, uses the matching Git tag and news version, and verifies the hosted release.json after activation. Do not place release labels on the gameplay overlay.

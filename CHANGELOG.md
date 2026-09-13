@@ -1,6 +1,6 @@
 # Match Vision releases
 
-## 1.0.0 — 2026-09-13
+## 1.2.0 — 2026-09-13
 
 - See your army composition with unit counts, ordered from lowest to highest gold cost. It shares the upgrades slot, switching every ten seconds when both have content, and is enabled by default.
 - Follow building upgrades with the destination artwork, progress, and a small upward arrow.
@@ -8,7 +8,7 @@
 - Tell Claws of Attack and Rings of Protection apart with their bonus values on the icon. Unit counts and item bonuses use compact corner shading and soft-shadow text.
 - Find the Match Vision version in its dashboard inside W3Booster.
 
-Earlier releases were distributed without a communicated Match Vision version.
+The release version is 1.2.0. The initial 1.0.0 label for this update was corrected before news publication.
 
 
 ## 2026-09-11
