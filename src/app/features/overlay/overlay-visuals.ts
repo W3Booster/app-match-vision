@@ -23,7 +23,8 @@ const CLOCK_SPRITE_ALIGNMENT_SECONDS = 11;
 const INVENTORY_RAIL_WIDTH = 138;
 // Inventory starts 74px after the portrait; its content is inset another 3px.
 const INVENTORY_CONTENT_INSET = 77;
-const ABILITY_COLUMN_WIDTH = 45;
+// Each column includes the 42px artwork, outside level rail and a 3px gap.
+const ABILITY_COLUMN_WIDTH = 53;
 const UPGRADE_PANEL_GAP = 24;
 
 /** Places upgrades directly after the first hero's occupied ability columns. */

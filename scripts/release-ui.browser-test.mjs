@@ -41,6 +41,12 @@ for (const [index, typeId, target, seconds] of [[3, 'htow', 'hkee', 140], [4, 'u
     state.players[0].buildings[id] = { id, typeId, isIllusion: false, upgrade: { typeId: target, progress: 0.5, remainingSeconds: seconds / 2, totalSeconds: seconds } };
 }
 state.players[0].upgrades.active = [{ typeId: 'Rhme', level: 1, gametime: 1 }];
+state.players[0].apm = 0;
+state.players[1].apm = 178;
+// These SDK observations are available to other apps, but Match Vision does not display them.
+for (const player of state.players) for (const hero of Object.values(player.heroes || {})) {
+    hero.combat = { damageDealt: 1000, selfDamage: 28, damageReceived: 98, healingDealt: 250 };
+}
 const original = structuredClone(state);
 let storage = { revision: 0, data: { matchScore: { wins: 0, losses: 0, lastUpdate: 0 }, automaticScore: { enabled: false, processedResults: [] } } };
 const commands = [];
@@ -160,6 +166,8 @@ try {
             }
         }
     }
+    assert.equal(await frame().locator('.player-apm, .self-play-apm, mv-self-play-bar, mv-hero-combat, .hero-combat').count(), 0,
+        'The withdrawn self-play panel, APM and hero combat totals remain undisplayed');
     state=structuredClone(original);broadcast();
     checks.push({feature:'Self-play excludes enemy portraits, abilities, vitals, inventory, army, researches and production despite populated input; observer/replay shows both sides; mode transitions clear stale panels'});
     for (const reforged of [false, true]) {
@@ -199,6 +207,34 @@ try {
     await update(s => { Object.values(s.players[0].heroes)[0].inventoryCooldowns = Array(6).fill(null); });
     await wait("!document.querySelector('.item-cooldown')");
     checks.push({ feature: 'Building upgrade destinations and badges, completion/cancellation, duplicate item cooldowns, moved slot and expiry' });
+    const beforeUpgradeWaiting = structuredClone(state);
+    const orcUpgradeSelector = '.building-upgrade[data-building-id="0000000000000006"]';
+    await update(s => {
+        s.players[0].buildings['0000000000000006'] = {
+            id: '0000000000000006', typeId: 'ostr', isIllusion: false,
+            upgrade: { typeId: 'ofrt', progress: 0, remainingSeconds: null, totalSeconds: null }
+        };
+        Object.assign(s.players[0].buildings['0000000000000001'].production.queue[0], { progress: 0, remainingSeconds: null, totalSeconds: null });
+        Object.assign(s.players[0].buildings['0000000000000002'].construction, { progress: 0, remainingSeconds: null, totalSeconds: null });
+    });
+    await wait(`document.querySelector(${JSON.stringify(orcUpgradeSelector)})`);
+    assert.equal(await frame().locator(orcUpgradeSelector + ' .production-pause').count(), 0, 'An Orc T2 to T3 upgrade with missing timing must not display a pause icon');
+    assert.equal((await frame().locator(orcUpgradeSelector + ' .production-cooldown').textContent()).trim(), '?');
+    assert.equal(await frame().locator('.building-queue .production-pause').count(), 1, 'Unstarted production still displays its waiting indicator');
+    assert.equal(await frame().locator('.construction-entry:not(.building-upgrade) .production-pause').count(), 1, 'Unstarted construction still displays its waiting indicator');
+    await update(s => { s.players[0].buildings['0000000000000006'].upgrade.progress = null; });
+    await wait(`document.querySelector(${JSON.stringify(orcUpgradeSelector + ' .progress-track.unknown')})`);
+    assert.equal((await frame().locator(orcUpgradeSelector + ' .production-cooldown').textContent()).trim(), '?');
+    await update(s => { Object.assign(s.players[0].buildings['0000000000000006'].upgrade, { progress: 0.25, remainingSeconds: 105, totalSeconds: 140 }); });
+    await wait(`document.querySelector(${JSON.stringify(orcUpgradeSelector + ' .production-cooldown')})?.textContent.trim() === '105'`);
+    assert.equal(await frame().locator(orcUpgradeSelector + ' .progress-track').getAttribute('aria-valuenow'), '25');
+    await update(s => {
+        s.players[0].buildings['0000000000000006'].typeId = 'ofrt';
+        delete s.players[0].buildings['0000000000000006'].upgrade;
+    });
+    await wait(`!document.querySelector(${JSON.stringify(orcUpgradeSelector)})`);
+    checks.push({ feature: 'Orc Stronghold to Fortress missing timing stays unknown, recovers to a countdown and clears on completion; waiting production and construction remain distinct' });
+    state = beforeUpgradeWaiting; broadcast();
     const beforeBadges = structuredClone(state);
     await update(s => { s.match.isReplay = true; });
     const badgeItems = ['rat6', 'rat9', 'ratc', 'rde2', 'rde4', 'ratf'];
@@ -284,6 +320,103 @@ try {
     state = beforeMixed; broadcast();
     await wait("document.querySelectorAll('.item-cooldown').length === 0");
     checks.push({ feature: 'C3 bonus items mixed with ordinary items and two cooldowns on both sides and artwork families' });
+    await update(s => { s.match.isObserver = false; s.match.isReplay = false; });
+    const beforeMana = structuredClone(state);
+    const manaCost = catalog.abilities.AHtb.levels[0].manaCost;
+    await update(s => {
+        s.match.isReplay = true;
+        for (const player of s.players) Object.assign(Object.values(player.heroes)[0], {
+            abilities: [{ id: 'mana-test', typeId: 'AHtb', level: 1, lastActivation: 1000 }],
+            mana: { current: manaCost - 30, max: 300, regenerationPerSecond: 2 }
+        });
+    });
+    for (const reforged of [false, true]) {
+        await update(s => { s.match.isReforged = reforged; });
+        await wait("document.querySelectorAll('.ability-icon.insufficient-mana').length === 2");
+        assert.deepEqual(await frame().locator('.ability-mana-track').evaluateAll(es => es.map(e=>Number(e.getAttribute('aria-valuenow')))), Array(2).fill((manaCost-30)/manaCost*100));
+        assert.equal(await frame().locator('.mana-requirement, .mana-missing, .mana-recovery').count(), 0);
+        assert.ok(await frame().locator('.insufficient-mana').evaluateAll(es => es.every(e => getComputedStyle(e, '::before').filter === 'grayscale(1) brightness(0.5)' && getComputedStyle(e).filter === 'none')));
+        await images('mana requirements ' + reforged, ['.ability-icon']);
+        await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
+        assert.ok(await frame().locator('.ability-icon').evaluateAll(es => es.every(e => e.getBoundingClientRect().width === 42 && e.getBoundingClientRect().height === 42)));
+        for (const side of ['streamer', 'opponent']) {
+            const fills = await frame().locator(`.hero-area-${side} .ability-mana-fill`).evaluateAll(elements => elements.map(fill => {
+                const bar = fill.parentElement.getBoundingClientRect(), rect = fill.getBoundingClientRect();
+                return { left: rect.left, start: bar.left, width: rect.width, trackWidth: bar.width };
+            }));
+            assert.equal(fills.length, 1);
+            assert.ok(fills.every(fill => Math.abs(fill.left - fill.start) < .1 && fill.width > 0 && fill.width < fill.trackWidth),
+                `${reforged ? 'Reforged' : 'Classic'} ${side}: a partial mana fill starts at the physical left edge`);
+        }
+        await page.screenshot({ path: resolve(output, `ability-mana-${reforged ? 'reforged' : 'classic'}.png`) });
+    }
+    const beforeManaLayout = structuredClone(state);
+    // Three native hero anchors, four skills each: mana bars must stay within their artwork.
+    for (const reforged of [false, true]) for (const inventory of [true, false]) {
+        await update(s => {
+            s.match.isReforged = reforged;
+            s.application.settings.observer.heroItemsEnabled = inventory;
+            for (const [side, p] of s.players.entries()) {
+                const base = Object.values(p.heroes)[0];
+                p.heroes = Object.fromEntries(Array.from({length:3}, (_, i) => {
+                    const id = (9000 + side * 10 + i).toString(16).padStart(16,'0');
+                    return [id, {...structuredClone(base), id, heroOrder:i+1,
+                        abilities: Array.from({length:4}, (_,j)=>({...base.abilities[0], typeId:j===3?'AHmt':base.abilities[0].typeId, id:'mana-layout-'+j}))}];
+                }));
+            }
+        });
+        await wait("document.querySelectorAll('.ability-mana-track').length === 24");
+        await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
+        assert.ok(await frame().locator('.ability-mana-track').evaluateAll(bars => {
+            const rect = e => e.getBoundingClientRect();
+            const overlaps = (a,b) => a.left < b.right-.1 && a.right > b.left+.1 && a.top < b.bottom-.1 && a.bottom > b.top+.1;
+            return bars.every(bar => {
+                const b = rect(bar), icon = rect(bar.parentElement);
+                const obstacles = [...document.querySelectorAll('.ability-icon, .army-icon, .item-icon, .hero-avatar, .queue-slot, .level-indicator')]
+                    .filter(e=>e!==bar.parentElement).map(rect);
+                return Math.abs(b.right - (icon.right-1))<.1 && Math.abs(b.width-40)<.1 && b.left >= icon.left && b.top >= icon.top && b.bottom <= icon.bottom &&
+                    !obstacles.some(r=>overlaps(b,r));
+            });
+        }), 'Mana bars remain inside their own artwork, clear of level pips and neighbouring panels');
+        assert.ok(await frame().locator('.hero-ability-area').evaluateAll(areas => areas.every(area => {
+            const icons = [...area.querySelectorAll('.ability-icon')].map(e=>e.getBoundingClientRect());
+            return Math.abs(icons[0].top-icons[2].top)<.1 && Math.abs(icons[1].top-icons[3].top)<.1 &&
+                Math.abs(Math.abs(icons[2].left-icons[0].left)-53)<.1;
+        })), 'Three and four skills retain two aligned, compact columns');
+        assert.ok(await frame().locator('.hero-ability-area .level-indicator').evaluateAll(markers => {
+            const rect=e=>e.getBoundingClientRect();
+            const overlap=(a,b)=>a.left<b.right-.1 && a.right>b.left+.1 && a.top<b.bottom-.1 && a.bottom>b.top+.1;
+            const others=[...document.querySelectorAll('.ability-icon, .army-icon, .item-icon, .hero-avatar, .queue-slot')].map(rect);
+            return markers.every(marker=>{
+                const b=rect(marker),icon=rect(marker.parentElement.querySelector('.ability-icon'));
+                return Math.abs(b.left-icon.right)<.1 && Math.abs(b.top-icon.top)<.1 && Math.abs(b.height-icon.height)<.1 &&
+                    !others.some(other=>overlap(b,other));
+            });
+        }), 'Level markers sit outside the right edge of every ability, without touching adjacent artwork or panels');
+        assert.ok(await frame().locator('.ability-mana-track').evaluateAll(es=>es.every(e=>getComputedStyle(e,'::after').content==='none')),'Mana fills have no segment decoration');
+        await page.screenshot({path:resolve(output,`ability-mana-four-skills-${reforged?'reforged':'classic'}-${inventory?'inventory':'no-inventory'}.png`)});
+        const positions = await frame().locator('.ability-icon-wrapper').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height]}));
+        await update(s=>{for(const p of s.players)for(const h of Object.values(p.heroes)) h.mana.current=300;});
+        await wait("!document.querySelector('.insufficient-mana')");
+        assert.deepEqual(await frame().locator('.ability-icon-wrapper').evaluateAll(es=>es.map(e=>{const r=e.getBoundingClientRect();return [r.x,r.y,r.width,r.height]})),positions,'Mana availability never shifts the grid');
+        state=structuredClone(beforeManaLayout); broadcast();
+    }
+    // The bar follows observations in both directions; it never extrapolates regeneration.
+    for (const fraction of [0, .8, .2, .999]) {
+        await update(s=>{for(const p of s.players) Object.assign(Object.values(p.heroes)[0].mana,{current:manaCost*fraction,regenerationPerSecond:0});});
+        await wait(`document.querySelectorAll('.ability-mana-track').length === 2 && [...document.querySelectorAll('.ability-mana-track')].every(e=>Number(e.getAttribute('aria-valuenow')) === ${fraction*100})`);
+        assert.deepEqual(await frame().locator('.ability-mana-fill').evaluateAll(es=>es.map(e=>e.style.width)),Array(2).fill(`${fraction*100}%`));
+    }
+    for (const current of [manaCost, manaCost+1]) {
+        await update(s => { for (const p of s.players) Object.values(p.heroes)[0].mana.current = current; });
+        await wait("!document.querySelector('.insufficient-mana, .ability-mana-track')");
+        assert.ok(await frame().locator('.ability-icon .cooldown').count()>0,'Enough mana does not remove independent cooldowns');
+    }
+    await page.screenshot({path:resolve(output,'ability-mana-sufficient.png')});
+    await update(s => { for (const p of s.players) Object.values(p.heroes)[0].mana.current = manaCost-1; });
+    await wait("document.querySelectorAll('.insufficient-mana .ability-mana-track').length === 2");
+    state = beforeMana; broadcast();
+    checks.push({ feature: 'Mana bars fill toward casting cost from observed mana, hide at and above cost and reappear after mana spending, preserve cooldowns, full-size artwork and three-hero four-ability geometry on both sides and graphics' });
     const beforeArmy = structuredClone(state);
     assert.equal(defaults.player.armyCompositionEnabled, true);
     assert.equal(defaults.observer.armyCompositionEnabled, true);
@@ -313,32 +446,32 @@ try {
         await wait(`document.querySelector('.army-icon')?.style.backgroundImage.includes(${JSON.stringify(iconHash('units', expectedArmy[0][0], graphics))})`);
         for (const selector of [leftPanel, rightPanel]) {
             assert.deepEqual(await frame().locator(selector + ' .army-icon').evaluateAll(elements => elements.map(e => [e.dataset.typeId, Number(e.textContent.trim())])), expectedArmy);
+            const visualOrder = await frame().locator(selector + ' .army-icon').evaluateAll(elements => elements
+                .map(e => ({ typeId: e.dataset.typeId, count: Number(e.textContent.trim()), rect: e.getBoundingClientRect() }))
+                .sort((a, b) => a.rect.top - b.rect.top || a.rect.left - b.rect.left)
+                .map(e => [e.typeId, e.count]));
+            assert.deepEqual(visualOrder, expectedArmy, `${graphics} ${selector}: unit cost increases visually left to right on both sides`);
         }
         await images('army composition ' + graphics, ['.army-icon']);
         await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
         await page.screenshot({ path: resolve(output, `army-${graphics}.png`) });
     }
-    const armyBox = await frame().locator(leftPanel).boundingBox();
+    const armyBox = await frame().locator(leftPanel + ' .army-row').boundingBox();
     await update(s => { s.application.settings.observer.researchesEnabled = true; });
-    await wait(`document.querySelector(${JSON.stringify(leftPanel)})?.dataset.panel === 'upgrades'`);
-    const rotationStarted = Date.now();
-    await wait(`document.querySelector(${JSON.stringify(leftPanel)})?.dataset.panel === 'army'`);
-    assert.ok(Date.now() - rotationStarted >= 9500 && Date.now() - rotationStarted < 12500, 'Upgrades dwell for 10 seconds despite snapshots every 250 ms');
-    assert.equal(await frame().locator(rightPanel).getAttribute('data-panel'), 'army', 'Empty opponent upgrades never create a blank rotation');
-    const secondRotationStarted = Date.now();
+    await wait(`document.querySelector(${JSON.stringify(leftPanel)})?.dataset.panel === 'army-and-upgrades'`);
+    const stackedResearch = await frame().locator(leftPanel + ' .research-row').boundingBox();
+    assert.ok(stackedResearch.y >= armyBox.y + armyBox.height, 'Upgrades sit below the army');
+    assert.equal(await frame().locator(rightPanel).getAttribute('data-panel'), 'army', 'Empty upgrades leave army visible');
     await update(s => { const id = '0000000000009999'; s.players[0].units[id] = { id, typeId: 'hfoo', isIllusion: false }; });
     await wait(`document.querySelector(${JSON.stringify(leftPanel + ' [data-type-id="hfoo"]')})?.textContent.trim() === '13'`);
-    await wait(`document.querySelector(${JSON.stringify(leftPanel)})?.dataset.panel === 'upgrades'`);
-    assert.ok(Date.now() - secondRotationStarted >= 9500 && Date.now() - secondRotationStarted < 12500, 'Army dwell is 10 seconds and count changes do not reset it');
-    await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
-    const researchBox = await frame().locator(leftPanel).boundingBox();
-    assert.equal(researchBox.x, armyBox.x); assert.equal(researchBox.y, armyBox.y, 'Army and upgrades share the exact slot');
+    await page.waitForTimeout(10_250);
+    assert.equal(await frame().locator(leftPanel).getAttribute('data-panel'), 'army-and-upgrades', 'Both panels stay visible beyond the former rotation period');
+    await page.screenshot({ path: resolve(output, 'stacked-army-upgrades.png') });
     await update(s => { s.application.settings.observer.armyCompositionEnabled = false; });
     await wait("!document.querySelector('.army-icon')");
     assert.equal(await frame().locator(leftPanel).getAttribute('data-panel'), 'upgrades');
-    // Observe beyond one complete rotation period: disabled army must leave upgrades pinned.
-    await page.waitForTimeout(10_250);
-    assert.equal(await frame().locator(leftPanel).getAttribute('data-panel'), 'upgrades');
+    const researchBox = await frame().locator(leftPanel + ' .research-row').boundingBox();
+    assert.equal(researchBox.y, armyBox.y, 'Upgrades move to the top when army is disabled');
     assert.equal(await frame().locator(rightPanel).count(), 0, 'Disabled army plus empty upgrades hides the slot');
     await update(s => { s.application.settings.observer.armyCompositionEnabled = true; s.players[0].units = {}; });
     await wait(`document.querySelector(${JSON.stringify(rightPanel)})?.dataset.panel === 'army'`);
@@ -352,8 +485,8 @@ try {
     await update(s => { s.match.status = 'finished'; });
     await wait("!document.querySelector('mv-army-research-panel')");
     state = beforeArmy; broadcast();
-    await images('restore after army rotation', ['.upgrade-icon']);
-    checks.push({ feature: 'Army counts, gold-per-unit ascending sort, illusions/deaths, both graphics and sides, two real 10-second rotations, live counts, exact shared slot, disabled/empty fallbacks, player/observer settings, match cleanup' });
+    await images('restore after stacked army panels', ['.upgrade-icon']);
+    checks.push({ feature: 'Army counts, gold-per-unit ascending sort visually left to right on both sides and graphics, illusions/deaths, persistent stacked rows beyond 10 seconds, live counts, upgrades move to top, disabled/empty fallbacks, player/observer settings, match cleanup' });
     await update(s => { s.gameContext.chatbarOpen = true; });
     await wait("!document.querySelector('.ctrlgroup-wrapper')");
     await update(s => { s.gameContext.chatbarOpen = false; s.application.settings.player.heroAbilitiesEnabled = false; s.application.settings.player.heroItemsEnabled = false; s.application.settings.player.productionQueuesEnabled = false; });

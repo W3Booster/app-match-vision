@@ -42,3 +42,57 @@
         transition: height 200ms linear;
     }
 }
+.ability-icon-wrapper {
+    // Reserve the outside level rail even for single-level abilities.
+    width: calc(var(--ability-icon-size) + 8px);
+
+    .ability-icon {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: var(--ability-icon-size);
+        height: var(--ability-icon-size);
+    }
+
+    .level-indicator {
+        left: var(--ability-icon-size);
+        margin-left: 0;
+        height: 100%;
+    }
+}
+
+.ability-icon {
+    position: relative;
+
+    &.insufficient-mana::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image: inherit;
+        background-position: inherit;
+        background-size: inherit;
+        background-repeat: no-repeat;
+        filter: grayscale(1) brightness(.5);
+    }
+
+    .ability-mana-track {
+        position: absolute;
+        bottom: 1px;
+        left: 1px;
+        right: 1px;
+        height: 3px;
+        z-index: 3;
+        background: #091219;
+
+    }
+
+    .ability-mana-fill {
+        // Keep the physical fill origin independent of mirrored hero layout.
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        background: #528aa5;
+        transition: width 200ms linear;
+    }
+}

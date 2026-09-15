@@ -528,3 +528,228 @@ both players in every mode and verify transitions back to self-play remove enemy
 panels. Screenshot tooling must preserve recorded replay flags unless the user
 explicitly requests a clearly identified alternative presentation; a replay payload
 must not be relabelled as self-play merely to change the top bar.
+
+## 2026-09-14: Missing building-upgrade timers do not imply waiting
+
+Building upgrades share construction's row but not its waiting indicator. The
+recorder can report zero progress with null timers when a duration is unavailable;
+that tuple alone does not establish that an observed building upgrade is paused
+or waiting to start. Show the existing unknown countdown (`?`) until timing is
+available, retaining the observed destination and progress. Do not estimate a
+timer from catalog build time or advance it with wall-clock time.
+
+Keep the waiting indicator for unstarted construction and production queues.
+The Electron 15 production-bundle regression covers an Orc Stronghold-to-Fortress
+upgrade with zero/null timing, unknown progress, recovered timing and completion,
+alongside waiting construction and production. The original template fails that
+regression. This presentation correction does not establish why timing was
+missing in any particular match.
+
+## 2026-09-14: Persistent army/research rows, mana availability and APM
+
+At the user's request, supersede the September 12 army/research rotation.
+Render independent rows with army above researches; disabling or emptying army
+moves researches to the top. No presentation interval or alternation remains.
+
+Dim and desaturate learned abilities when observed mana is below the current
+level's catalog cost. Show the missing amount and an approximate duration from
+observed net mana regeneration, rounded up. Zero/negative/unknown regeneration,
+a dead hero, or cost above maximum mana has no recoverable duration. Missing
+pool/catalog/cost does not invent a disabled state. Cooldown remains a separate
+indicator; estimates update from observations, never a browser timer. Keep
+numerical labels left-to-right on both player sides.
+
+Show observed APM beside player names, including measured zero, and hide it
+when unavailable. Use Warcraft's SDK observation rather than input counting.
+Preserve self-play opponent privacy even when test input contains their APM.
+The app retains its published SDK dependency; feature checks cover registry
+and locally packed SDK HEAD before publication is considered.
+
+## 2026-09-14: Display observed hero combat totals
+
+The 1v1 hero panels display optional engine combat totals beside abilities and
+inventory: damage dealt, self-damage, total damage taken, damage from others and
+total healing. Missing data hides the panel; observed zero remains visible.
+Subtraction uses the same snapshot, and no browser accumulation is performed.
+Healing includes self-healing; its label and description must not promise an
+unavailable healing-to-others partition. Keep compatibility with registry SDK
+4.1.0 and verify the packed SDK development lane before release. Self-play uses
+the existing local-player hero selector and never displays enemy combat totals.
+
+## 2026-09-14: Keep APM and combat totals out of Match Vision
+
+The owner explicitly restricted APM and hero damage/healing totals to recorder
+and SDK data for other applications. This supersedes the APM display and hero
+combat panel decisions above. Remove their components, helpers, labels and styles
+from Match Vision rather than hiding them behind a default setting. Preserve the
+recorder, SDK and API observations. Mana availability and stacked army/research
+presentation remain separate requested features.
+
+## 2026-09-15: Keep insufficient-mana artwork readable
+
+Display the missing mana and estimated recovery time in a compact blue caption
+beside the ability. Desaturate and dim only its artwork; keep the caption and any
+cooldown readable independently. Mirror the caption toward the center for the
+opponent while retaining left-to-right numbers. Reserve the caption width for
+every ability column so mana changes do not move the abilities or army rows.
+This replaces the centered two-line treatment without changing mana semantics.
+
+## 2026-09-15: Mana footers retain the compact ability grid
+
+The owner rejected side captions and requested a footer within each ability tile:
+blue mana deficit on the left, approximate recovery time on the right, and the
+independent cooldown on the artwork. This supersedes the side-caption decision.
+Both values remain visible without hover. The accessible label keeps explicit
+mana units and the estimate in seconds; the compact visual estimate uses minutes
+or hours for long waits, rounded upward, and a dash when recovery is unavailable.
+
+Keep the original 45px ability columns and army inset. Native self-play portraits
+have fixed vertical anchors, so simply adding a footer to 42px artwork would
+overlap the next hero. Use 32px artwork with separate level pips and a 12px footer
+inside a 44px tile. Reserve that tile height even when no mana footer is needed.
+Two rows fit the existing hero spacing; portraits and inventory remain aligned
+with the game. The fourth ability uses the same row pitch as the second instead
+of a percentage offset. Verify three heroes with four skills on both sides,
+both artwork families and inventory settings, including availability transitions.
+
+## 2026-09-15: Replace mana footers with an in-icon fill bar
+
+At the owner's request, replace the numeric mana footer with a slim blue bar
+inside the ability artwork. It represents observed current mana divided by the
+learned ability's mana cost, not the hero's maximum pool. Show it while mana is
+insufficient, then remove it and restore normal artwork at the casting cost.
+Spending mana can lower the bar again. Never advance it using browser time or
+an assumed regeneration rate. Missing mana/cost and passive abilities have no
+bar. Keep cooldowns independent and leave level pips unobstructed.
+
+Restore 42px artwork and the original compact rows and columns. No numeric
+footer or extra space remains; the existing accessible explanation retains the
+missing amount and observed recovery estimate. This supersedes the footer design.
+
+## 2026-09-15: Segmented mana with a persistent enough-mana signal
+
+The owner requested subtler incomplete bars, 10-MP segments, better integration
+with level markers and a distinct full state. Keep a 3px track with low-opacity
+muted blue fill while mana is insufficient. Divide the track at each 10 MP of
+the learned cost; the final segment can be shorter. Use the full artwork width
+when no level markers exist, otherwise leave a small gap before those markers.
+
+At the exact casting cost, retain a brighter cyan full bar with a soft glow and
+small end marker. This replaces removing the bar at sufficient mana. Snap to
+that full state so the highlight never accompanies an unfinished fill animation;
+mana spending restores the subdued partial state. The signal means enough mana,
+not cooldown completion or general cast eligibility. Preserve independent cooldowns,
+the compact grid, and no bar for passive/unknown-cost abilities.
+
+## 2026-09-15: Uniform mana-bar width and readable segment sizes
+
+The owner found 10-MP divisions too dense and objected to bars widening when
+level markers were absent. Use 25-MP divisions (three cells for 75 MP, six for
+150 MP), retaining a proportionally shorter final cell for other costs. Keep
+every bar 40px wide within the 42px artwork. Level markers end above the shared
+bottom strip instead of reducing the bar width. This supersedes the adaptive
+width and 10-MP decisions; the subdued partial and highlighted full states stay.
+
+## 2026-09-15: Distinguish mana states with opaque colors
+
+The owner found partial bars difficult to read over gameplay. Use opaque steel
+blue for incomplete fill, an opaque dark track and separators, and pale cyan for
+enough mana. Preserve the full-state highlight and end marker. This replaces
+partial-bar transparency while retaining equal widths and 25-MP segments.
+
+## 2026-09-15: Show mana bars only while mana is insufficient
+
+The owner prefers the bar completely hidden once the casting cost is met.
+Remove the track, fill and full-state decoration at and above that threshold;
+restore the bar if observed mana drops below it. Retain the opaque steel-blue
+fill, 25-MP divisions and equal width beneath level markers. Keep independent
+cooldowns and stable icon geometry. This supersedes the persistent full-state
+highlight; enough mana restores ordinary ability artwork without a mana bar.
+
+## 2026-09-15: Continuous mana fill and level markers outside the artwork
+
+The owner removed mana segmentation and moved ability levels to the right of
+the artwork. Use a continuous opaque fill, still shown only below the casting
+cost. Place the existing 8px level rail 2px beyond the 42px icon, on its physical
+right on both player sides. Reserve that space for every ability so single-level
+abilities and mana changes cannot shift the grid. Two columns use a 55px pitch;
+the army/research inset follows the occupied columns. Center cooldown text and
+its backdrop on the now-unobstructed artwork. Preserve native hero vertical
+anchors and test three heroes with four abilities, including inventory toggles.
+
+## 2026-09-15: Stronger insufficient-mana artwork
+
+At the owner's request, use full grayscale and 50% brightness for ability artwork
+while mana is insufficient. Apply the filter only to the artwork layer so mana
+fill, outside level markers and cooldown text retain their normal contrast.
+Restore ordinary artwork immediately when the ability's mana cost is met.
+
+## 2026-09-15: Level markers touch the ability artwork
+
+The owner removed the gap between the ability image and its outside level rail.
+Place the rail flush against the image's right edge. Reserve 50px for the 42px
+image plus 8px markers, with a 53px column pitch including the inter-column gap.
+This supersedes the earlier 2px image-to-marker gap; all mana behavior stays.
+
+## 2026-09-15: Unit costs increase left to right on both sides
+
+Keep army composition in ascending individual gold cost, read left to right on
+both player sides. The opponent panel remains anchored on the right, but its
+army row must not reverse the sorted units. Research rows retain their existing
+alignment. Verify physical icon positions in both artwork families so DOM order
+alone cannot hide a mirrored row.
+
+
+## 2026-09-15: Withdraw the self-play economy panel
+
+The owner asked to undo the new self-play resources/upkeep, tier progress and
+APM panel. Restore the native top-right strip and remove the added component,
+tier/APM helpers and panel tests. APM and combat totals remain recorder/SDK data
+for other applications, as decided on September 14. Keep the other v1.3 changes,
+including mana availability, outside ability levels, persistent army/research
+rows, unit sorting and missing-upgrade-timer correction. Remove the withdrawn
+feature from current release notes and news artwork.
+
+## 2026-09-15: Reintroduce the panel using the self-play match-bar design
+
+The owner revisited the withdrawal and asked for a panel matching the rest of
+self-play. Reuse the existing `statsbar.png` frame, 646×66 geometry, Roboto text,
+25/24px content rows and subdued label/value colors. Place it opposite the match
+bar, leaving the native day/night clock visible. Avoid the separate observer
+panel's taller resource typography and colored outer stripe.
+
+Show local gold, lumber, supply/cap, upkeep, town-hall tier/upgrade progress and
+observed APM. Use the real broadcaster when supplied, falling back to the legacy
+broadcaster ID. Keep the panel limited to active self-play and the existing top-bar
+setting. Missing resource observations retain the native strip; unavailable
+APM/tier shows a dash. Progress remains snapshot-based, with unknown timing shown
+as `?`. Highest completed surviving melee hall defines the displayed tier; higher
+same-chain upgrades advance it, not lower-tier expansion upgrades.
+
+The recorder now supplies local economy using its existing reader. Recorder/API
+and SDK changes remain locally prepared; the app keeps published SDK 4.1.0 and
+checks both it and packed SDK HEAD. A genuine owned self-play scene supplies the
+screenshot, with replay/observer flags preserved and no fabricated resource or
+APM values. This supersedes the withdrawal for this revised design only.
+
+
+## 2026-09-15: Withdraw the revised self-play bar; retain SDK resources
+
+The owner asked to reverse the revised self-play bar and explicitly approved
+providing the own player’s resources through the SDK. Remove the added UI,
+helpers and panel-specific tests, leaving Warcraft’s native resource/upkeep
+strip visible. APM and combat totals remain recorder/SDK observations for other
+apps. Keep the local-resource recorder, API and SDK changes and their ownership
+guards and tests, independently of this UI withdrawal. All other v1.3 changes
+remain. This supersedes the preceding panel reintroduction; current release
+notes and news must no longer advertise the withdrawn panel.
+
+
+## 2026-09-15: Mana fills always grow from the physical left edge
+
+The ability mana fill inherited RTL flow from the opponent hero container.
+Anchor the fill with physical `left: 0` inside its track so it grows left to
+right on both sides, independently of surrounding layout direction. Verify
+partial-fill geometry for both sides in Classic and Reforged. News examples
+should feature actual recorded left-side abilities when requested, preserving
+the replay identity, sides and observer board.

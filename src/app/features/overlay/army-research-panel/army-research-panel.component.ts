@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, computed, inject, input } from '@angular/core';
 import type { ActiveUpgrade, Match, Player } from '@w3booster/sdk';
 import { currentUpgrades } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
@@ -30,23 +30,7 @@ export class ArmyResearchPanelComponent {
         return this.settings().researchesShowAllEnabled
             ? [...leveled, ...active.filter(upgrade => !this.isWeaponOrArmorUpgrade(upgrade.typeId))] : leveled;
     });
-    private readonly canRotate = computed(() => this.army().length > 0 && this.researches().length > 0);
-    private readonly identity = computed(() => JSON.stringify([this.match().id, this.player().id]));
-    private readonly armyTurn = signal(false);
-    readonly showArmy = computed(() => this.army().length > 0 && (!this.researches().length || this.armyTurn()));
     readonly panelInset = computed(() => upgradePanelInset(this.player(), this.settings().heroItemsEnabled !== false, this.settings().heroAbilitiesEnabled === true));
-
-    constructor() {
-        effect(onCleanup => {
-            this.identity();
-            const rotate = this.canRotate();
-            this.armyTurn.set(false);
-            if (!rotate) return;
-            // UI dwell time, independent of paused/replayed game time and incoming snapshots.
-            const timer = setInterval(() => this.armyTurn.update(value => !value), 10_000);
-            onCleanup(() => clearInterval(timer));
-        });
-    }
 
     isWeaponOrArmorUpgrade(typeId: string): boolean {
         return ['armor', 'melee', 'ranged'].includes(this.assets.data()?.upgrades.get(typeId)?.category ?? '');

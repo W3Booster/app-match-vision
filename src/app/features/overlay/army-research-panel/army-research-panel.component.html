@@ -1,16 +1,20 @@
 @if (army().length || researches().length) {
     <div class="upgrade-box" [class.opponent]="opponent()" [class.tight-upgrades]="isHeadToHead()"
         [style.left.px]="opponent() ? null : panelInset()" [style.right.px]="opponent() ? panelInset() : null"
-        [attr.data-player-id]="player().id" [attr.data-panel]="showArmy() ? 'army' : 'upgrades'"
-        [attr.aria-label]="showArmy() ? 'Army composition' : 'Research and upgrades'">
-        @if (showArmy()) {
+        [attr.data-player-id]="player().id" [attr.data-panel]="army().length ? (researches().length ? 'army-and-upgrades' : 'army') : 'upgrades'"
+        aria-label="Army composition and upgrades">
+        @if (army().length) {
+            <div class="panel-row army-row" aria-label="Army composition">
             @for (group of army(); track group.typeId) {
                 <div class="upgrade-icon army-icon" [style.backgroundImage]="armyIcon(group)"
                     [attr.data-type-id]="group.typeId" [attr.aria-label]="armyLabel(group)" [title]="armyLabel(group)">
                     <span class="army-count">{{group.count}}</span>
                 </div>
             }
-        } @else {
+            </div>
+        }
+        @if (researches().length) {
+            <div class="panel-row research-row" aria-label="Research and upgrades">
             @for (research of researches(); track research.typeId) {
                 <div class="upgrade-icon" [style.backgroundImage]="researchIcon(research)">
                     @if (isWeaponOrArmorUpgrade(research.typeId)) {
@@ -22,6 +26,7 @@
                     }
                 </div>
             }
+            </div>
         }
     </div>
 }

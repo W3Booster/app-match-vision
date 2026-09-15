@@ -39,7 +39,7 @@
                                                         [style.height.%]="(1 - (activity.progress ?? 0)) * 100"
                                                         [style.opacity]="activity.progress === null ? 0 : 1"></div>
                                                     <span class="production-cooldown">
-                                                        @if (isProgressWaiting(activity)) {
+                                                        @if (!building.upgrade && isProgressWaiting(activity)) {
                                                             <span class="production-pause" role="img" aria-label="Construction waiting to start" title="Construction waiting to start"></span>
                                                         } @else { {{ remainingSecondsLabel(activity.remainingSeconds) }} }
                                                     </span>

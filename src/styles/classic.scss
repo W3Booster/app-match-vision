@@ -83,7 +83,7 @@
         .ability-icon-wrapper:nth-child(4) {
             position: absolute;
             left: auto;
-            right: 45px;
+            right: var(--ability-column-width);
         }
 
         &.inventory {
@@ -322,7 +322,7 @@
     .ability-icon-wrapper:nth-child(3),
     .ability-icon-wrapper:nth-child(4) {
         position: absolute;
-        left: 45px;
+        left: var(--ability-column-width);
     }
 
     .ability-icon-wrapper:nth-child(3) {
@@ -330,7 +330,7 @@
     }
 
     .ability-icon-wrapper:nth-child(4) {
-        top: 3.9333%;
+        top: calc(var(--ability-icon-size) + 2px);
     }
 
 
@@ -354,7 +354,7 @@
             .cooldown {
                 height: 100%;
                 position: absolute;
-                right: 8px;
+                right: 0px;
                 left: 0px;
                 display: flex;
                 justify-content: center;
@@ -369,7 +369,7 @@
                 background-color: var(--cooldown-backdrop-color);
                 height: 100%;
                 left: 0px;
-                right: 8px;
+                right: 0px;
                 position: absolute;
                 bottom: 0;
                 transition: height 1s linear;

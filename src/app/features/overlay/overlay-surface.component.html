@@ -217,8 +217,20 @@
                                         <div *ngFor="let ability of hero.abilities || []; trackBy: trackAbility" id="ID_ABILITY_{{ability.typeId}}"
                                             [class]="'ability-icon-wrapper ' + (settings.heroItemsEnabled !== false ? 'inventory-spacer' : '') ">
 
+                                            @let mana = abilityMana(hero, ability);
                                             <div class="ability-icon {{abilityLevels(ability).length === 0 ? 'ulti' : '' }}"
+                                                [class.insufficient-mana]="mana && mana.missing > 0"
+                                                [attr.aria-disabled]="mana && mana.missing > 0 ? 'true' : null"
+                                                [attr.aria-label]="mana?.label" [attr.title]="mana?.label"
                                                 [style.backgroundImage]="getAbilityIconBackground(ability)">
+                                                @if (mana && mana.missing > 0) {
+                                                    <div class="ability-mana-track"
+                                                        role="progressbar" aria-label="Mana available for this ability"
+                                                        aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="mana.availableFraction * 100"
+                                                        [attr.aria-valuetext]="mana.label">
+                                                        <div class="ability-mana-fill" [style.width.%]="mana.availableFraction * 100"></div>
+                                                    </div>
+                                                }
                                                 <div *ngIf="getCooldown(ability) as cooldown"
                                                     class="cooldown-wrapper">
                                                     <div *ngIf="cooldown.remainingSeconds > 0" class="cooldown">
@@ -242,8 +254,20 @@
                                         <div *ngFor="let ability of hero.abilities || []; trackBy: trackAbility"
                                             id="ID_OPPONENT_ABILITY_{{ability.typeId}}"
                                             [class]="'ability-icon-wrapper ' + (settings.heroItemsEnabled !== false ? 'inventory-spacer' : '') ">
+                                            @let mana = abilityMana(hero, ability);
                                             <div class="ability-icon"
+                                                [class.insufficient-mana]="mana && mana.missing > 0"
+                                                [attr.aria-disabled]="mana && mana.missing > 0 ? 'true' : null"
+                                                [attr.aria-label]="mana?.label" [attr.title]="mana?.label"
                                                 [style.backgroundImage]="getAbilityIconBackground(ability)">
+                                                @if (mana && mana.missing > 0) {
+                                                    <div class="ability-mana-track"
+                                                        role="progressbar" aria-label="Mana available for this ability"
+                                                        aria-valuemin="0" aria-valuemax="100" [attr.aria-valuenow]="mana.availableFraction * 100"
+                                                        [attr.aria-valuetext]="mana.label">
+                                                        <div class="ability-mana-fill" [style.width.%]="mana.availableFraction * 100"></div>
+                                                    </div>
+                                                }
                                                 <div *ngIf="getCooldown(ability) as cooldown"
                                                     class="cooldown-wrapper">
                                                     <div *ngIf="cooldown.remainingSeconds > 0" class="cooldown">

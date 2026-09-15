@@ -1,5 +1,16 @@
 # Match Vision releases
 
+## 1.3.0
+
+- Low-mana abilities are more clearly disabled. A continuous blue bar fills left to right on both sides toward the casting cost and disappears when enough mana is available; cooldowns stay independent.
+- Ability level markers sit flush beside the right edge of the artwork.
+- Army composition and upgrades stay visible in separate rows, with units above upgrades. Upgrades move up when the unit row is empty or disabled.
+- Both army rows read from cheapest to most expensive left to right, including the opponent’s side.
+- Missing building-upgrade timers show `?` instead of a false pause indicator.
+- Enemy gameplay panels remain hidden during self-play even if enemy data is supplied.
+
+Observed mana-recovery estimates appear when supported by the recorder. Unknown readings are not guessed. APM, local-player resources, and hero damage and healing totals remain available through the recorder/SDK for other apps.
+
 ## 1.2.0 — 2026-09-13
 
 - See your army composition with unit counts, ordered from lowest to highest gold cost. It shares the upgrades slot, switching every ten seconds when both have content, and is enabled by default.

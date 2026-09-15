@@ -15,6 +15,7 @@ import { TeamObserverBarComponent } from './team-observer-bar/team-observer-bar.
 import { ProductionQueueComponent } from './production-queue/production-queue.component';
 import { heroHealthColor } from './hero-vitals';
 import { ArmyResearchPanelComponent } from './army-research-panel/army-research-panel.component';
+import { abilityManaState } from './ability-mana';
 
 @Component({
     selector: 'mv-overlay-surface',
@@ -67,6 +68,7 @@ export class OverlaySurfaceComponent {
         return count > 1 ? Array.from({ length: count }, (_, index) => index + 1).reverse() : [];
     }
     getCooldown(ability: HeroAbility) { return this.presentation().abilityCooldowns.get(ability); }
+    abilityMana(hero: Hero, ability: HeroAbility) { return abilityManaState(hero, ability, this.assets.data()); }
     getItemCooldown(hero: Hero, slot: number) {
         if (!this.matchActive || !hero.inventory?.[slot]) return null;
         const cooldown = hero.inventoryCooldowns?.[slot];
