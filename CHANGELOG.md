@@ -1,5 +1,10 @@
 # Match Vision releases
 
+## 1.3.1
+
+- Upgrade to SDK 4.3.0 for resource-read invalidation and recovery. Missing economy readings remain unavailable, while observed zero values are preserved.
+- Receive the improved resource recorder through the coordinated W3Booster release.
+
 ## 1.3.0
 
 - Low-mana abilities are more clearly disabled. A continuous blue bar fills left to right on both sides toward the casting cost and disappears when enough mana is available; cooldowns stay independent.
