@@ -295,7 +295,14 @@
                                             <div class="item-icon" *ngIf="item !== ''"
                                                 [style.backgroundImage]="getItemIconBackground(item)" [class.has-item-bonus]="getItemBonus(item) !== null" [class.has-item-charges]="getItemCharges(hero, slot) !== null">
                                                 <span *ngIf="getItemBonus(item) as bonus" class="item-bonus">{{bonus}}</span>
-                                                <span *ngIf="getItemCharges(hero, slot) !== null" class="item-charges" [attr.aria-label]="'Remaining charges: ' + getItemCharges(hero, slot)">{{getItemCharges(hero, slot)}}</span>
+                                                <span *ngIf="getItemCharges(hero, slot) as charges" class="item-charges"
+                                                    [class.charge-dots]="charges.dots !== null" [class.charge-number]="charges.dots === null"
+                                                    role="img" [attr.aria-label]="'Remaining charges: ' + charges.remaining">
+                                                    <ng-container *ngIf="charges.dots as dots; else chargeNumber">
+                                                        <span *ngFor="let filled of dots" class="charge-dot" [class.filled]="filled" aria-hidden="true"></span>
+                                                    </ng-container>
+                                                    <ng-template #chargeNumber>{{charges.remaining}}</ng-template>
+                                                </span>
                                                 <div *ngIf="getItemCooldown(hero, slot) as cooldown" class="cooldown-wrapper item-cooldown" [attr.data-slot]="slot">
                                                     <div class="cooldown">{{cooldownSeconds(cooldown.remainingSeconds!)}}</div>
                                                     <div class="cooldown-animation" [style.height.%]="(1 - (cooldown.progress ?? 0)) * 100"></div>
@@ -314,7 +321,14 @@
                                             <div class="item-icon" *ngIf="item !== ''"
                                                 [style.backgroundImage]="getItemIconBackground(item)" [class.has-item-bonus]="getItemBonus(item) !== null" [class.has-item-charges]="getItemCharges(hero, slot) !== null">
                                                 <span *ngIf="getItemBonus(item) as bonus" class="item-bonus">{{bonus}}</span>
-                                                <span *ngIf="getItemCharges(hero, slot) !== null" class="item-charges" [attr.aria-label]="'Remaining charges: ' + getItemCharges(hero, slot)">{{getItemCharges(hero, slot)}}</span>
+                                                <span *ngIf="getItemCharges(hero, slot) as charges" class="item-charges"
+                                                    [class.charge-dots]="charges.dots !== null" [class.charge-number]="charges.dots === null"
+                                                    role="img" [attr.aria-label]="'Remaining charges: ' + charges.remaining">
+                                                    <ng-container *ngIf="charges.dots as dots; else chargeNumber">
+                                                        <span *ngFor="let filled of dots" class="charge-dot" [class.filled]="filled" aria-hidden="true"></span>
+                                                    </ng-container>
+                                                    <ng-template #chargeNumber>{{charges.remaining}}</ng-template>
+                                                </span>
                                                 <div *ngIf="getItemCooldown(hero, slot) as cooldown" class="cooldown-wrapper item-cooldown" [attr.data-slot]="slot">
                                                     <div class="cooldown">{{cooldownSeconds(cooldown.remainingSeconds!)}}</div>
                                                     <div class="cooldown-animation" [style.height.%]="(1 - (cooldown.progress ?? 0)) * 100"></div>

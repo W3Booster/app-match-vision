@@ -768,3 +768,19 @@ The optional fields are feature-detected so registry SDK 4.3.0 and older runtime
 snapshots remain supported. The candidate SDK provides the typed contract.
 A coordinated recorder/catalog/API/SDK release is required to supply real counts;
 frontend fixture validation alone does not prove native recording or deployment.
+
+
+## 2026-09-17: Visualize catalog charge capacity with filled and empty dots
+
+Supersedes the numeric presentation above: derive dot capacity from the item's
+catalog `initialCharges` and fill the observed `inventoryCharges[slot]` count.
+Keep remaining charges, including zero and one, visible for multi-use items;
+hide single-use items and missing/invalid observations or catalog defaults.
+Empty dots describe normal catalog capacity, not recorded use history. Do not
+add initial counts to live SDK snapshots or infer per-instance starting counts.
+
+Both artwork families and player sides use bottom-right dots, filling left to
+right in rows of five. Two rows cover the current catalog maximum of ten. Fall
+back to the existing numeric badge when remaining charges exceed the default
+or a future/custom capacity exceeds ten; never truncate the observed count or
+allocate unbounded dot arrays. Cooldowns and item bonuses retain their rendering.

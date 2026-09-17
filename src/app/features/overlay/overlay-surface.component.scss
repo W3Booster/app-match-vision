@@ -15,9 +15,36 @@
 }
 
 .item-bonus,
-.item-charges {
+.charge-number {
     // Inventory artwork is 23px wide; keep +12/+15 entirely inside it.
     @include icon-number.corner-number(12px);
+}
+
+.charge-dots {
+    position: absolute;
+    right: 1px;
+    bottom: 1px;
+    z-index: 3;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1px;
+    max-width: 19px;
+    padding: 1px;
+    background: rgba(0, 0, 0, .8);
+    border-radius: 2px;
+    direction: ltr;
+    pointer-events: none;
+
+    .charge-dot {
+        flex: 0 0 3px;
+        width: 3px;
+        height: 3px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        border-radius: 50%;
+
+        &.filled { background: #fff; }
+    }
 }
 
 .item-icon .cooldown-wrapper {

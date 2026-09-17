@@ -337,7 +337,17 @@ try {
             await wait("document.querySelectorAll('.item-charges').length === 4");
             for (const side of ['streamer', 'opponent']) {
                 const inventory = frame().locator(`.hero-area-${side}.inventory`).first();
-                assert.deepEqual(await inventory.locator('.item-charges').allTextContents(), ['3', '1']);
+                assert.deepEqual(await inventory.locator('.item-charges').evaluateAll(es => es.map(e => ({
+                    label: e.getAttribute('aria-label'), dots: e.querySelectorAll('.charge-dot').length,
+                    filled: e.querySelectorAll('.charge-dot.filled').length
+                }))), [
+                    { label: 'Remaining charges: 3', dots: 3, filled: 3 },
+                    { label: 'Remaining charges: 1', dots: 3, filled: 1 }
+                ]);
+                assert.ok(await inventory.locator('.charge-dots').evaluateAll(es => es.every(e => {
+                    const dots = [...e.children].map(d => d.getBoundingClientRect());
+                    return dots.every((d, i) => i === 0 || d.left > dots[i - 1].left);
+                })), 'Charge dots fill from left to right on both player sides');
                 assert.deepEqual(await inventory.locator('.item-bonus').allTextContents(), [catalog.items.rat6.name.match(/\+\d+$/)[0]]);
                 assert.equal(await inventory.locator('.item-cooldown .cooldown').textContent(), '15');
                 assert.ok(await inventory.locator('.item-charges').evaluateAll(es => es.every(e => {
@@ -355,12 +365,36 @@ try {
                 inventoryCharges: [null, 1, 1, 2, 0, null], inventoryCooldowns: Array(6).fill(null)
             });
         });
-        await wait("document.querySelector('.hero-area-streamer.inventory .item-charges')?.textContent === '1'");
-        for (const side of ['streamer', 'opponent']) assert.deepEqual(await frame().locator(`.hero-area-${side}.inventory .item-charges`).allTextContents(), ['1', '2']);
+        await wait("document.querySelector('.hero-area-streamer.inventory .item-charges')?.getAttribute('aria-label') === 'Remaining charges: 1'");
+        for (const side of ['streamer', 'opponent']) assert.deepEqual(await frame().locator(`.hero-area-${side}.inventory .item-charges`).evaluateAll(es => es.map(e => e.querySelectorAll('.filled').length)), [1, 2]);
+        // Include a retained zero, an above-default count, and the largest catalog capacity.
+        const tenChargeItem = Object.values(catalog.items).find(item => item.initialCharges === 10).typeId;
+        for (const reforged of [false, true]) {
+            await update(s => {
+                s.match.isReforged = reforged;
+                for (const player of s.players) Object.assign(Object.values(player.heroes)[0], {
+                    inventory: ['hslv', 'hslv', tenChargeItem, '', '', ''],
+                    inventoryCharges: [0, 7, 6, null, null, null]
+                });
+            });
+            await wait("document.querySelectorAll('.charge-number').length === 2");
+            for (const side of ['streamer', 'opponent']) {
+                const inventory = frame().locator(`.hero-area-${side}.inventory`).first();
+                assert.equal(await inventory.locator('.charge-number').textContent(), '7');
+                assert.deepEqual(await inventory.locator('.charge-dots').evaluateAll(es => es.map(e => [e.children.length, e.querySelectorAll('.filled').length])), [[3, 0], [10, 6]]);
+                assert.ok(await inventory.locator('.charge-dot').evaluateAll(es => es.every(e => {
+                    const a = e.getBoundingClientRect(), b = e.closest('.item-icon').getBoundingClientRect();
+                    return a.left >= b.left && a.right <= b.right && a.top >= b.top && a.bottom <= b.bottom;
+                })), 'All ten dots fit inside the inventory artwork');
+            }
+            await images('charge capacity', ['.inventory .item-icon']);
+            await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
+            await page.screenshot({ path: resolve(output, `item-charge-capacity-${reforged ? 'reforged' : 'classic'}.png`) });
+        }
         await update(s => { for (const player of s.players) delete Object.values(player.heroes)[0].inventoryCharges; });
         await wait("!document.querySelector('.item-charges')");
         state = beforeCharges; broadcast();
-        checks.push({ feature: 'Remaining inventory charges including 1, both sides/artwork families, duplicate items, slot moves, missing data, cooldown and bonus coexistence; single-use items excluded' });
+        checks.push({ feature: 'Inventory charge dots including zero/one, numeric overflow, ten-dot capacity, both sides/artwork families, duplicate items, slot moves, missing data, cooldown and bonus coexistence; single-use items excluded' });
     }
     const beforeMana = structuredClone(state);
     const manaCost = catalog.abilities.AHtb.levels[0].manaCost;
