@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Keep production and construction below shared allied hero portraits during play, including an allied hero in slot 4 when you have only one hero. Long queues scroll within the remaining space.
 - See remaining charges on multi-use inventory items: filled dots show what remains and empty dots show the normal starting capacity. The last charge stays visible.
 - Counts above normal capacity use a numeric badge. Single-use items and unavailable charge observations have no indicator. Both Classic and Reforged artwork are supported.
 

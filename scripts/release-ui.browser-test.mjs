@@ -170,6 +170,62 @@ try {
         'The withdrawn self-play panel, APM and hero combat totals remain undisplayed');
     state=structuredClone(original);broadcast();
     checks.push({feature:'Self-play excludes enemy portraits, abilities, vitals, inventory, army, researches and production despite populated input; observer/replay shows both sides; mode transitions clear stale panels'});
+    const beforeHeroRail = structuredClone(state);
+    for (const [width, height] of [[1920, 1080], [1280, 720]]) {
+        await page.setViewportSize({ width, height });
+        await wait(`innerHeight === ${height} && Math.abs(Number(getComputedStyle(document.body).zoom) - ${height / 1080}) < .001`);
+        for (const reforged of [false, true]) for (const hudScale of [1, .75]) {
+            await update(s => {
+                s.match.isObserver = false; s.match.isReplay = false; s.match.isReforged = reforged;
+                s.gameContext.hudScale = hudScale; delete s.gameContext.heroBarLastOccupiedSlot;
+                // Exactly one owned hero; shared portraits belong only to native HUD context.
+                const h = Object.values(s.players[0].heroes)[0]; s.players[0].heroes = { [h.id]: h };
+            });
+            const left = '.production-side[data-side="left"]';
+            await wait(`document.querySelector('${left}') && !document.querySelector('${left}').style.getPropertyValue('--production-side-top')`);
+            const baseline = await frame().locator(left).boundingBox();
+            const layoutHeight = await frame().locator('mv-production-queue').evaluate(e => e.getBoundingClientRect().height);
+            for (const slot of [4, 7, 3, 4, 0, undefined]) {
+                await update(s => {
+                    if (slot === undefined) delete s.gameContext.heroBarLastOccupiedSlot;
+                    else s.gameContext.heroBarLastOccupiedSlot = slot;
+                });
+                const expected = baseline.y + Math.max(0, (slot ?? 3) - 3) * .0865 * layoutHeight;
+                try { await wait(`Math.abs(document.querySelector('${left}').getBoundingClientRect().top - ${expected}) < 1`); }
+                catch (error) { console.error('Hero rail geometry', { width, height, reforged, hudScale, slot, expected, actual: await frame().locator(left).evaluate(e => ({ top: e.getBoundingClientRect().top, style: e.getAttribute('style'), host: e.closest('mv-production-queue').getBoundingClientRect().height })) }); throw error; }
+                const box = await frame().locator(left).boundingBox();
+                assert.ok(box.y + box.height <= layoutHeight - 15, 'Expanded rail retains viewport clearance');
+            }
+            await update(s => {
+                s.gameContext.heroBarLastOccupiedSlot = 7;
+                const building = Object.values(s.players[0].buildings).find(b => b.production);
+                for (let n = 0; n < 25; n++) {
+                    const id = (7000 + n).toString(16).padStart(16, '0');
+                    s.players[0].buildings[id] = { ...structuredClone(building), id };
+                }
+            });
+            await wait(`document.querySelector('${left}').scrollHeight > document.querySelector('${left}').clientHeight`);
+            assert.ok(await frame().locator(left).evaluate(e => e.getBoundingClientRect().bottom <= e.closest('mv-production-queue').getBoundingClientRect().height - 15), 'Long queues scroll below the shared rail');
+            await update(s => { s.players[0].buildings = structuredClone(beforeHeroRail.players[0].buildings); });
+        }
+    }
+    await page.setViewportSize({ width: 1920, height: 1080 });
+    await update(s => {
+        const id = '00000000000ff001';
+        const building = Object.values(s.players[0].buildings).find(b => b.production);
+        s.players[1].buildings = { [id]: { ...structuredClone(building), id } };
+    });
+    for (const mode of ['isObserver', 'isReplay']) {
+        await update(s => { s.match.isObserver = false; s.match.isReplay = false; s.match[mode] = true; delete s.gameContext.heroBarLastOccupiedSlot; });
+        await wait("document.querySelector('.production-side[data-side=right]')");
+        const tops = await frame().locator('.production-side').evaluateAll(es => es.map(e => e.getBoundingClientRect().top));
+        await update(s => { s.gameContext.heroBarLastOccupiedSlot = 7; });
+        await page.waitForTimeout(300);
+        assert.deepEqual(await frame().locator('.production-side').evaluateAll(es => es.map(e => e.getBoundingClientRect().top)), tops, 'Observer/replay sides retain their layout');
+    }
+    state = beforeHeroRail; broadcast();
+    await wait("document.querySelectorAll('.building-queue').length === 1 && !document.querySelector('.production-side[data-side=right]')");
+    checks.push({ feature: 'Native last slot 4/7 with one owned hero, gap preservation, shrinking/reset, scroll bounds, Classic/Reforged and HUD scale; observer/replay sides unchanged' });
     for (const reforged of [false, true]) {
         const graphics = reforged ? 'reforged' : 'classic';
         await update(s => { s.match.isReforged = reforged; });

@@ -3,6 +3,7 @@
         @for (panel of panels(); track panel.side) {
             @if (panel.groups.length) {
                 <div class="production-side" [class.right]="panel.side === 'right'" [attr.data-side]="panel.side"
+                    [style.--production-side-top]="panel.side === 'left' ? leftTop() : null"
                     animate.enter="panel-enter" animate.leave="panel-leave">
                     @for (group of panel.groups; track group.player.id) {
                         <div class="player-production" [attr.data-player-id]="group.player.id"

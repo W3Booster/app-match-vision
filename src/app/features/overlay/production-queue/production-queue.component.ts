@@ -1,7 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import type { Match } from '@w3booster/sdk';
+import type { GameContext, Match } from '@w3booster/sdk';
 import type { MatchVisionPlayerView } from '../../../domain';
 import { WarcraftAssetsService } from '../../../shared/warcraft/warcraft-assets.service';
+import { productionTop } from './production-queue-layout';
 import { productionPlayers, progressLabel, remainingSecondsLabel, isProgressWaiting, buildingActivity, buildingActivityType } from './production-queue-presentation';
 
 @Component({
@@ -12,6 +13,8 @@ import { productionPlayers, progressLabel, remainingSecondsLabel, isProgressWait
 })
 export class ProductionQueueComponent {
     readonly match = input.required<Match>();
+    readonly gameContext = input<GameContext>({ hudScale: 1 });
+    readonly leftTop = computed(() => productionTop(this.match(), this.gameContext()));
     readonly players = input.required<readonly MatchVisionPlayerView[]>();
     readonly reversePlayerOrder = input(false);
     readonly enabled = input(true);

@@ -1,11 +1,11 @@
-// Reserve all three hero rows, even before the second/third hero is observed.
+// Keep the three-row minimum; shared native portraits can extend the left rail.
 :host { --waiting-icon-size: calc((var(--ability-icon-size) - 4px) / 2); --production-row-height: calc(var(--ability-icon-size) + 9px); position: absolute; inset: 0; pointer-events: none; color: #f4ecd6; }
 .production-side {
     position: absolute;
-    top: var(--production-top);
+    top: var(--production-side-top, var(--production-top));
     left: 8px;
     max-width: calc(50% - 16px);
-    max-height: calc(100% - var(--production-top) - 16px);
+    max-height: calc(100% - var(--production-side-top, var(--production-top)) - 16px);
     overflow: auto;
     pointer-events: auto;
     display: flex;
