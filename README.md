@@ -152,6 +152,19 @@ locally packed SDK 4 in a disposable checkout; `scripts/check-release-sdk.mjs` r
 release builds with an old registry dependency. Do not publish or deploy this migration
 without upgrading the recorder, API, static bundle and application together.
 
+## Inventory charges
+
+Inventory icons use the matched catalog's `initialCharges` as normal capacity
+and the hero's slot-aligned `inventoryCharges` as the remaining count. Multi-use
+items show filled and empty dots, including one remaining or a known zero.
+Unknown counts, missing defaults and single-use items have no indicator. Counts
+above capacity, or capacities above ten, use a numeric badge. Empty dots do not
+claim recorded use history; custom maps can override catalog defaults.
+
+This feature requires the coordinated recorder/API/SDK and catalog update.
+Older catalogs or producers continue to render inventory without charge dots.
+See the SDK's [charge contract and JSON examples](https://github.com/W3Booster/sdk/blob/main/GAME_DATA.md#inventory-charges).
+
 ## Releases
 
 Match Vision uses semantic versions independently of W3Booster and the SDK.

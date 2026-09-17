@@ -1,5 +1,10 @@
 # Match Vision releases
 
+## Unreleased
+
+- See remaining charges on multi-use inventory items: filled dots show what remains and empty dots show the normal starting capacity. The last charge stays visible.
+- Counts above normal capacity use a numeric badge. Single-use items and unavailable charge observations have no indicator. Both Classic and Reforged artwork are supported.
+
 ## 1.3.1
 
 - Upgrade to SDK 4.3.0 for resource-read invalidation and recovery. Missing economy readings remain unavailable, while observed zero values are preserved.
