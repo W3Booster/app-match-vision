@@ -16,6 +16,7 @@ import { ProductionQueueComponent } from './production-queue/production-queue.co
 import { heroHealthColor } from './hero-vitals';
 import { ArmyResearchPanelComponent } from './army-research-panel/army-research-panel.component';
 import { abilityManaState } from './ability-mana';
+import { itemCharges } from './item-charges';
 
 @Component({
     selector: 'mv-overlay-surface',
@@ -57,6 +58,7 @@ export class OverlaySurfaceComponent {
         const name = this.assets.data()?.items.get(rawcode)?.name;
         return name?.match(/^(?:Claws of Attack|Ring of Protection) (\+\d+)$/)?.[1] ?? null;
     }
+    getItemCharges(hero: Hero, slot: number): number | null { return itemCharges(hero, slot, this.assets.data()); }
     isObserverOrReplay(): boolean { return isObserverOrReplayMatch(this.state.match); }
     showObserverBar(): boolean { return this.presentation().showsObserverBar; }
     showObserverTeamBar(): boolean { return this.presentation().showsTeamObserverBar; }

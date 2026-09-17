@@ -753,3 +753,18 @@ right on both sides, independently of surrounding layout direction. Verify
 partial-fill geometry for both sides in Classic and Reforged. News examples
 should feature actual recorded left-side abilities when requested, preserving
 the replay identity, sides and observer board.
+
+## 2026-09-17: Show remaining charges for items bought with multiple charges
+
+Inventory icons show the observed remaining count when the matched catalog item
+has `initialCharges > 1`. Keep showing 1 on the last charge. Single-use items,
+permanent items, missing catalog defaults and unavailable live counts have no
+charge badge. Zero remains an observed count if a retained item reports it.
+Use the existing bottom-right bonus/count style on both player sides and both
+artwork families; cooldowns remain centered. Counts follow inventory slots,
+including duplicate rawcodes, rather than tracking uses in the app.
+
+The optional fields are feature-detected so registry SDK 4.3.0 and older runtime
+snapshots remain supported. The candidate SDK provides the typed contract.
+A coordinated recorder/catalog/API/SDK release is required to supply real counts;
+frontend fixture validation alone does not prove native recording or deployment.

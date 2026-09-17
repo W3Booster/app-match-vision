@@ -321,6 +321,47 @@ try {
     await wait("document.querySelectorAll('.item-cooldown').length === 0");
     checks.push({ feature: 'C3 bonus items mixed with ordinary items and two cooldowns on both sides and artwork families' });
     await update(s => { s.match.isObserver = false; s.match.isReplay = false; });
+    // New catalogs advertise starting charges; older catalogs continue to render without badges.
+    if (catalog.items.hslv.initialCharges > 1) {
+        const beforeCharges = structuredClone(state);
+        await update(s => {
+            s.match.isReplay = true;
+            for (const player of s.players) Object.assign(Object.values(player.heroes)[0], {
+                inventory: ['hslv', 'hslv', 'phea', 'bspd', 'rat6', 'hslv'],
+                inventoryCharges: [3, 1, 1, 0, 0, null],
+                inventoryCooldowns: [{ progress: .5, remainingSeconds: 15, totalSeconds: 30 }, null, null, null, null, null]
+            });
+        });
+        for (const reforged of [false, true]) {
+            await update(s => { s.match.isReforged = reforged; });
+            await wait("document.querySelectorAll('.item-charges').length === 4");
+            for (const side of ['streamer', 'opponent']) {
+                const inventory = frame().locator(`.hero-area-${side}.inventory`).first();
+                assert.deepEqual(await inventory.locator('.item-charges').allTextContents(), ['3', '1']);
+                assert.deepEqual(await inventory.locator('.item-bonus').allTextContents(), [catalog.items.rat6.name.match(/\+\d+$/)[0]]);
+                assert.equal(await inventory.locator('.item-cooldown .cooldown').textContent(), '15');
+                assert.ok(await inventory.locator('.item-charges').evaluateAll(es => es.every(e => {
+                    const a = e.getBoundingClientRect(), b = e.parentElement.getBoundingClientRect();
+                    return a.left >= b.left && a.right <= b.right && a.top >= b.top && a.bottom <= b.bottom;
+                })), 'Charges fit inside the inventory artwork');
+            }
+            await images('item charges', ['.inventory .item-icon']);
+            await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
+            await page.screenshot({ path: resolve(output, `item-charges-${reforged ? 'reforged' : 'classic'}.png`) });
+        }
+        await update(s => {
+            for (const player of s.players) Object.assign(Object.values(player.heroes)[0], {
+                inventory: ['', 'hslv', 'phea', 'hslv', 'rat6', ''],
+                inventoryCharges: [null, 1, 1, 2, 0, null], inventoryCooldowns: Array(6).fill(null)
+            });
+        });
+        await wait("document.querySelector('.hero-area-streamer.inventory .item-charges')?.textContent === '1'");
+        for (const side of ['streamer', 'opponent']) assert.deepEqual(await frame().locator(`.hero-area-${side}.inventory .item-charges`).allTextContents(), ['1', '2']);
+        await update(s => { for (const player of s.players) delete Object.values(player.heroes)[0].inventoryCharges; });
+        await wait("!document.querySelector('.item-charges')");
+        state = beforeCharges; broadcast();
+        checks.push({ feature: 'Remaining inventory charges including 1, both sides/artwork families, duplicate items, slot moves, missing data, cooldown and bonus coexistence; single-use items excluded' });
+    }
     const beforeMana = structuredClone(state);
     const manaCost = catalog.abilities.AHtb.levels[0].manaCost;
     await update(s => {

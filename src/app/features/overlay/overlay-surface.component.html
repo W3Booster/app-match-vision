@@ -293,8 +293,9 @@
                                         <div *ngFor="let item of heroItems(hero); let slot = index; trackBy: trackInventorySlot" id="ID_ITEM_{{item}}"
                                             class="item-icon-wrapper">
                                             <div class="item-icon" *ngIf="item !== ''"
-                                                [style.backgroundImage]="getItemIconBackground(item)" [class.has-item-bonus]="getItemBonus(item) !== null">
+                                                [style.backgroundImage]="getItemIconBackground(item)" [class.has-item-bonus]="getItemBonus(item) !== null" [class.has-item-charges]="getItemCharges(hero, slot) !== null">
                                                 <span *ngIf="getItemBonus(item) as bonus" class="item-bonus">{{bonus}}</span>
+                                                <span *ngIf="getItemCharges(hero, slot) !== null" class="item-charges" [attr.aria-label]="'Remaining charges: ' + getItemCharges(hero, slot)">{{getItemCharges(hero, slot)}}</span>
                                                 <div *ngIf="getItemCooldown(hero, slot) as cooldown" class="cooldown-wrapper item-cooldown" [attr.data-slot]="slot">
                                                     <div class="cooldown">{{cooldownSeconds(cooldown.remainingSeconds!)}}</div>
                                                     <div class="cooldown-animation" [style.height.%]="(1 - (cooldown.progress ?? 0)) * 100"></div>
@@ -311,8 +312,9 @@
                                         <div *ngFor="let item of heroItems(hero); let slot = index; trackBy: trackInventorySlot" id="ID_ITEM_{{item}}"
                                             class="item-icon-wrapper">
                                             <div class="item-icon" *ngIf="item !== ''"
-                                                [style.backgroundImage]="getItemIconBackground(item)" [class.has-item-bonus]="getItemBonus(item) !== null">
+                                                [style.backgroundImage]="getItemIconBackground(item)" [class.has-item-bonus]="getItemBonus(item) !== null" [class.has-item-charges]="getItemCharges(hero, slot) !== null">
                                                 <span *ngIf="getItemBonus(item) as bonus" class="item-bonus">{{bonus}}</span>
+                                                <span *ngIf="getItemCharges(hero, slot) !== null" class="item-charges" [attr.aria-label]="'Remaining charges: ' + getItemCharges(hero, slot)">{{getItemCharges(hero, slot)}}</span>
                                                 <div *ngIf="getItemCooldown(hero, slot) as cooldown" class="cooldown-wrapper item-cooldown" [attr.data-slot]="slot">
                                                     <div class="cooldown">{{cooldownSeconds(cooldown.remainingSeconds!)}}</div>
                                                     <div class="cooldown-animation" [style.height.%]="(1 - (cooldown.progress ?? 0)) * 100"></div>

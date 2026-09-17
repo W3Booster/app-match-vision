@@ -9,11 +9,13 @@
     position: relative;
 }
 
-.item-icon.has-item-bonus::before {
+.item-icon.has-item-bonus::before,
+.item-icon.has-item-charges::before {
     @include icon-number.corner-shading;
 }
 
-.item-bonus {
+.item-bonus,
+.item-charges {
     // Inventory artwork is 23px wide; keep +12/+15 entirely inside it.
     @include icon-number.corner-number(12px);
 }
