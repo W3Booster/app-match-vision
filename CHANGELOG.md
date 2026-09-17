@@ -1,6 +1,8 @@
 # Match Vision releases
 
-## Unreleased
+## 1.4.0
+
+- Smooth health, mana and active production/building progress through SDK 4.4, including replay speed changes and Human power-building. Reconnects restore current values.
 
 - Keep production and construction below shared allied hero portraits during play, including an allied hero in slot 4 when you have only one hero. Long queues scroll within the remaining space.
 - See remaining charges on multi-use inventory items: filled dots show what remains and empty dots show the normal starting capacity. The last charge stays visible.
