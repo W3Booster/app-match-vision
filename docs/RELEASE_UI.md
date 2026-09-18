@@ -66,3 +66,8 @@ The supplementary geometry tests use JSON-only fixture cloning and convert
 Chromium 94’s pre-zoom rectangles to viewport coordinates, corroborated by hit
 testing. They do not change application styles or polyfill browser APIs. Every
 UI session owns a temporary profile, preventing settings leaking between runs.
+
+The production-bundle gate also supplies precise SDK clock heartbeats. It checks
+that a forward correction cannot briefly undo an already displayed second, and
+that a real backward seek and pause still apply. Match data is synthetic; the
+compiled SDK and Electron renderer are unmodified.

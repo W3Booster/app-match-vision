@@ -139,6 +139,42 @@ try {
     await wait("document.querySelector('.ctrlgroup-icon')");
     assert.equal(await frame().evaluate(() => typeof AbortSignal.prototype.throwIfAborted), 'undefined', 'Run the actual oldest supported desktop browser');
     assert.equal(await frame().evaluate(() => typeof window.ng), 'undefined', 'Smoke must use the production build');
+    // A fresh heartbeat must not briefly undo a second already rendered by the
+    // SDK estimate. Exercise the compiled consumer, including real rewind/pause.
+    await update(s => {
+        s.match.gameTime = 10;
+        s.transport = { recorderUrls: [], interpolation: { entries: [], clock: {
+            sample: 1, times: [10.05, 10.05], rates: [1, 1], gameTime: 10.05, ageMs: 1000
+        } } };
+    });
+    await wait("document.querySelector('.gametime')?.textContent.trim() === '00:11'");
+    await frame().evaluate(() => {
+        window.__releaseClockTicks = [];
+        window.__releaseClockObserver = new MutationObserver(() => {
+            window.__releaseClockTicks.push(document.querySelector('.gametime')?.textContent.trim());
+        });
+        window.__releaseClockObserver.observe(document.querySelector('.gametime'), { childList: true, characterData: true, subtree: true });
+    });
+    await update(s => {
+        s.transport.interpolation.clock = { sample: 2, times: [10.1, 10.1], rates: [1, 1], gameTime: 10.1, ageMs: 0 };
+    });
+    await page.waitForTimeout(250);
+    assert.equal(await frame().locator('.gametime').innerText(), '00:11');
+    assert.ok(!(await frame().evaluate(() => window.__releaseClockTicks)).includes('00:10'), 'No transient backward clock tick');
+    await update(s => {
+        s.match.gameTime = 9;
+        s.transport.interpolation.clock = { sample: 3, times: [9, 9], rates: [1, 1], gameTime: 9, ageMs: 0 };
+    });
+    await wait("document.querySelector('.gametime')?.textContent.trim() === '00:09'");
+    await update(s => {
+        s.match.paused = true;
+        s.transport.interpolation.clock = { sample: 4, times: [9.1, 9.1], rates: [0, 0], gameTime: 9.1, ageMs: 0 };
+    });
+    await page.waitForTimeout(100);
+    assert.equal(await frame().locator('.gametime').innerText(), '00:09');
+    await frame().evaluate(() => window.__releaseClockObserver.disconnect());
+    state = structuredClone(original); broadcast();
+    checks.push({ feature: 'Compiled SDK clock correction holds integer seconds and still accepts replay rewind and pause' });
     await update(s => {
         const enemy = s.players[1];
         Object.assign(Object.values(enemy.heroes)[0], { inventory: ['ratc','rde4','bspd','cnob','spre','stel'], inventoryCooldowns: [null,null,null,null,{progress:.5,remainingSeconds:15,totalSeconds:30},null] });

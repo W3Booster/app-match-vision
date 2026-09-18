@@ -1,5 +1,9 @@
 # Match Vision releases
 
+## 1.4.1
+
+- Keep the game clock steady across small timing corrections with SDK 4.4.1, while preserving replay seeks, pauses and reconnects.
+
 ## 1.4.0
 
 - Smooth health, mana and active production/building progress through SDK 4.4, including replay speed changes and Human power-building. Reconnects restore current values.
