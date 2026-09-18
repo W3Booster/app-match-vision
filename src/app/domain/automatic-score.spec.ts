@@ -52,7 +52,7 @@ describe('Match Vision automatic scoring policy', () => {
         ['W3Champions', 121, false, 'losses'],
         ['W3Champions', 120, true, 'wins'],
         ['Reforged', 20, false, 'losses'],
-        ['Netease', 20, false, 'losses'],
+        ['Custom realm', 20, false, 'losses'],
         ['Reforged', 800, true, 'wins']
     ] as const)('preserves legacy scoring through the SDK for %s, %is, won=%s', (realm, gameTime, isWon, side) => {
         const state: any = { match: { id: 'game', status: 'finished', gameTime, realm,

@@ -805,3 +805,22 @@ Retain the three-row fallback when unobserved; observer/replay and right-side
 placement stay unchanged. Hero rail geometry uses the existing application scale,
 not the independently adjustable lower Warcraft HUD scale. This is local release
 preparation and does not authorize publication or deployment.
+
+## 2026-09-18: Hide the in-game HUD while native menus own input
+
+Render an active match unless application.surface is ingameOverlay and the
+optional gameContext.menuOpen observation is true. Stream overlays stay visible.
+Paused matches without a menu remain visible, and unavailable observations retain
+older-recorder behavior. Hiding changes presentation only: keep the SDK connection,
+collection, score and match identity running. Use a temporary additive structural
+field declaration so both the published minimum SDK and packed SDK HEAD compile;
+keep the public dependency and lockfile on the published registry artifact.
+
+## 2026-09-18: SDK 4.5 release dependency for menu visibility
+
+Match Vision 1.5.0 requires published SDK 4.5 for local replay/observer menu
+updates. During preparation, retain the published SDK 4.4.1 pin for minimum
+compatibility checks and test the packed SDK 4.5 candidate separately. The
+release guard blocks deployment until SDK 4.5 is published and both package
+and registry lock are updated. The owner explicitly accepts retiring Netease
+within SDK 4.x; this supersedes the unpublished SDK 5 proposal. Protocol stays 4.0.

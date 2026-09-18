@@ -16,7 +16,7 @@ describe('provider league artwork', () => {
     it('keeps W3Champions leagues separate', () => {
         const assets = createService();
         expect(assets.leagueIconPath({ ...stats, provider: 'w3champions', league: 6 })).toBe('/assets/img/leagues/6.png');
-        expect(assets.leagueIconPath({ ...stats, provider: 'netease', league: 6 })).toBeNull();
+        expect(assets.leagueIconPath({ ...stats, provider: 'unsupported' as PlayerStats['provider'], league: 6 })).toBeNull();
     });
 });
 

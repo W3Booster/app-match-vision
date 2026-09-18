@@ -1,3 +1,4 @@
+import { overlayVisible } from './overlay-visibility';
 import { playerHeroes } from '../../domain/unit-selectors';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
@@ -44,6 +45,7 @@ export class OverlaySurfaceComponent {
     get opponentHeroes(): readonly Hero[] { return playerHeroes(this.opponent); }
     readonly heroHealthColor = heroHealthColor;
     get isReforged(): boolean { return this.state.match.isReforged === true; }
+    get visible(): boolean { return overlayVisible(this.state); }
     get matchActive(): boolean { return isActiveMatch(this.state.match); }
     get requiredAvatarCoverCount(): number { return this.presentation().requiredAvatarCovers; }
 

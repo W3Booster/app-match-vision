@@ -20,7 +20,7 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
           cache-dependency-path: package-lock.json
-      - name: Require the coordinated SDK 4 registry upgrade
+      - name: Require the coordinated SDK 4.5 registry upgrade
         run: node scripts/check-release-sdk.mjs
       - run: npm ci
       - run: npm run check

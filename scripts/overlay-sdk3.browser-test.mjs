@@ -74,10 +74,23 @@ try {
                 const buildings = state.players[0].buildings;
                 buildings['0000000000000003'] = { ...JSON.parse(JSON.stringify(buildings['0000000000000001'])), id: '0000000000000003' };
             }
+            state.application = { ...state.application, surface: options.surface || 'ingameOverlay' };
+            state.gameContext = { ...state.gameContext, menuOpen: options.menuOpen };
+            state.match.paused = options.paused === true;
             if (options.selected !== undefined) state.match.broadcasterPlayerId = options.selected;
             window.testConnection.connection.set({ ...base, state, settings });
         }, options);
         await page.waitForTimeout(settleMs);
+    }
+    for (const view of [{}, { observer: true }, { replay: true }]) {
+        for (const surface of ['ingameOverlay', 'streamOverlay']) {
+            for (const menuOpen of [false, true, false, undefined]) {
+                await render({ ...view, surface, menuOpen, paused: true });
+                assert.equal(await page.locator('mv-overlay-surface .App').count(),
+                    surface === 'ingameOverlay' && menuOpen === true ? 0 : 1,
+                    'Only in-game menus hide the HUD; paused gameplay and OBS remain visible');
+            }
+        }
     }
     for (const reforged of [false, true]) {
         for (const mode of ['1v1', '2v2', 'FFA']) {
