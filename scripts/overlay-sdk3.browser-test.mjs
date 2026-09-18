@@ -87,8 +87,8 @@ try {
             for (const menuOpen of [false, true, false, undefined]) {
                 await render({ ...view, surface, menuOpen, paused: true });
                 assert.equal(await page.locator('mv-overlay-surface .App').count(),
-                    surface === 'ingameOverlay' && menuOpen === true ? 0 : 1,
-                    'Only in-game menus hide the HUD; paused gameplay and OBS remain visible');
+                    menuOpen === true ? 0 : 1,
+                    'Menus hide both overlays; paused gameplay without a menu remains visible');
             }
         }
     }

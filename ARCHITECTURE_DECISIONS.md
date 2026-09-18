@@ -824,3 +824,12 @@ compatibility checks and test the packed SDK 4.5 candidate separately. The
 release guard blocks deployment until SDK 4.5 is published and both package
 and registry lock are updated. The owner explicitly accepts retiring Netease
 within SDK 4.x; this supersedes the unpublished SDK 5 proposal. Protocol stays 4.0.
+
+## 2026-09-18: Hide OBS alongside the in-game overlay during menus
+
+The owner explicitly revised the earlier menu presentation decision: Match Vision
+must hide both in-game and OBS surfaces while gameContext.menuOpen is true because
+OBS artwork also overlaps the captured Warcraft menu. Remove the surface exception;
+restore both when the menu closes. Keep subscriptions, collection, match identity
+and unknown-observation behavior unchanged. Pause alone is still not a menu signal.
+This supersedes the earlier decision to leave the stream overlay visible.

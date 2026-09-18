@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { overlayVisible } from './overlay-visibility';
 
 describe('menu visibility', () => {
-    it.each(['self', 'observer', 'replay'])('hides and restores only the in-game overlay for %s', (mode) => {
+    it.each(['self', 'observer', 'replay'])('hides and restores both overlay surfaces for %s', (mode) => {
         for (const surface of ['ingameOverlay', 'streamOverlay'] as const) {
             for (const menuOpen of [true, false, undefined]) {
                 const state = {
@@ -13,7 +13,7 @@ describe('menu visibility', () => {
                     application: { clientId: 'test', surface, settings: {} }
                 } as unknown as MatchState;
                 const before = structuredClone(state);
-                expect(overlayVisible(state)).toBe(!(surface === 'ingameOverlay' && menuOpen === true));
+                expect(overlayVisible(state)).toBe(menuOpen !== true);
                 expect(state).toEqual(before);
                 expect(overlayVisible({ ...state, match: { ...state.match, status: 'idle' } })).toBe(false);
             }
