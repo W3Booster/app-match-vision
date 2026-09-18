@@ -173,8 +173,19 @@ try {
     await page.waitForTimeout(100);
     assert.equal(await frame().locator('.gametime').innerText(), '00:09');
     await frame().evaluate(() => window.__releaseClockObserver.disconnect());
+    await update(s => {
+        s.match.paused = false; s.match.gameTime = 20;
+        s.transport.interpolation.clock = { sample: 5, times: [20, 20], rates: [1, 1], gameTime: 20, ageMs: 0 };
+    });
+    await wait("document.querySelector('.gametime')?.textContent.trim() === '00:20'");
+    await update(s => {
+        s.match.id = 'pending-frame-replay'; s.match.isReplay = true; s.match.gameTime = 21;
+        s.transport.interpolation.clock = { sample: 6, times: [21, 21], rates: [1, 1], gameTime: 21, ageMs: 0 };
+    });
+    await wait("[...document.querySelectorAll('.gametime,.field-time,.match-clock,.game-time')].some(e => /^0{1,2}:2[12]$/.test(e.textContent.trim()))");
+    assert.deepEqual(errors, [], 'Changing match with an active browser timer must cancel it safely');
     state = structuredClone(original); broadcast();
-    checks.push({ feature: 'Compiled SDK clock correction holds integer seconds and still accepts replay rewind and pause' });
+    checks.push({ feature: 'Compiled SDK clock correction holds integer seconds, accepts replay rewind/pause, and safely cancels pending frames on match changes' });
     await update(s => {
         const enemy = s.players[1];
         Object.assign(Object.values(enemy.heroes)[0], { inventory: ['ratc','rde4','bspd','cnob','spre','stel'], inventoryCooldowns: [null,null,null,null,{progress:.5,remainingSeconds:15,totalSeconds:30},null] });
