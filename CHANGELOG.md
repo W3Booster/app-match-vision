@@ -1,5 +1,9 @@
 # Match Vision releases
 
+## 1.5.3
+
+- Make remaining item charges easier to read on Windows: spent charges have dim outlines and a faint dark fill, while available charges stay bright white.
+
 ## 1.4.1
 
 - Keep the game clock steady across small timing corrections with SDK 4.4.1, while preserving replay seeks, pauses and reconnects.

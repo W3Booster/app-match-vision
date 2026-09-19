@@ -10,7 +10,7 @@ export function createMatchVisionDemo() {
         match: {
             ...state.match,
             gameVersion: '3.0.0.24268',
-            gameDataId: '3.0.0.24268-41304aaa2345cb33'
+            gameDataId: '3.0.0.24268-61e667c51d996056'
         }
     };
 }

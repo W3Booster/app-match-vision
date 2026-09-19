@@ -1,6 +1,6 @@
 {
   "name": "w3booster-match-vision",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "W3Booster's open-source live match visualization application.",
   "scripts": {
     "ng": "ng",

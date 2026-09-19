@@ -24,6 +24,7 @@ is the only ignored warning.
 | Upgrades | All three level indicators and exact level-specific textures |
 | Army composition | Exact counts, illusions/deaths excluded, ascending per-unit gold cost, both sides/artwork families, shared slot, two real 10-second rotations, disabled/empty fallbacks, settings defaults |
 | Item bonuses | Catalog-derived Claws/Ring corner numbers and gradients, mixed ordinary/cooldown items, duplicate/replaced slots, missing catalog, settled-animation screenshots |
+| Item charges | Screenshot pixels distinguish filled and spent rod/ward charges on both sides and artwork families; zero/one, overflow, ten-dot capacity, duplicate items and slot moves |
 | Layouts | Self-play, replay/observer 1v1, 2v2, FFA; geometry matrix also checks narrow viewports |
 | Settings/lifecycle | Delivered visibility settings, restoration, match end/start, reconnect with new state |
 | Dashboard | Score increments/reset, automatic result, explanation dialog, persistence, reverse players, history filters, compact launch |

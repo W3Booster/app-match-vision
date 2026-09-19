@@ -40,7 +40,9 @@
         width: 3px;
         height: 3px;
         box-sizing: border-box;
-        border: 1px solid #ddd;
+        // Tiny CSS borders can paint solid in the Windows overlay. Draw the
+        // empty ring with an explicit dark center so spent charges stay hollow.
+        background: radial-gradient(circle, #1f1f1f 0 30%, rgba(221, 221, 221, .6) 40% 65%, transparent 70%);
         border-radius: 50%;
 
         &.filled { background: #fff; }

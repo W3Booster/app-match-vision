@@ -470,6 +470,42 @@ try {
         });
         await wait("document.querySelector('.hero-area-streamer.inventory .item-charges')?.getAttribute('aria-label') === 'Remaining charges: 1'");
         for (const side of ['streamer', 'opponent']) assert.deepEqual(await frame().locator(`.hero-area-${side}.inventory .item-charges`).evaluateAll(es => es.map(e => e.querySelectorAll('.filled').length)), [1, 2]);
+        // Reported rod/ward issue: DOM counts alone miss solid-looking empty
+        // dots on Windows. Check the actual painted centers as well.
+        for (const reforged of [false, true]) {
+            await update(s => {
+                s.match.isReforged = reforged;
+                for (const player of s.players) Object.assign(Object.values(player.heroes)[0], {
+                    inventory: ['rnec', 'wswd', '', '', '', ''],
+                    inventoryCharges: [3, 1, null, null, null, null], inventoryCooldowns: Array(6).fill(null)
+                });
+            });
+            await wait("document.querySelectorAll('.charge-dot').length === 12");
+            await images('rod and wards', ['.inventory .item-icon']);
+            await wait("document.getAnimations().filter(a => a.effect?.getTiming().iterations !== Infinity).every(a => a.playState === 'finished' || a.playState === 'idle')");
+            const png = await page.screenshot({ path: resolve(output, `item-charges-rod-wards-${reforged ? 'reforged' : 'classic'}.png`) });
+            const iframeBox = await page.locator('#app').boundingBox();
+            for (const side of ['streamer', 'opponent']) {
+                const badges = frame().locator(`.hero-area-${side}.inventory .item-charges`);
+                for (const [index, expected] of [[0, [true, true, true, false]], [1, [true, false]]]) {
+                    const badge = badges.nth(index);
+                    const centers = await badge.evaluate((e, offset) => {
+                        return [...e.children].map(dot => {
+                            const r = dot.getBoundingClientRect();
+                            return { x: Math.floor(offset.x + r.left + r.width / 2), y: Math.floor(offset.y + r.top + r.height / 2) };
+                        });
+                    }, iframeBox);
+                    assert.equal(centers.length, expected.length);
+                    const pixels = await browser.app.evaluate(({ nativeImage }, { png, centers }) => {
+                        const image = nativeImage.createFromBuffer(Buffer.from(png, 'base64'));
+                        const bitmap = image.toBitmap(), width = image.getSize().width;
+                        return centers.map(({ x, y }) => [...bitmap.subarray((y * width + x) * 4, (y * width + x) * 4 + 3)]);
+                    }, { png: png.toString('base64'), centers });
+                    pixels.forEach((rgb, i) => assert.ok(rgb.every(v => expected[i] ? v >= 220 : v <= 80),
+                        `${side} ${reforged ? 'reforged' : 'classic'} item ${index} dot ${i}: ${rgb}`));
+                }
+            }
+        }
         // Include a retained zero, an above-default count, and the largest catalog capacity.
         const tenChargeItem = Object.values(catalog.items).find(item => item.initialCharges === 10).typeId;
         for (const reforged of [false, true]) {
