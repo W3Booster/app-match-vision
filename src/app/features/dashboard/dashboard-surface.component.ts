@@ -15,6 +15,7 @@ import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
 import { MatchHistoryStore } from './match-history.store';
 import { MatchControls } from './match-controls';
+import { MatchDisplayPreferences } from './match-display-preferences';
 import { version } from '../../../../package.json';
 
 @Component({
@@ -37,6 +38,7 @@ export class DashboardSurfaceComponent implements OnDestroy {
     readonly historyStatus = matchHistoryStatus;
     readonly score = inject(AutomaticScoreService);
     readonly controls = new MatchControls();
+    readonly display = new MatchDisplayPreferences();
     readonly teams = computed(() => matchVisionTeams(this.state(), this.displayedReversePlayerOrder()));
 
     private readonly clientBinding = effect(() => this.history.connect(this.client()));
@@ -47,6 +49,7 @@ export class DashboardSurfaceComponent implements OnDestroy {
     ngOnDestroy(): void {
         this.history.disconnect();
         this.controls.destroy();
+        this.display.destroy();
     }
 
     get matchActive(): boolean {

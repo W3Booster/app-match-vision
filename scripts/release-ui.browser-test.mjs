@@ -728,6 +728,11 @@ try {
     assert.equal(await frame().locator('.app-version').innerText(), 'v' + version);
     await frame().getByRole('heading', { name: 'Match dashboard' }).waitFor();
     await wait("document.querySelector('.current-match').textContent.includes('Northwind') && document.querySelector('.current-match').textContent.includes('Ironclaw')");
+    await wait("document.querySelectorAll('.player-statistics,.stats-status').length > 0");
+    await frame().getByRole('checkbox', { name: 'Show player stats', exact: true }).uncheck();
+    await wait("!document.querySelector('.player-statistics,.stats-status') && document.querySelectorAll('.current-match mv-race-tag').length === 2");
+    const raceBadgeColors = await frame().locator('.current-match mv-race-tag span').evaluateAll(elements => elements.map(e => ({ race: e.dataset.race, color: getComputedStyle(e).color, background: getComputedStyle(e).backgroundColor })));
+    assert.ok(raceBadgeColors.every(badge => badge.color !== badge.background));
     await frame().locator('.score-side.win button').last().click();
     await wait("document.querySelector('.score-side.win strong').textContent==='1'");
     await frame().locator('.score-side.loss button').last().click();
@@ -761,6 +766,14 @@ try {
     await wait("document.querySelector('.current-match').textContent.includes('Reconnected smoke match')");
     assert.ok(requests.filter(url => url.endsWith('/stream/v1/stream-tickets')).length > oldSocketCount);
     await open('compact');
+    await wait("!document.querySelector('.player-stats') && document.querySelectorAll('.current-match mv-race-tag').length === 2");
+    assert.equal(await frame().getByRole('checkbox', { name: 'Show stats', exact: true }).isChecked(), false);
+    await frame().getByRole('checkbox', { name: 'Show stats', exact: true }).check();
+    await wait("document.querySelectorAll('.player-stats').length === 2");
+    await update(s => { s.players[0].race = 'random'; });
+    await wait("document.querySelector('.current-match [data-race=random]')");
+    assert.equal(await frame().locator('.current-match [data-race=random]').evaluate(e => getComputedStyle(e).backgroundColor), 'rgb(255, 210, 162)');
+    checks.push({ feature: 'stats toggle persists between dashboard and compact; names/races remain visible; distinct race badges and orange Random' });
     await frame().getByRole('button', { name: 'Add win', exact: true }).click();
     await wait("document.querySelector('.score-section').textContent.includes('1')");
     assert.equal(storage.data.matchScore.wins, 1);

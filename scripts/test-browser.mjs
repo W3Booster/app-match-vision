@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { testElectron } from './install-test-electron.mjs';
+import { once } from 'node:events';
 
 // Every UI test uses the oldest supported desktop runtime, including geometry tests.
 export async function launchTestBrowser() {
@@ -12,7 +13,28 @@ export async function launchTestBrowser() {
         executablePath: await testElectron(),
         args: ['--no-sandbox', '--user-data-dir=' + directory, resolve(import.meta.dirname, 'electron-shell.cjs')]
     }); } catch (error) { await rm(directory, { recursive: true, force: true }); throw error; }
-    const close = async () => { try { await app.close(); } finally { await rm(directory, { recursive: true, force: true }); } };
+    let closing;
+    const close = () => closing ??= (async () => {
+        const process = app.process();
+        const exited = process.exitCode !== null || process.signalCode !== null ? Promise.resolve() : once(process, 'exit');
+        let timer;
+        try {
+            // Electron 15 can stall Playwright's close RPC. Close the owned
+            // windows explicitly and require the native process to finish.
+            await app.evaluate(({ app, BrowserWindow }) => {
+                for (const window of BrowserWindow.getAllWindows()) window.destroy();
+                app.quit();
+            }).catch(() => {});
+            await Promise.race([
+                exited,
+                new Promise((_, reject) => { timer = setTimeout(() => reject(Error('Owned Electron UI process did not close')), 5000); })
+            ]);
+        } finally {
+            clearTimeout(timer);
+            if (process.exitCode === null && process.signalCode === null) { process.kill('SIGKILL'); await exited; }
+            await rm(directory, { recursive: true, force: true });
+        }
+    })();
     if (await app.evaluate(() => process.versions.electron) !== '15.0.0') { await close(); throw Error('UI acceptance requires Electron 15.0.0'); }
     return {
         app,

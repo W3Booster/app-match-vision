@@ -37,6 +37,7 @@
         <section class="compact-section current-match">
             <header>
                 <div><span>LIVE</span><h2>Current match</h2></div>
+                <label class="stats-toggle"><input type="checkbox" [checked]="display.showPlayerStats()" (change)="display.setShowPlayerStats($any($event.target).checked)">Show stats</label>
                 <button *ngIf="matchActive && (state().match.isReplay || state().match.isObserver)" type="button" class="quiet" [disabled]="controls.busy() || !canReversePlayers" (click)="reversePlayers()"><i aria-hidden="true">⇅</i> Reverse order</button>
             </header>
             <div class="empty" *ngIf="!matchActive">No match running</div>
@@ -57,7 +58,7 @@
                                     </span>
                                     <mv-race-tag [value]="player.race"></mv-race-tag>
                                 </div>
-                                <div class="player-stats">
+                                <div class="player-stats" *ngIf="display.showPlayerStats()">
                                     <ng-container *ngIf="playerStats(player) as stats; else noStats"><strong *ngIf="stats.mmr !== undefined" class="mmr">{{Math.round(stats.mmr)}} MMR</strong>
                                         <span class="player-record"><strong class="win-rate">{{stats.winRate | number:'1.0-0'}}%</strong><strong class="wins">{{stats.wins}}W</strong><strong class="losses">{{stats.losses}}L</strong></span>
                                     </ng-container>

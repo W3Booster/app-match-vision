@@ -189,7 +189,9 @@ function connectionView(
 
 export function connectionErrorMessage(error: unknown): string {
     const problem = classifyW3BoosterError(error);
-    if (problem.kind === 'permission') return 'Enable and open Match Vision from W3Booster.';
+    if (problem.kind === 'permission') {
+        return 'Match Vision could not authorize this connection. Reopen it from W3Booster to start a fresh session. If the app is disabled, enable it first.';
+    }
     if (problem.code === 'APPLICATION_DEFINITION_MISMATCH') {
         return 'Match Vision is outdated for this W3Booster environment. Regenerate and redeploy its application binding.';
     }

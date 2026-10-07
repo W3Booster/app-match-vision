@@ -16,6 +16,7 @@ import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
 import { dashboardStatusLabel } from './dashboard-status';
 import { MatchHistoryStore } from './match-history.store';
 import { MatchControls } from './match-controls';
+import { MatchDisplayPreferences } from './match-display-preferences';
 
 @Component({
     selector: 'mv-compact-dashboard-surface',
@@ -37,6 +38,7 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
     readonly historyStatus = matchHistoryStatus;
     readonly score = inject(AutomaticScoreService);
     readonly controls = new MatchControls();
+    readonly display = new MatchDisplayPreferences();
     readonly teams = computed(() => matchVisionTeams(this.state(), this.displayedReversePlayerOrder()));
     readonly isFreeForAll = computed(() => standardGame.modeInfo(this.state().match.mode)?.kind === 'ffa');
     fontSize = 12;
@@ -49,6 +51,7 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
     ngOnDestroy(): void {
         this.history.disconnect();
         this.controls.destroy();
+        this.display.destroy();
     }
     get matchActive(): boolean { return isActiveMatch(this.state().match); }
     get wins(): number | undefined { return matchVisionScore(this.state())?.wins; }

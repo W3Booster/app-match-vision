@@ -86,3 +86,4 @@ h1, h2 { margin: 0; color: #f1eadf; font-size: 1em; line-height: 1.1; }
     padding-inline-start: 10px;
     border-inline-start: 1px solid rgba(154, 172, 184, .25);
 }
+.stats-toggle { display: inline-flex; align-items: center; gap: 5px; color: #c7d2d9; font-size: 11px; cursor: pointer; }

@@ -22,7 +22,7 @@
     </section>
 
     <section class="dashboard-card current-match">
-        <header><div><span>LIVE</span><h2>Current match</h2></div><div class="match-clock" *ngIf="matchActive">{{formatTime(state().match.gameTime)}}</div></header>
+        <header><div><span>LIVE</span><h2>Current match</h2></div><label class="stats-toggle"><input type="checkbox" [checked]="display.showPlayerStats()" (change)="display.setShowPlayerStats($any($event.target).checked)">Show player stats</label><div class="match-clock" *ngIf="matchActive">{{formatTime(state().match.gameTime)}}</div></header>
         <div class="empty" *ngIf="!matchActive"><i class="fa fa-hourglass-half"></i><b>No match running</b><span>This page updates automatically when Warcraft III starts a match.</span></div>
         <ng-container *ngIf="matchActive">
             <div class="match-meta"><b>{{state().match.map || 'Unknown map'}}</b><span>{{state().match.mode || 'Unknown mode'}} · {{state().match.realm || 'Warcraft III'}}</span><button *ngIf="state().match.isObserver || state().match.isReplay" [disabled]="controls.busy() || !canReversePlayers" (click)="reversePlayers()"><i class="fa fa-exchange-alt"></i> Reverse players</button></div>
@@ -31,6 +31,7 @@
                     <h3>{{team.teamId === null ? 'Unassigned team' : 'Team ' + (team.teamId + 1)}}</h3>
                     <div class="player-row" *ngFor="let player of team.players">
                         <div class="player-heading"><b><mv-copy-player-name [name]="playerName(player)"></mv-copy-player-name></b><mv-race-tag [value]="player.race"></mv-race-tag></div>
+                        <ng-container *ngIf="display.showPlayerStats()">
                         <div class="player-statistics" *ngIf="playerStats(player) as stats; else statsPending">
                             <span *ngIf="stats.mmr !== undefined" class="mmr"><strong>{{Math.round(stats.mmr)}}</strong><small>MMR</small></span>
                             <div class="player-record">
@@ -40,6 +41,7 @@
                             </div>
                         </div>
                         <ng-template #statsPending><div class="stats-status" role="status"><i *ngIf="player.stats?.status === 'loading'" aria-hidden="true"></i>{{player.stats?.status === 'loading' ? 'Loading stats…' : 'No stats available'}}</div></ng-template>
+                        </ng-container>
                     </div>
                 </article>
             </div>

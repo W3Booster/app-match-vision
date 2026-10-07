@@ -1,5 +1,14 @@
 # Match Vision architecture decisions
 
+## 2026-10-07: Keep the stats visibility toggle local to match views
+
+The dashboard and compact window share a remembered local presentation choice
+for showing player stats. Hiding stats removes MMR, records and loading messages
+while retaining names, aliases, races and match controls. It does not change the
+SDK's stats scope, delivered match data or gameplay overlay settings. Storage
+events synchronize open windows; blocked storage still permits the local toggle.
+Race badges use contrasting fills, with light orange for Random.
+
 
 ## 2026-09-09: Production follows the existing PRO data entitlement
 

@@ -1,4 +1,4 @@
-import { ConnectionError } from '@w3booster/sdk';
+import { ConnectionError, PermissionRequiredError } from '@w3booster/sdk';
 import type { HostLifecycleSnapshot, MatchState, W3BoosterClient } from '@w3booster/sdk';
 import type { ApplicationRuntime, ApplicationRuntimeSnapshot } from '@w3booster/sdk/app';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -22,6 +22,12 @@ const unavailableHost: HostLifecycleSnapshot = {
 
 describe('MatchVisionClientService', () => {
     beforeEach(() => createRuntimeMock.mockReset());
+
+    it('offers a fresh session without claiming an enabled app is disabled', () => {
+        const error = new PermissionRequiredError('This app has not been authorized.');
+        expect(connectionErrorMessage(error)).toContain('Reopen it from W3Booster to start a fresh session.');
+        expect(connectionErrorMessage(error)).toContain('If the app is disabled');
+    });
 
     it('explains that an application-definition mismatch requires a new app build', () => {
         const error = new ConnectionError(

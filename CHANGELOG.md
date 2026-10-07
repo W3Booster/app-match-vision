@@ -1,5 +1,12 @@
 # Match Vision releases
 
+## 1.5.7
+
+- Explain how to reopen Match Vision after a rejected or expired connection without assuming the app is disabled.
+
+- Hide player stats in the dashboard or compact window to focus on names and races. The choice is remembered in both views.
+- Spot each race more easily with brighter badges; Random uses light orange.
+
 ## 1.5.3
 
 - Make remaining item charges easier to read on Windows: spent charges have dim outlines and a faint dark fill, while available charges stay bright white.
