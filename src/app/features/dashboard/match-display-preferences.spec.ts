@@ -43,4 +43,18 @@ describe('MatchDisplayPreferences', () => {
         preferences.setShowPlayerStats(false);
         expect(preferences.showPlayerStats()).toBe(false);
     });
+
+    it('opens the surface when the browser denies access to localStorage itself', () => {
+        const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+        Object.defineProperty(globalThis, 'localStorage', { configurable: true, get() { throw new Error('SecurityError'); } });
+        try {
+            const preferences = new MatchDisplayPreferences(undefined, { addEventListener() {}, removeEventListener() {} });
+            preferences.setShowPlayerStats(false);
+            expect(preferences.showPlayerStats()).toBe(false);
+            preferences.destroy();
+        } finally {
+            if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+            else Reflect.deleteProperty(globalThis, 'localStorage');
+        }
+    });
 });
