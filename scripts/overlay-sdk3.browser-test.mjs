@@ -26,6 +26,10 @@ try {
             const settings = JSON.parse(JSON.stringify(base.settings));
             Object.assign(state.match, { mode: options.mode || '1v1', isObserver: !!options.observer,
                 isReplay: !!options.replay, gameTime: 5, isReforged: !!options.reforged, status: options.status || 'running' });
+            // The demo fixture represents a Battle.net match. Keep the realm
+            // explicit so provider-based SDK selectors exercise the same path
+            // as the dashboard and match bar.
+            state.match.realm = options.realm || 'Battle.net';
             for (const profile of [settings.player, settings.observer]) {
                 profile.heroExpProgressEnabled = options.xp !== false;
                 profile.heroAbilitiesEnabled = options.abilities !== false;
