@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, computed, effect, inject, input, signal } from '@angular/core';
 import { canUseHostCapability } from '@w3booster/sdk';
 import type { ConnectionStatus, DeepReadonly, HostLifecycleSnapshot, MatchState, Player, PlayerStats, W3BoosterClient } from '@w3booster/sdk';
-import { isActiveMatch, playerDisplayIdentity } from '@w3booster/sdk/selectors';
+import { currentStatsProvider, isActiveMatch, playerDisplayIdentity } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import { matchVisionSettings, matchVisionTeams, reversePlayerOrderForMatch, type MatchVisionSettings } from '../../domain';
 import type { W3BoosterAppSettings } from '../../core/w3booster-app.generated';
@@ -71,7 +71,8 @@ export class CompactDashboardSurfaceComponent implements OnDestroy {
     }
     changeFont(delta: 1 | -1): void { this.fontSize = Math.min(20, Math.max(10, this.fontSize + delta)); }
     playerStats(player: Player): PlayerStats | undefined {
-        return standardGame.statsForMode(player, this.state().match.mode);
+        const provider = currentStatsProvider(this.state().match);
+        return provider ? standardGame.statsForMode(player, this.state().match.mode, { provider }) : undefined;
     }
     playerIdentity(player: Player) {
         const identity = playerDisplayIdentity(player);

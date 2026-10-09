@@ -2,6 +2,7 @@ import type { GameContext } from '@w3booster/sdk';
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, input } from '@angular/core';
 import type { Match, Player, PlayerStats } from '@w3booster/sdk';
+import { currentStatsProvider } from '@w3booster/sdk/selectors';
 import * as standardGame from '@w3booster/sdk/standard-game';
 import type { MatchVisionOverlaySettings, MatchVisionPlayerView } from '../../../domain';
 import { WarcraftAssetsService } from '../../../shared/warcraft/warcraft-assets.service';
@@ -32,7 +33,8 @@ export class MatchBarComponent {
     readonly Math = Math;
 
     getStats(player: Player): PlayerStats | undefined {
-        return standardGame.statsForMode(player, this.match().mode);
+        const provider = currentStatsProvider(this.match());
+        return provider ? standardGame.statsForMode(player, this.match().mode, { provider }) : undefined;
     }
     leagueIcon(stats: PlayerStats): string | null { return this.assets.leagueIconPath(stats); }
     playerIdentity(player: MatchVisionPlayerView) { return player.displayIdentity; }
