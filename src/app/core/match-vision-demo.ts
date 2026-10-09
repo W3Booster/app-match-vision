@@ -9,7 +9,7 @@ export function createMatchVisionDemo() {
         ...state,
         match: {
             ...state.match,
-            gameVersion: '3.0.1.24342',
+            gameVersion: '3.0.0.24268',
             gameDataId: '3.0.0.24268-b01f3ba39503e1fd'
         }
     };
