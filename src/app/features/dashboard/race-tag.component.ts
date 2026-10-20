@@ -20,7 +20,7 @@ const RACE_TAGS: Record<string, { id: string; label: string; name: string }> = {
         span[data-race='orc'] { background: #ffb6a7; color: #4c2018; }
         span[data-race='undead'] { background: #d2baff; color: #302044; }
         span[data-race='night-elf'] { background: #9fe1bd; color: #163325; }
-        span[data-race='random'] { background: #ffd2a2; color: #4f2a0c; }
+        span[data-race='random'] { background: #f5e58b; color: #40350d; }
     `
 })
 export class RaceTagComponent {

@@ -772,8 +772,8 @@ try {
     await wait("document.querySelectorAll('.player-stats').length === 2");
     await update(s => { s.players[0].race = 'random'; });
     await wait("document.querySelector('.current-match [data-race=random]')");
-    assert.equal(await frame().locator('.current-match [data-race=random]').evaluate(e => getComputedStyle(e).backgroundColor), 'rgb(255, 210, 162)');
-    checks.push({ feature: 'stats toggle persists between dashboard and compact; names/races remain visible; distinct race badges and orange Random' });
+    assert.equal(await frame().locator('.current-match [data-race=random]').evaluate(e => getComputedStyle(e).backgroundColor), 'rgb(245, 229, 139)');
+    checks.push({ feature: 'stats toggle persists between dashboard and compact; names/races remain visible; distinct race badges and gold Random' });
     await frame().getByRole('button', { name: 'Add win', exact: true }).click();
     await wait("document.querySelector('.score-section').textContent.includes('1')");
     assert.equal(storage.data.matchScore.wins, 1);
