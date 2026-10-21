@@ -79,7 +79,7 @@ try {
                 buildings['0000000000000003'] = { ...JSON.parse(JSON.stringify(buildings['0000000000000001'])), id: '0000000000000003' };
             }
             state.application = { ...state.application, surface: options.surface || 'ingameOverlay' };
-            state.gameContext = { ...state.gameContext, menuOpen: options.menuOpen };
+            state.gameContext = { ...state.gameContext, menuOpen: options.menuOpen, advancedObserverMode: options.advancedObserverMode };
             state.match.paused = options.paused === true;
             if (options.selected !== undefined) state.match.broadcasterPlayerId = options.selected;
             window.testConnection.connection.set({ ...base, state, settings });
@@ -93,6 +93,16 @@ try {
                 assert.equal(await page.locator('mv-overlay-surface .App').count(),
                     menuOpen === true ? 0 : 1,
                     'Menus hide both overlays; paused gameplay without a menu remains visible');
+            }
+        }
+    }
+    for (const view of [{}, { observer: true }, { replay: true }]) {
+        for (const surface of ['ingameOverlay', 'streamOverlay']) {
+            for (const advancedObserverMode of [undefined, true, false, true, undefined]) {
+                await render({ ...view, surface, advancedObserverMode });
+                assert.equal(await page.locator('mv-overlay-surface .App').count(),
+                    advancedObserverMode === true ? 0 : 1,
+                    'Advanced Observer layout hides both overlays and restores them when inactive or unavailable');
             }
         }
     }

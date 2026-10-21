@@ -842,3 +842,14 @@ OBS artwork also overlaps the captured Warcraft menu. Remove the surface excepti
 restore both when the menu closes. Keep subscriptions, collection, match identity
 and unknown-observation behavior unchanged. Pause alone is still not a menu signal.
 This supersedes the earlier decision to leave the stream overlay visible.
+
+## 2026-10-21: Hide incompatible Advanced Observer presentation
+
+While optional `gameContext.advancedObserverMode` is true, hide both Match Vision
+surfaces. Warcraft's native Advanced Observer layout uses different production,
+statistics and lower player panels; normal portrait/hero coordinates do not apply.
+Keep SDK subscriptions, recording, match identity and score alive. False or absent
+restores normal presentation, still subject to menu and active-match visibility.
+Use additive feature detection so the published minimum SDK remains supported.
+A dedicated advanced layout must be verified against the native HUD before this
+fallback is relaxed; no deployment is authorized by this local change.
