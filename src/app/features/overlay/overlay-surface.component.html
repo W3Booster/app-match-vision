@@ -127,6 +127,41 @@
                             </div>
                         </div>
 
+                        <div class="hero-revivals">
+                            <div>
+                                <div *ngFor="let hero of streamerHeroes; trackBy: trackHero"
+                                    class="hero-area hero-area-streamer hero-revival-area">
+                                    @if (getHeroRevival(hero, streamer); as revival) {
+                                        <div class="hero-hp-bar-wrapper hero-revival-wrapper">
+                                            <div class="hero-hp-bar-background" role="progressbar"
+                                                aria-label="Hero revival" aria-valuemin="0" aria-valuemax="100"
+                                                [attr.aria-valuenow]="revival.progress === null ? null : revival.progress * 100"
+                                                [attr.aria-valuetext]="revival.remainingSeconds === null ? 'Revival time unavailable' : cooldownSeconds(revival.remainingSeconds) + ' seconds remaining'">
+                                                <div class="hero-revival-fill" [style.width.%]="(revival.progress ?? 0) * 100"></div>
+                                            </div>
+                                            <span class="hero-revival-countdown">{{revival.remainingSeconds === null ? '—' : cooldownSeconds(revival.remainingSeconds) + 's'}}</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                            <div>
+                                <div *ngFor="let hero of opponentHeroes; trackBy: trackHero"
+                                    class="hero-area hero-area-opponent hero-revival-area">
+                                    @if (getHeroRevival(hero, opponent); as revival) {
+                                        <div class="hero-hp-bar-wrapper hero-revival-wrapper">
+                                            <div class="hero-hp-bar-background" role="progressbar"
+                                                aria-label="Hero revival" aria-valuemin="0" aria-valuemax="100"
+                                                [attr.aria-valuenow]="revival.progress === null ? null : revival.progress * 100"
+                                                [attr.aria-valuetext]="revival.remainingSeconds === null ? 'Revival time unavailable' : cooldownSeconds(revival.remainingSeconds) + ' seconds remaining'">
+                                                <div class="hero-revival-fill" [style.width.%]="(revival.progress ?? 0) * 100"></div>
+                                            </div>
+                                            <span class="hero-revival-countdown">{{revival.remainingSeconds === null ? '—' : cooldownSeconds(revival.remainingSeconds) + 's'}}</span>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
                         <div *ngIf="settings.heroAbilitiesEnabled || settings.heroExpProgressEnabled !== false">
                             <div *ngIf="streamerHeroes.length">
                                 <div *ngFor="let hero of streamerHeroes; trackBy: trackHero"

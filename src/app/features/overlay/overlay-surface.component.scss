@@ -127,3 +127,30 @@
         transition: width 200ms linear;
     }
 }
+
+.hero-revival-wrapper {
+    direction: ltr;
+    .hero-revival-fill {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        background: #fff;
+        transition: width 200ms linear;
+    }
+    .hero-revival-countdown {
+        position: absolute;
+        bottom: 36px;
+        left: 0;
+        width: 100%;
+        text-align: center;
+        color: #fff;
+        font: bold 16px Roboto, sans-serif;
+        font-variant-numeric: tabular-nums;
+        text-shadow: 0 1px 3px #000, 1px 0 3px #000, -1px 0 3px #000;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .hero-revival-wrapper .hero-revival-fill { transition: none; }
+}

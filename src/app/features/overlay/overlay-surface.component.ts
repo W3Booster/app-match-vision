@@ -15,6 +15,7 @@ import { createOverlayPresentation } from './overlay-presentation';
 import { TeamObserverBarComponent } from './team-observer-bar/team-observer-bar.component';
 import { ProductionQueueComponent } from './production-queue/production-queue.component';
 import { heroHealthColor } from './hero-vitals';
+import { heroRevival } from './hero-revival';
 import { ArmyResearchPanelComponent } from './army-research-panel/army-research-panel.component';
 import { abilityManaState } from './ability-mana';
 import { itemCharges, type ItemCharges } from './item-charges';
@@ -44,6 +45,9 @@ export class OverlaySurfaceComponent {
     get streamerHeroes(): readonly Hero[] { return playerHeroes(this.streamer); }
     get opponentHeroes(): readonly Hero[] { return playerHeroes(this.opponent); }
     readonly heroHealthColor = heroHealthColor;
+    getHeroRevival(hero: Hero, player: MatchVisionPlayerView | null) {
+        return this.matchActive ? heroRevival(hero, player) : null;
+    }
     get isReforged(): boolean { return this.state.match.isReforged === true; }
     get visible(): boolean { return overlayVisible(this.state); }
     get matchActive(): boolean { return isActiveMatch(this.state.match); }

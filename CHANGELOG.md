@@ -1,5 +1,9 @@
 # Match Vision releases
 
+## 1.5.9 — 2026-10-27
+
+- Show same-owner hero revival progress and remaining seconds on both overlay surfaces.
+
 ## 1.5.8 — 2026-10-21
 
 - Hide both Match Vision surfaces while Warcraft's native Advanced Observer layout is active, and restore them when the layout is inactive or unavailable.

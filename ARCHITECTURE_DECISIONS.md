@@ -853,3 +853,22 @@ restores normal presentation, still subject to menu and active-match visibility.
 Use additive feature detection so the published minimum SDK remains supported.
 A dedicated advanced layout must be verified against the native HUD before this
 fallback is relaxed; no deployment is authorized by this local change.
+
+## 2026-10-26: Show observed hero revival progress and remaining seconds
+
+Both overlay surfaces show a white bar under a dead hero's portrait and a compact
+countdown over its lower edge. Reuse the HP bar geometry for Classic/Reforged and
+both player sides. Revival is independent of abilities, XP and production queue
+visibility; retain the existing exclusion of portrait panels in team layouts.
+
+Associate only the same player's active first production slot explicitly marked
+`reviving`, matching one unambiguous real hero type. The public queue has no hero
+instance reference, so multiple heroes of that type or multiple matching active
+queues suppress association. Never treat ordinary recruitment or waiting queue
+slots as active revival. Missing hero health, missing queues, cancellation,
+completion and an alive hero remove the presentation.
+
+Use SDK snapshot progress and remainingSeconds; round remaining seconds upward.
+Unknown progress has no fill and unknown time displays a dash. Do not derive
+revival durations from hero levels/catalogs or advance a timer in browser time.
+No recorder, SDK, entitlement or database contract changes are required.
